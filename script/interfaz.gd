@@ -426,7 +426,7 @@ func ejecutar_movimiento_spid(
 		return await mi_spid.minar()
 
 	if comando == "transferir":
-		return procesar_transferencia()
+		return await procesar_transferencia()
 
 	return _crear_error_comando(
 		"ejecucion",
@@ -664,6 +664,9 @@ func procesar_transferencia() -> Dictionary:
 
 	minerales_nave += cantidad_transferida
 	minerales_spid -= cantidad_transferida
+
+	if mi_spid != null and mi_spid.has_method("animar_transferencia"):
+		await mi_spid.animar_transferencia()
 
 	MissionService.registrar_transferencia(cantidad_transferida)
 
