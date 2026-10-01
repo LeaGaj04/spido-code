@@ -21,6 +21,7 @@ GestorSintaxis="*res://script/services/gestor_sintaxis.gd"
 ProgressService="*res://script/services/progress_service.gd"
 AttemptService="*res://script/services/attempt_service.gd"
 CursorManager="*res://script/services/cursor_manager.gd"
+AudioManager="*res://script/audio_manager.gd"
 CodeExecutor="*uid://dt8p6vupo2s3k"
 MissionService="*uid://cc2d418sdsyc0"
 
