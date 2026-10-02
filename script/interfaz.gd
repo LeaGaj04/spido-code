@@ -1140,7 +1140,7 @@ func _on_conocimiento_desbloqueado(conocimiento_id: String) -> void:
 		10.0
 	)
 
-func actualizar_panel_mision(resultado: Dictionary = {}) -> void:
+func actualizar_panel_mision(_resultado: Dictionary = {}) -> void:
 	if label_mision == null:
 		return
 	var mision_id := MissionService.objective_id

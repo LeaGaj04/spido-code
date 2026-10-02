@@ -600,9 +600,9 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 	var recolectados: int = int(resultado.get("minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
 
-	var termina_transfiriendo: bool = false
+	var _termina_transfiriendo: bool = false
 	if not comandos.is_empty():
-		termina_transfiriendo = comandos.back() == "transferir"
+		_termina_transfiriendo = comandos.back() == "transferir"
 
 	if bucle_detectado < 1 and iteraciones < 1:
 		objetivo_actualizado.emit(
