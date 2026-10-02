@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://debjkdltq8c76"
-path="res://.godot/imported/MineralRover.png-35a011dfeee744876512393b5e3034dd.ctex"
+uid="uid://bkknfbgcshdew"
+path="res://.godot/imported/MineralSpid.png-c76c4857a76e5e6fd336213d661d983c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Minerales/MineralRover.png"
-dest_files=["res://.godot/imported/MineralRover.png-35a011dfeee744876512393b5e3034dd.ctex"]
+source_file="res://Minerales/MineralSpid.png"
+dest_files=["res://.godot/imported/MineralSpid.png-c76c4857a76e5e6fd336213d661d983c.ctex"]
 
 [params]
 

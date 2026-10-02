@@ -10,6 +10,23 @@ var paso_distancia: float = 2.0
 var cola_instrucciones: Array = []
 var esta_moviendose: bool = false
 var tiempo_minado: float = 3.0
+var animation_player: AnimationPlayer
+
+
+func _ready() -> void:
+	animation_player = find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if animation_player:
+		var anim_idle = animation_player.get_animation("idle")
+		if anim_idle:
+			anim_idle.loop_mode = Animation.LOOP_LINEAR
+		var anim_walk = animation_player.get_animation("caminar")
+		if anim_walk:
+			anim_walk.loop_mode = Animation.LOOP_LINEAR
+		var anim_minar = animation_player.get_animation("minar")
+		if anim_minar:
+			anim_minar.loop_mode = Animation.LOOP_LINEAR
+		if animation_player.has_animation("idle"):
+			animation_player.play("idle")
 
 
 # --- FUNCIONES DE MOVIMIENTO (Aceptan cantidad de pasos) ---
@@ -54,6 +71,8 @@ func _intentar_mover() -> Dictionary:
 		}
 
 	esta_moviendose = true
+	if animation_player and animation_player.has_animation("caminar"):
+		animation_player.play("caminar")
 
 	while cola_instrucciones.size() > 0:
 		var direccion: Vector3 = cola_instrucciones.pop_front()
@@ -62,6 +81,8 @@ func _intentar_mover() -> Dictionary:
 		if not _destino_esta_desbloqueado(destino):
 			cola_instrucciones.clear()
 			esta_moviendose = false
+			if animation_player and animation_player.has_animation("idle"):
+				animation_player.play("idle")
 
 			return {
 				"ok": false,
@@ -84,6 +105,8 @@ func _intentar_mover() -> Dictionary:
 		pasos_completados += 1
 
 	esta_moviendose = false
+	if animation_player and animation_player.has_animation("idle"):
+		animation_player.play("idle")
 
 	return {
 		"ok": true,
@@ -166,7 +189,13 @@ func minar() -> Dictionary:
 
 		if casilla_spid == casilla_mineral:
 			print("Spid posicionado. Iniciando protocolo de minería...")
-			await get_tree().create_timer(tiempo_minado).timeout
+			if animation_player and animation_player.has_animation("minar"):
+				animation_player.play("minar")
+				await get_tree().create_timer(tiempo_minado).timeout
+				if animation_player.has_animation("idle"):
+					animation_player.play("idle")
+			else:
+				await get_tree().create_timer(tiempo_minado).timeout
 
 			if is_instance_valid(nodo_mineral):
 				nodo_mineral.queue_free()
@@ -199,6 +228,22 @@ func resetear_a_base(posicion_global: Vector3) -> void:
 	cola_instrucciones.clear()
 	esta_moviendose = false
 	rotation = Vector3.ZERO
+	if animation_player and animation_player.has_animation("idle"):
+		animation_player.play("idle")
 	var tween := create_tween()
 	tween.tween_property(self, "global_position", posicion_global, 0.35)
 	await tween.finished
+
+
+func animar_transferencia() -> void:
+	if animation_player and animation_player.has_animation("transferir"):
+		animation_player.play("transferir")
+		await animation_player.animation_finished
+		if animation_player.has_animation("idle"):
+			animation_player.play("idle")
+	else:
+		await get_tree().create_timer(2.5).timeout
+
+
+func transferir() -> void:
+	await animar_transferencia()
