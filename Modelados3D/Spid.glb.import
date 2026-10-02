@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://ofeow1hg3mg4"
-path="res://.godot/imported/Rover.glb-37630fc1ecd403cfbc6a57faacbee660.scn"
+uid="uid://dwh0mjg2vy20a"
+path="res://.godot/imported/Spid.glb-ee392a314eb4f099acd51df07e1e628a.scn"
 
 [deps]
 
-source_file="res://Modelados3D/Rover.glb"
-dest_files=["res://.godot/imported/Rover.glb-37630fc1ecd403cfbc6a57faacbee660.scn"]
+source_file="res://Modelados3D/Spid.glb"
+dest_files=["res://.godot/imported/Spid.glb-ee392a314eb4f099acd51df07e1e628a.scn"]
 
 [params]
 

@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dfvy6lib4ga2h" path="res://escenas/mineral.tscn" id="2_4vydk"]
 [ext_resource type="Script" uid="uid://br4t1ndl8asky" path="res://script/interfaz.gd" id="2_6wjgb"]
 [ext_resource type="Script" uid="uid://dqmlj1jkvco4u" path="res://script/ciclo_solar.gd" id="5_16hu1"]
-[ext_resource type="Texture2D" uid="uid://debjkdltq8c76" path="res://Minerales/MineralSpid.png" id="6_kckb2"]
+[ext_resource type="Texture2D" uid="uid://bkknfbgcshdew" path="res://Minerales/MineralSpid.png" id="6_kckb2"]
 [ext_resource type="Texture2D" uid="uid://ehjvumyqcfbr" path="res://Minerales/MineraNave.png" id="7_ijldy"]
 [ext_resource type="PackedScene" uid="uid://b0kuh5v2yxqd7" path="res://escenas/nave.tscn" id="8_txhqv"]
 [ext_resource type="Texture2D" uid="uid://mk4i0achjumg" path="res://assets/sky/cielo_espacial_suave_4k.png" id="9_cielo"]
