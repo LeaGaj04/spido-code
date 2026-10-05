@@ -1,7 +1,9 @@
 extends CanvasLayer
 
 var panel: PanelContainer
-var slider_volumen: HSlider
+var slider_general: HSlider
+var slider_musica: HSlider
+var slider_efectos: HSlider
 var check_mute: CheckButton
 var boton_cerrar: Button
 
@@ -57,30 +59,20 @@ func _ready() -> void:
 	title.add_theme_color_override("font_color", Color(0.76, 0.94, 0.78, 1))
 	vbox.add_child(title)
 	
-	var hbox_vol = HBoxContainer.new()
-	hbox_vol.add_theme_constant_override("separation", 20)
-	vbox.add_child(hbox_vol)
-	var lbl_vol = Label.new()
-	lbl_vol.text = "VOLUMEN"
-	lbl_vol.custom_minimum_size = Vector2(130, 0)
-	lbl_vol.add_theme_font_size_override("font_size", 18)
-	lbl_vol.add_theme_color_override("font_color", Color(0.6, 0.86, 0.63, 1))
-	hbox_vol.add_child(lbl_vol)
-	slider_volumen = HSlider.new()
-	slider_volumen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider_volumen.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	slider_volumen.min_value = 0.0001
-	slider_volumen.max_value = 1.0
-	slider_volumen.step = 0.01
-	slider_volumen.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master")))
-	slider_volumen.value_changed.connect(_on_volumen_changed)
-	hbox_vol.add_child(slider_volumen)
+	# Contenedor de Sliders
+	var sliders_vbox = VBoxContainer.new()
+	sliders_vbox.add_theme_constant_override("separation", 15)
+	vbox.add_child(sliders_vbox)
+	
+	slider_general = _crear_slider("GENERAL", "Master", sliders_vbox)
+	slider_musica = _crear_slider("MÚSICA", "Musica", sliders_vbox)
+	slider_efectos = _crear_slider("EFECTOS", "Efectos", sliders_vbox)
 	
 	var hbox_mute = HBoxContainer.new()
 	hbox_mute.add_theme_constant_override("separation", 20)
 	vbox.add_child(hbox_mute)
 	var lbl_mute = Label.new()
-	lbl_mute.text = "MUTEAR"
+	lbl_mute.text = "MUTEAR TODO"
 	lbl_mute.custom_minimum_size = Vector2(130, 0)
 	lbl_mute.add_theme_font_size_override("font_size", 18)
 	lbl_mute.add_theme_color_override("font_color", Color(0.6, 0.86, 0.63, 1))
@@ -120,22 +112,49 @@ func _ready() -> void:
 	boton_cerrar.pressed.connect(_on_cerrar_pressed)
 	btn_container.add_child(boton_cerrar)
 
-func _on_volumen_changed(value: float) -> void:
-	var bus = AudioServer.get_bus_index("Master")
-	AudioServer.set_bus_volume_db(bus, linear_to_db(value))
-	if value <= 0.0001:
-		AudioServer.set_bus_mute(bus, true)
-		check_mute.set_pressed_no_signal(true)
-	else:
-		if check_mute.button_pressed:
-			AudioServer.set_bus_mute(bus, false)
-			check_mute.set_pressed_no_signal(false)
+func _crear_slider(texto: String, bus_name: String, parent: Control) -> HSlider:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 20)
+	parent.add_child(hbox)
+	var lbl = Label.new()
+	lbl.text = texto
+	lbl.custom_minimum_size = Vector2(130, 0)
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.add_theme_color_override("font_color", Color(0.6, 0.86, 0.63, 1))
+	hbox.add_child(lbl)
+	var slider = HSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slider.min_value = 0.0001
+	slider.max_value = 1.0
+	slider.step = 0.01
+	
+	# Asegurarnos de que el bus existe, si no, usamos Master
+	var bus_idx = AudioServer.get_bus_index(bus_name)
+	if bus_idx == -1:
+		bus_idx = AudioServer.get_bus_index("Master")
+		
+	slider.value = db_to_linear(AudioServer.get_bus_volume_db(bus_idx))
+	slider.value_changed.connect(func(val): _on_slider_changed(val, bus_idx))
+	hbox.add_child(slider)
+	return slider
+
+func _on_slider_changed(value: float, bus_idx: int) -> void:
+	AudioServer.set_bus_volume_db(bus_idx, linear_to_db(value))
+	if bus_idx == AudioServer.get_bus_index("Master"):
+		if value <= 0.0001:
+			AudioServer.set_bus_mute(bus_idx, true)
+			check_mute.set_pressed_no_signal(true)
+		else:
+			if check_mute.button_pressed:
+				AudioServer.set_bus_mute(bus_idx, false)
+				check_mute.set_pressed_no_signal(false)
 
 func _on_mute_toggled(button_pressed: bool) -> void:
 	var bus = AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_mute(bus, button_pressed)
-	if not button_pressed and slider_volumen.value <= 0.0001:
-		slider_volumen.value = 0.5
+	if not button_pressed and slider_general.value <= 0.0001:
+		slider_general.value = 0.5
 		AudioServer.set_bus_volume_db(bus, linear_to_db(0.5))
 
 func _on_cerrar_pressed() -> void:
