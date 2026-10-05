@@ -1167,7 +1167,7 @@ func _animar_mision_completada() -> void:
 func _get_objetivo_panel(mision_id: String) -> String:
 	match mision_id:
 		"recolectar_primer_mineral":
-			return "Obtén y almacena tu primera muestra."
+			return "Mina y transfiere tu primera muestra."
 		"comprar_casillas":
 			return "Adquiere el sector de exploración 2x3 (+3 Casillas)."
 		"ruta_calibracion":
