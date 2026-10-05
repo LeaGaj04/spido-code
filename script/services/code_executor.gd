@@ -195,6 +195,26 @@ func ejecutar_codigo(
 					if not res_sub.get("ok", false):
 						_finalizar(resultado)
 						return resultado
+			elif instruccion.has("cuerpo_else"):
+				resultado["else_branch_taken"] = true
+				if instruccion.has("else_numero"):
+					linea_iniciada.emit(instruccion["else_numero"], instruccion.get("else_contenido", "else:"))
+					await _esperar_paso_si_aplica(instruccion["else_numero"], instruccion.get("else_contenido", "else:"))
+					linea_finalizada.emit(instruccion["else_numero"], instruccion.get("else_contenido", "else:"))
+				for sub_instruccion in instruccion.get("cuerpo_else", []):
+					if detener_solicitado:
+						break
+					if int(instruccion.get("loop_iteration", 0)) > 0:
+						sub_instruccion["loop_iteration"] = instruccion["loop_iteration"]
+					var res_sub: Dictionary = await _ejecutar_instruccion_simple(
+						sub_instruccion,
+						ejecutar_comando,
+						resultado,
+						variables_env
+					)
+					if not res_sub.get("ok", false):
+						_finalizar(resultado)
+						return resultado
 
 			linea_finalizada.emit(num_linea, cont_linea)
 			if detener_solicitado:
@@ -267,6 +287,25 @@ func ejecutar_codigo(
 								cmd_if["loop_iteration"] = iteracion
 								var res_sub: Dictionary = await _ejecutar_instruccion_simple(
 									cmd_if,
+									ejecutar_comando,
+									resultado,
+									variables_env
+								)
+								if not res_sub.get("ok", false):
+									_finalizar(resultado)
+									return resultado
+						elif sub_ins.has("cuerpo_else"):
+							resultado["else_branch_taken"] = true
+							if sub_ins.has("else_numero"):
+								linea_iniciada.emit(sub_ins["else_numero"], sub_ins.get("else_contenido", "else:"))
+								await _esperar_paso_si_aplica(sub_ins["else_numero"], sub_ins.get("else_contenido", "else:"))
+								linea_finalizada.emit(sub_ins["else_numero"], sub_ins.get("else_contenido", "else:"))
+							for cmd_else in sub_ins.get("cuerpo_else", []):
+								if detener_solicitado:
+									break
+								cmd_else["loop_iteration"] = iteracion
+								var res_sub: Dictionary = await _ejecutar_instruccion_simple(
+									cmd_else,
 									ejecutar_comando,
 									resultado,
 									variables_env
@@ -608,6 +647,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 			var sangria_base := _contar_espacios_sangria(linea_original)
 			var cuerpo_if: Array = []
+			var sangria_cuerpo_if_top := -1
 			indice += 1
 
 			while indice < lineas.size():
@@ -618,6 +658,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 				var sangria_cuerpo := _contar_espacios_sangria(linea_cuerpo)
 				if sangria_cuerpo <= sangria_base:
+					break
+
+				if sangria_cuerpo_if_top == -1:
+					sangria_cuerpo_if_top = sangria_cuerpo
+				elif sangria_cuerpo < sangria_cuerpo_if_top:
 					break
 
 				var contenido_cuerpo := linea_cuerpo.strip_edges()
@@ -642,7 +687,80 @@ func compilar_programa(codigo: String) -> Dictionary:
 					"El condicional if necesita al menos una instrucción con sangría."
 				)
 
-			instrucciones.append({
+			var cuerpo_else: Array = []
+			var else_numero: int = 0
+			var else_contenido: String = ""
+
+			var idx_la := indice
+			while idx_la < lineas.size():
+				var l_la := lineas[idx_la]
+				if l_la.strip_edges().is_empty() or l_la.strip_edges().begins_with("#"):
+					idx_la += 1
+					continue
+				break
+
+			if idx_la < lineas.size():
+				var linea_p_else := lineas[idx_la]
+				var sangria_p_else := _contar_espacios_sangria(linea_p_else)
+				var cont_p_else := linea_p_else.strip_edges()
+
+				if cont_p_else.to_lower().begins_with("else"):
+					if sangria_p_else != sangria_base:
+						return _error_de_linea(
+							idx_la + 1,
+							cont_p_else,
+							"La sangría de 'else:' debe coincidir con el 'if' correspondiente."
+						)
+					if cont_p_else.to_lower() != "else:":
+						return _error_de_linea(
+							idx_la + 1,
+							cont_p_else,
+							"Sintaxis incorrecta. Usa 'else:' con dos puntos al final."
+						)
+
+					else_numero = idx_la + 1
+					else_contenido = cont_p_else
+					indice = idx_la + 1
+					var sangria_cuerpo_else_top := -1
+
+					while indice < lineas.size():
+						var linea_c_else: String = lineas[indice]
+						if linea_c_else.strip_edges().is_empty() or linea_c_else.strip_edges().begins_with("#"):
+							indice += 1
+							continue
+
+						var sangria_c_else := _contar_espacios_sangria(linea_c_else)
+						if sangria_c_else <= sangria_base:
+							break
+
+						if sangria_cuerpo_else_top == -1:
+							sangria_cuerpo_else_top = sangria_c_else
+						elif sangria_c_else < sangria_cuerpo_else_top:
+							break
+
+						var cont_c_else := linea_c_else.strip_edges()
+						var analisis_else: Dictionary = analizar_linea(cont_c_else, indice + 1)
+						if not analisis_else["ok"]:
+							return analisis_else
+
+						cuerpo_else.append({
+							"tipo": "comando",
+							"numero": indice + 1,
+							"contenido": cont_c_else,
+							"command": analisis_else["command"],
+							"steps": analisis_else["steps"],
+							"step_var": analisis_else.get("step_var", "")
+						})
+						indice += 1
+
+					if cuerpo_else.is_empty():
+						return _error_de_linea(
+							else_numero,
+							else_contenido,
+							"El bloque else necesita al menos una instrucción con sangría."
+						)
+
+			var ins_if: Dictionary = {
 				"tipo": "if",
 				"numero": numero_linea,
 				"contenido": contenido,
@@ -650,8 +768,21 @@ func compilar_programa(codigo: String) -> Dictionary:
 				"inverted": resultado_if["inverted"],
 				"cuerpo": cuerpo_if,
 				"loop_iteration": 0
-			})
+			}
+			if not cuerpo_else.is_empty():
+				ins_if["cuerpo_else"] = cuerpo_else
+				ins_if["else_numero"] = else_numero
+				ins_if["else_contenido"] = else_contenido
+
+			instrucciones.append(ins_if)
 			continue
+
+		if contenido_lower.begins_with("else"):
+			return _error_de_linea(
+				numero_linea,
+				contenido,
+				"La instrucción 'else:' no tiene un 'if' previo correspondiente."
+			)
 
 		if contenido_lower.begins_with("for "):
 			var resultado_for: Dictionary = _analizar_for(
@@ -697,6 +828,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 					var sangria_if := sangria_cuerpo
 					var cuerpo_if_anidado: Array = []
+					var sangria_cuerpo_if_for := -1
 					indice += 1
 
 					while indice < lineas.size():
@@ -707,6 +839,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 						var sangria_sub := _contar_espacios_sangria(linea_sub)
 						if sangria_sub <= sangria_if:
+							break
+
+						if sangria_cuerpo_if_for == -1:
+							sangria_cuerpo_if_for = sangria_sub
+						elif sangria_sub < sangria_cuerpo_if_for:
 							break
 
 						var cont_sub := linea_sub.strip_edges()
@@ -805,6 +942,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 					var sangria_if := sangria_cuerpo
 					var cuerpo_if_anidado: Array = []
+					var sangria_cuerpo_if := -1
 					indice += 1
 
 					while indice < lineas.size():
@@ -815,6 +953,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 						var sangria_sub := _contar_espacios_sangria(linea_sub)
 						if sangria_sub <= sangria_if:
+							break
+
+						if sangria_cuerpo_if == -1:
+							sangria_cuerpo_if = sangria_sub
+						elif sangria_sub < sangria_cuerpo_if:
 							break
 
 						var cont_sub := linea_sub.strip_edges()
@@ -839,14 +982,93 @@ func compilar_programa(codigo: String) -> Dictionary:
 							"El condicional if necesita al menos una instrucción con sangría."
 						)
 
-					cuerpo_while.append({
+					var cuerpo_else_anidado: Array = []
+					var else_num_anidado: int = 0
+					var else_cont_anidado: String = ""
+
+					var idx_la_w := indice
+					while idx_la_w < lineas.size():
+						var l_la_w := lineas[idx_la_w]
+						if l_la_w.strip_edges().is_empty() or l_la_w.strip_edges().begins_with("#"):
+							idx_la_w += 1
+							continue
+						break
+
+					if idx_la_w < lineas.size():
+						var linea_p_else_w := lineas[idx_la_w]
+						var sangria_p_else_w := _contar_espacios_sangria(linea_p_else_w)
+						var cont_p_else_w := linea_p_else_w.strip_edges()
+
+						if cont_p_else_w.to_lower().begins_with("else"):
+							if sangria_p_else_w != sangria_if:
+								return _error_de_linea(
+									idx_la_w + 1,
+									cont_p_else_w,
+									"La sangría de 'else:' debe coincidir con el 'if' correspondiente."
+								)
+							if cont_p_else_w.to_lower() != "else:":
+								return _error_de_linea(
+									idx_la_w + 1,
+									cont_p_else_w,
+									"Sintaxis incorrecta. Usa 'else:' con dos puntos al final."
+								)
+
+							else_num_anidado = idx_la_w + 1
+							else_cont_anidado = cont_p_else_w
+							indice = idx_la_w + 1
+							var sangria_cuerpo_else_w := -1
+
+							while indice < lineas.size():
+								var linea_c_else_w: String = lineas[indice]
+								if linea_c_else_w.strip_edges().is_empty() or linea_c_else_w.strip_edges().begins_with("#"):
+									indice += 1
+									continue
+
+								var sangria_c_else_w := _contar_espacios_sangria(linea_c_else_w)
+								if sangria_c_else_w <= sangria_if:
+									break
+
+								if sangria_cuerpo_else_w == -1:
+									sangria_cuerpo_else_w = sangria_c_else_w
+								elif sangria_c_else_w < sangria_cuerpo_else_w:
+									break
+
+								var cont_c_else_w := linea_c_else_w.strip_edges()
+								var analisis_else_w: Dictionary = analizar_linea(cont_c_else_w, indice + 1)
+								if not analisis_else_w["ok"]:
+									return analisis_else_w
+
+								cuerpo_else_anidado.append({
+									"tipo": "comando",
+									"numero": indice + 1,
+									"contenido": cont_c_else_w,
+									"command": analisis_else_w["command"],
+									"steps": analisis_else_w["steps"],
+									"step_var": analisis_else_w.get("step_var", "")
+								})
+								indice += 1
+
+							if cuerpo_else_anidado.is_empty():
+								return _error_de_linea(
+									else_num_anidado,
+									else_cont_anidado,
+									"El bloque else necesita al menos una instrucción con sangría."
+								)
+
+					var ins_if_anidado: Dictionary = {
 						"tipo": "if",
 						"numero": num_linea_if,
 						"contenido": contenido_cuerpo,
 						"condition": res_if_anidado["condition"],
 						"inverted": res_if_anidado["inverted"],
 						"cuerpo": cuerpo_if_anidado
-					})
+					}
+					if not cuerpo_else_anidado.is_empty():
+						ins_if_anidado["cuerpo_else"] = cuerpo_else_anidado
+						ins_if_anidado["else_numero"] = else_num_anidado
+						ins_if_anidado["else_contenido"] = else_cont_anidado
+
+					cuerpo_while.append(ins_if_anidado)
 					continue
 
 				var analisis_cmd: Dictionary = analizar_linea(contenido_cuerpo, indice + 1)
@@ -1022,6 +1244,9 @@ func _crear_resultado(codigo: String) -> Dictionary:
 		"minerals_collected": 0,
 		"minerals_transferred": 0,
 		"loop_minerals_collected": 0,
+		"if_evaluations": 0,
+		"if_branch_taken": false,
+		"else_branch_taken": false,
 		"duration_seconds": 0.0,
 		"objective_id": MissionService.objective_id,
 		"objective_completed": false
