@@ -520,6 +520,15 @@ func get_completed_missions() -> Array:
 func get_unlocked_knowledge() -> Array:
 	return unlocked_knowledge.duplicate()
 
+func _obtener_minerales_nave() -> int:
+	var root := Engine.get_main_loop() as SceneTree
+	if root != null and root.current_scene != null:
+		var interfaz = root.current_scene.get_node_or_null("CanvasLayer")
+		if interfaz != null and "minerales_nave" in interfaz:
+			return int(interfaz.minerales_nave)
+	var progreso_actual: Dictionary = ProgressService.get_current_progress()
+	return int(progreso_actual.get("minerals_ship", 0))
+
 func evaluar_programa(resultado: Dictionary) -> void:
 	if objective_completed:
 		return
@@ -532,8 +541,7 @@ func evaluar_programa(resultado: Dictionary) -> void:
 		return
 
 	if objective_id == "comprar_mapa_3x3":
-		var progreso_actual: Dictionary = ProgressService.get_current_progress()
-		var minerales_nave: int = int(progreso_actual.get("minerals_ship", 0))
+		var minerales_nave: int = _obtener_minerales_nave()
 		if minerales_nave >= 20:
 			objetivo_actualizado.emit(
 				objective_id,
@@ -727,8 +735,7 @@ func iniciar_trabajo_continuo() -> void:
 
 func iniciar_cuota_suministro() -> void:
 	objective_id = "cuota_suministro"
-	var progreso_actual: Dictionary = ProgressService.get_current_progress()
-	var minerales_nave: int = int(progreso_actual.get("minerals_ship", 0))
+	var minerales_nave: int = _obtener_minerales_nave()
 	objective_completed = "cuota_suministro" in completed_missions or minerales_nave >= 10
 	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CUOTA_SUMINISTRO
 
@@ -740,8 +747,7 @@ func iniciar_cuota_suministro() -> void:
 func _evaluar_cuota_suministro(resultado: Dictionary) -> void:
 	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var iteraciones: int = int(resultado.get("loop_iterations", 0))
-	var progreso_actual: Dictionary = ProgressService.get_current_progress()
-	var minerales_nave: int = int(progreso_actual.get("minerals_ship", 0))
+	var minerales_nave: int = _obtener_minerales_nave()
 
 	if codigo.contains("whiletrue:") or codigo.contains("while1:"):
 		objetivo_actualizado.emit(

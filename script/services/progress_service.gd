@@ -85,17 +85,18 @@ func load_progress() -> bool:
 # Solicita un PATCH coalescido. Para invitados es un no-op seguro y no genera
 # ninguna petición a Supabase.
 func save_progress(progress: Dictionary) -> bool:
+	var normalizado := _normalizar_progreso(progress)
+	if not normalizado.is_empty():
+		current_progress.merge(normalizado, true)
+
 	if not Supabase.is_authenticated():
 		return false
-	var normalizado := _normalizar_progreso(progress)
 	if normalizado.is_empty():
 		_fail_save("El estado de progreso local no es válido para guardar.")
 		return false
 	if not has_loaded_progress() and not loading:
 		_fail_save("No se puede guardar sin un progreso remoto cargado.")
 		return false
-	if has_loaded_progress():
-		current_progress.merge(normalizado, true)
 	pending_save_progress = normalizado
 	save_debounce_elapsed = false
 	save_timer.start()
