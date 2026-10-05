@@ -10,7 +10,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | :---: | :--- | :--- | :--- | :--- | :---: |
 | **1** | **Secuencia Lineal** | 1x1 (Base) $\rightarrow$ Corredor 1x3 | Comandos básicos (`norte`, `sur`, `este`, `oeste`, `minar`, `transferir`) | `recolectar_primer_mineral`<br>`ruta_calibracion` | **100%** |
 | **2** | **Bucle `while`** | Corredor 1x3 (1 mineral) | `while`, comparación numérica (`<`, `<=`, `>`, `>=`, `==`) | `trabajo_continuo` (`while True`)<br>`cuota_suministro` (`while < 10`) | **100%** |
-| **3** | **Condicionales `if / else`** | Sector 2x3 (10 minerales) | `if`, `else`, sensor `spid.hay_mineral()` | `senales_inciertas` (Patrulla y Plan B)<br>`comprar_mapa_3x3` | **En progreso (90%)** |
+| **3** | **Condicionales `if / else`** | Sector 2x3 (10 minerales) | `if`, `else`, sensor `spid.hay_mineral()` | `senales_inciertas` (Patrulla y Plan B)<br>`comprar_mapa_3x3` | **100%** |
 | **4** | **Bucle `for`** | Sector 3x3 (20 minerales) | `for`, `in range(N)` | `ciclo_recoleccion`<br>`exploracion_3x3` | **Planificado (70%)** |
 | **5** | **Parámetros y Variables** | Sector 3x3 | Argumentos numéricos `spid.norte(2)`, variables `pasos = 2` | `camino_largo`<br>`variables` | **Planificado (60%)** |
 | **6** | **Listas y Colecciones** | Sector 3x3 / Terreno abierto | Listas `rutas = ["norte", "este"]`, indexación | *Por definir* | **Pendiente** |
@@ -53,7 +53,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 
 ---
 
-### Fase 3: Condicionales `if / else` (En progreso - 90%)
+### Fase 3: Condicionales `if / else` (100% Completada)
 * **Objetivo:** Aprender que el entorno es dinámico e impredecible: el rover debe censar con `if` antes de actuar y tomar un camino alternativo con `else:` cuando la condición no se cumpla.
 * **Terreno:** Sector 2x3 (+3 casillas, spawns de mineral aleatorios entre casillas).
 * **Desbloqueo orgánico:** Al comprar la expansión **[ +3 CASILLAS ]**, se instala automáticamente en la consola el firmware de **`if` y `else`**.
