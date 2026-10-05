@@ -88,16 +88,28 @@ func preparar_mision_expansion() -> void:
 		iniciar_mision_comprar_casillas()
 		return
 
-	if objective_id == "ciclo_autonomo":
+	if objective_id == "comprar_casillas":
+		iniciar_senales_inciertas()
+		return
+
+	if objective_id == "senales_inciertas":
 		iniciar_mision_comprar_mapa_3x3()
 		return
 
-	if objective_id == "exploracion_3x3":
+	if objective_id == "comprar_mapa_3x3":
 		iniciar_ciclo_recoleccion()
 		return
 
 	if objective_id == "ciclo_recoleccion":
+		iniciar_exploracion_3x3()
+		return
+
+	if objective_id == "exploracion_3x3":
 		iniciar_camino_largo()
+		return
+
+	if objective_id == "camino_largo":
+		iniciar_variables()
 		return
 
 	if objective_id == "retorno_base":
@@ -240,6 +252,16 @@ func aplicar_progreso(progress: Dictionary) -> void:
 			"metodo"
 		]
 
+	var tier_guardado: int = int(progress.get("map_tier", 0))
+	if tier_guardado >= 2:
+		GestorSintaxis.desbloquear_sintaxis("if")
+		GestorSintaxis.desbloquear_sintaxis("else")
+		desbloquear_conocimiento("condicional_if")
+	if tier_guardado >= 3:
+		GestorSintaxis.desbloquear_sintaxis("for")
+		GestorSintaxis.desbloquear_sintaxis("in range")
+		desbloquear_conocimiento("bucle_for")
+
 	objective_completed = objective_id in completed_missions
 	preparar_mision_expansion()
 
@@ -252,6 +274,7 @@ func aplicar_progreso(progress: Dictionary) -> void:
 	if objective_id == "trabajo_continuo":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.TRABAJO_CONTINUO
 		return
+
 	if (
 		(objective_id == "cuota_suministro" and objective_completed)
 		or (objective_id == "cuota_suministro" and "cuota_suministro" in completed_missions)
@@ -261,84 +284,77 @@ func aplicar_progreso(progress: Dictionary) -> void:
 	if objective_id == "cuota_suministro":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CUOTA_SUMINISTRO
 		return
+
 	if (
 		(objective_id == "comprar_casillas" and objective_completed)
 		or (objective_id == "comprar_casillas" and "comprar_casillas" in completed_missions)
-		or (objective_id == "comprar_casillas" and int(progress.get("map_tier", 0)) >= 2)
+		or (objective_id == "comprar_casillas" and tier_guardado >= 2)
 	):
 		iniciar_senales_inciertas()
 		return
 	if objective_id == "comprar_casillas":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_CASILLAS
 		return
-	if (
-		(objective_id == "ciclo_recoleccion" and objective_completed)
-		or (objective_id == "ciclo_recoleccion" and "ciclo_recoleccion" in completed_missions)
-	):
-		iniciar_camino_largo()
-		return
-	if objective_id == "ciclo_recoleccion":
-		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CICLO_RECOLECCION
-		return
-	if (
-		objective_id == "comprar_if"
-		and (objective_completed or GestorSintaxis.esta_desbloqueada("if") or "comprar_if" in completed_missions)
-	):
-		iniciar_senales_inciertas()
-		return
-	if objective_id == "comprar_if":
-		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_IF
-		return
+
 	if (
 		(objective_id == "senales_inciertas" and objective_completed)
 		or (objective_id == "senales_inciertas" and "senales_inciertas" in completed_missions)
 	):
-		iniciar_ciclo_autonomo()
+		iniciar_mision_comprar_mapa_3x3()
 		return
 	if objective_id == "senales_inciertas":
-		if not GestorSintaxis.esta_desbloqueada("if") and "comprar_if" not in completed_missions:
-			iniciar_mision_comprar_if()
+		if tier_guardado < 2 and "comprar_casillas" not in completed_missions:
+			iniciar_mision_comprar_casillas()
 		else:
 			estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.SENALES_INCIERTAS
 		return
-	if (
-		objective_id == "comprar_while"
-		and (objective_completed or GestorSintaxis.esta_desbloqueada("while") or "comprar_while" in completed_missions)
-	):
-		iniciar_ciclo_autonomo()
+
+	# Compatibilidad con partidas antiguas
+	if objective_id == "comprar_if":
+		iniciar_senales_inciertas()
 		return
-	if objective_id == "comprar_while":
-		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_WHILE
-		return
-	if (
-		(objective_id == "ciclo_autonomo" and objective_completed)
-		or (objective_id == "ciclo_autonomo" and "ciclo_autonomo" in completed_missions)
-	):
+	if objective_id in ["comprar_while", "ciclo_autonomo"]:
 		iniciar_mision_comprar_mapa_3x3()
 		return
-	if objective_id == "ciclo_autonomo":
-		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CICLO_AUTONOMO
-		return
+
 	if (
 		objective_id == "comprar_mapa_3x3"
-		and (objective_completed or int(progress.get("map_tier", 0)) >= 3 or "comprar_mapa_3x3" in completed_missions)
+		and (objective_completed or tier_guardado >= 3 or "comprar_mapa_3x3" in completed_missions)
 	):
-		iniciar_exploracion_3x3()
+		iniciar_ciclo_recoleccion()
 		return
 	if objective_id == "comprar_mapa_3x3":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_MAPA_3X3
 		return
+
+	if (
+		(objective_id == "ciclo_recoleccion" and objective_completed)
+		or (objective_id == "ciclo_recoleccion" and "ciclo_recoleccion" in completed_missions)
+	):
+		iniciar_exploracion_3x3()
+		return
+	if objective_id == "ciclo_recoleccion":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CICLO_RECOLECCION
+		return
+
 	if (
 		(objective_id == "exploracion_3x3" and objective_completed)
 		or (objective_id == "exploracion_3x3" and "exploracion_3x3" in completed_missions)
 	):
-		iniciar_ciclo_recoleccion()
+		iniciar_camino_largo()
 		return
 	if objective_id == "exploracion_3x3":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.EXPLORACION_3X3
 		return
-	if objective_id == "comprar_casillas":
-		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_CASILLAS
+
+	if (
+		(objective_id == "camino_largo" and objective_completed)
+		or (objective_id == "camino_largo" and "camino_largo" in completed_missions)
+	):
+		iniciar_variables()
+		return
+	if objective_id == "camino_largo":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CAMINO_LARGO
 		return
 	if (
 		objective_id == "recolectar_primer_mineral"
@@ -409,8 +425,13 @@ func get_objetivo_actual() -> String:
 	if objective_id == "ciclo_recoleccion":
 		return (
 			"CICLO DE RECOLECCIÓN (BUCLE FOR)\n" +
-			"Un bucle for repite instrucciones un número exacto de veces: for ciclo in range(N):\n" +
-			"Tu desafío: en el nuevo sector 2x3, usa for para recolectar al menos 2 minerales " +
+			"Un bucle for repite instrucciones un número exacto de veces: for ciclo in range(N):\n\n" +
+			"for ciclo in range(3):\n" +
+			"    spid.norte()\n" +
+			"    spid.minar()\n" +
+			"    spid.sur()\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: en el nuevo sector 3x3, usa 'for' y 'range()' para recolectar al menos 2 minerales " +
 			"y transferirlos a la nave en la base."
 		)
 
@@ -422,12 +443,14 @@ func get_objetivo_actual() -> String:
 
 	if objective_id == "senales_inciertas":
 		return (
-			"SEÑALES INCIERTAS (SENSORES E IF)\n" +
-			"Las lecturas minerales en este sector son inestables.\n" +
-			"Usa el sensor spid.hay_mineral() y la estructura condicional:\n\n" +
+			"SEÑALES INCIERTAS (SENSORES E IF / ELSE)\n" +
+			"Las lecturas minerales en este nuevo sector 2x3 son inestables y variables.\n" +
+			"Usa el sensor spid.hay_mineral() y la estructura condicional con else:\n\n" +
 			"if spid.hay_mineral():\n" +
-			"    spid.minar()\n\n" +
-			"Tu desafío: navega a una casilla sospechosa, evalúa con if si hay mineral " +
+			"    spid.minar()\n" +
+			"else:\n" +
+			"    # acción alternativa si no hay recurso\n\n" +
+			"Tu desafío: navega por el sector 2x3, evalúa con 'if' si hay mineral " +
 			"antes de extraerlo, y transfiere el cargamento a la nave."
 		)
 
@@ -452,14 +475,14 @@ func get_objetivo_actual() -> String:
 		return (
 			"EXPANSIÓN DE SECTOR (SECTOR 3X3)\n" +
 			"Reúne 20 minerales en la nave y adquiere el [ SECTOR 3X3 ] " +
-			"en el Centro de Mejoras para ampliar el terreno de operaciones."
+			"en el Centro de Mejoras para ampliar el terreno e instalar el módulo BUCLE FOR."
 		)
 	if objective_id == "exploracion_3x3":
 		return (
 			"BARRIDO DE CUADRANTE (SECTOR 3X3)\n" +
-			"El nuevo sector contiene 3 depósitos de mineral simultáneos y variables.\n\n" +
-			"Tu desafío: programa una rutina combinando bucles (while o for) y el sensor condicional " +
-			"'if spid.hay_mineral():' para recolectar al menos 3 minerales y transferirlos a la base."
+			"El nuevo sector contiene múltiples depósitos de mineral simultáneos.\n\n" +
+			"Tu desafío: programa una rutina combinando bucles 'for' y el sensor condicional " +
+			"'if spid.hay_mineral():' para barrer las casillas, recolectar al menos 3 minerales y transferirlos a la base."
 		)
 	if objective_id == "retorno_base":
 		return (
@@ -669,6 +692,7 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 
 	mision_completada.emit(objective_id)
 	print("Ciclo de recolección completado.")
+	iniciar_exploracion_3x3()
 
 	
 func desbloquear_modulo_for() -> void:
@@ -727,11 +751,19 @@ func _evaluar_cuota_suministro(resultado: Dictionary) -> void:
 		)
 		return
 
-	if iteraciones < 1 or not codigo.contains("while"):
+	if iteraciones < 1:
+		if codigo.contains("while") and (codigo.contains("<10") or codigo.contains("<=10")) and minerales_nave >= 10:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes %d minerales en la nave! " % minerales_nave +
+				"Como ya superaste 10, la condición '< 10' fue falsa desde el inicio y el bucle no arrancó. " +
+				"Prueba con una meta más alta (ej: 'while spid.minerales_en_nave() < %d:') para ver a Spid trabajar y frenar solo." % (minerales_nave + 4)
+			)
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Debes usar un bucle 'while' con una condición de comparación " +
-			"(ej: 'while spid.minerales_en_nave() < 10:')."
+			"(ej: 'while spid.minerales_en_nave() < %d:')." % (maxi(10, minerales_nave + 4))
 		)
 		return
 
@@ -949,7 +981,7 @@ func _evaluar_senales_inciertas(resultado: Dictionary) -> void:
 	desbloquear_conocimiento("condicional_if")
 	mision_completada.emit(objective_id)
 	print("Misión senales_inciertas completada!")
-	iniciar_ciclo_autonomo()
+	iniciar_mision_comprar_mapa_3x3()
 
 
 func iniciar_mision_comprar_while() -> void:
@@ -1029,7 +1061,7 @@ func iniciar_mision_comprar_mapa_3x3() -> void:
 	objective_id = "comprar_mapa_3x3"
 	objective_completed = "comprar_mapa_3x3" in completed_missions or map_tier >= 3
 	if objective_completed:
-		iniciar_exploracion_3x3()
+		iniciar_ciclo_recoleccion()
 		return
 	estado_actual = EstadoMision.COMPRAR_MAPA_3X3
 	mision_iniciada.emit(objective_id)
@@ -1050,7 +1082,7 @@ func registrar_compra_mapa_3x3() -> void:
 		objective_completed = true
 		estado_actual = EstadoMision.COMPLETADA
 		mision_completada.emit("comprar_mapa_3x3")
-		iniciar_exploracion_3x3()
+		iniciar_ciclo_recoleccion()
 	else:
 		mision_completada.emit("compra_temprana_3x3")
 
@@ -1097,3 +1129,4 @@ func _evaluar_exploracion_3x3(resultado: Dictionary) -> void:
 		completed_missions.append(objective_id)
 	mision_completada.emit(objective_id)
 	print("Misión exploracion_3x3 completada!")
+	iniciar_camino_largo()

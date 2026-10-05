@@ -560,13 +560,13 @@ func actualizar_mejoras_visual() -> void:
 
 	if boton_while != null:
 		boton_while.disabled = while_on
-		boton_while.text = "[ BUCLE WHILE ]\nDESBLOQUEADO" if while_on else "[ BUCLE WHILE ]\n15 MINERALES"
+		boton_while.text = "[ BUCLE WHILE ]\nDESBLOQUEADO" if while_on else "[ BUCLE WHILE ]\nPOR MISIÓN"
 	if boton_if != null:
-		boton_if.disabled = if_on or not while_on
-		boton_if.text = "[ CONDICIONAL IF ]\nDESBLOQUEADO" if if_on else ("[ CONDICIONAL IF ]\n10 MINERALES" if while_on else "[ CONDICIONAL IF ]\nBLOQUEADO")
+		boton_if.disabled = true
+		boton_if.text = "[ IF / ELSE ]\nDESBLOQUEADO" if if_on else "[ IF / ELSE ]\nEN SECTOR 2X3"
 	if boton_for != null:
-		boton_for.disabled = for_on or not if_on
-		boton_for.text = "[ BUCLE FOR ]\nDESBLOQUEADO" if for_on else ("[ BUCLE FOR ]\n10 MINERALES" if if_on else "[ BUCLE FOR ]\nBLOQUEADO")
+		boton_for.disabled = true
+		boton_for.text = "[ BUCLE FOR ]\nDESBLOQUEADO" if for_on else "[ BUCLE FOR ]\nEN SECTOR 3X3"
 
 	var vars_on: bool = (
 		"variable" in MissionService.get_unlocked_knowledge()
@@ -730,81 +730,35 @@ func _crear_error_comando(
 	
 func _on_button_while_pressed() -> void:
 	if GestorSintaxis.esta_desbloqueada("while"):
+		transmision_ada.mostrar_mensaje("El módulo Bucle WHILE ya está activo en tu consola.", "completado", 4.0)
 		return
-	var costo: int = PRECIOS["while"]
-	if minerales_nave < costo:
-		transmision_ada.mostrar_mensaje(
-			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
-			"error",
-			4.0
-		)
-		return
-	minerales_nave -= costo
-	GestorSintaxis.desbloquear_sintaxis("while")
-	MissionService.desbloquear_conocimiento("bucle_while")
-	MissionService.registrar_compra_while()
-	actualizar_contadores()
-	actualizar_mejoras_visual()
-	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"El Bucle WHILE se desbloquea al completar la calibración de la Fase 1.",
+		"objetivo",
+		5.0
+	)
 
 
 func _on_button_for_pressed() -> void:
 	if GestorSintaxis.esta_desbloqueada("for"):
+		transmision_ada.mostrar_mensaje("El módulo Bucle FOR ya está activo en tu consola.", "completado", 4.0)
 		return
-	if not GestorSintaxis.esta_desbloqueada("if"):
-		transmision_ada.mostrar_mensaje(
-			"Debes desbloquear el Condicional IF primero.",
-			"objetivo",
-			5.0
-		)
-		return
-	var costo: int = PRECIOS["for"]
-	if minerales_nave < costo:
-		transmision_ada.mostrar_mensaje(
-			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
-			"error",
-			4.0
-		)
-		return
-	minerales_nave -= costo
-	GestorSintaxis.desbloquear_sintaxis("for")
-	GestorSintaxis.desbloquear_sintaxis("in range")
-	MissionService.desbloquear_conocimiento("bucle_for")
-	actualizar_contadores()
-	actualizar_mejoras_visual()
-	_solicitar_guardado_progreso()
 	transmision_ada.mostrar_mensaje(
-		"¡Módulo Bucle FOR instalado! Ahora puedes repetir secuencias con precisión.",
-		"completado",
-		6.0
+		"El Bucle FOR se instala automáticamente al adquirir [ SECTOR 3X3 ] en navegación.",
+		"objetivo",
+		5.0
 	)
 
 
 func _on_button_if_pressed() -> void:
 	if GestorSintaxis.esta_desbloqueada("if"):
+		transmision_ada.mostrar_mensaje("El módulo Condicional IF/ELSE ya está activo en tu consola.", "completado", 4.0)
 		return
-	if not GestorSintaxis.esta_desbloqueada("while"):
-		transmision_ada.mostrar_mensaje(
-			"Debes desbloquear el Bucle While primero.",
-			"objetivo",
-			5.0
-		)
-		return
-	var costo: int = PRECIOS["if"]
-	if minerales_nave < costo:
-		transmision_ada.mostrar_mensaje(
-			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
-			"error",
-			4.0
-		)
-		return
-	minerales_nave -= costo
-	GestorSintaxis.desbloquear_sintaxis("if")
-	MissionService.desbloquear_conocimiento("condicional_if")
-	MissionService.registrar_compra_if()
-	actualizar_contadores()
-	actualizar_mejoras_visual()
-	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"El Condicional IF/ELSE se instala automáticamente al adquirir [ +3 CASILLAS ] en navegación.",
+		"objetivo",
+		5.0
+	)
 
 
 func _on_button_expansion_1_pressed() -> void:
@@ -847,6 +801,11 @@ func _on_button_expansion_2_pressed() -> void:
 		MissionService.registrar_compra_casillas()
 		actualizar_mejoras_visual()
 		_solicitar_guardado_progreso()
+		transmision_ada.mostrar_mensaje(
+			"¡Sector 2x3 expandido! Módulo de sensores CONDICIONAL IF/ELSE instalado en la consola.",
+			"completado",
+			6.0
+		)
 
 
 func _on_button_expansion_3_pressed() -> void:
@@ -866,6 +825,11 @@ func _on_button_expansion_3_pressed() -> void:
 		MissionService.registrar_compra_mapa_3x3()
 		actualizar_mejoras_visual()
 		_solicitar_guardado_progreso()
+		transmision_ada.mostrar_mensaje(
+			"¡Sector 3x3 expandido! Módulo de barrido BUCLE FOR instalado en la consola.",
+			"completado",
+			6.0
+		)
 
 
 func _on_button_mineria_pressed() -> void:
