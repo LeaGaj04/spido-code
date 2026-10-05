@@ -389,6 +389,11 @@ func _ejecutar_instruccion_simple(
 	):
 		detener_solicitado = true
 	elif (
+		_objective_id_at_start == "cuota_suministro"
+		and int(resultado.get("minerals_transferred", 0)) >= 10
+	):
+		detener_solicitado = true
+	elif (
 		_objective_id_at_start in ["ciclo_autonomo", "exploracion_3x3"]
 		and int(resultado.get("minerals_transferred", 0)) >= 3
 	):
@@ -1107,7 +1112,27 @@ func _analizar_while(contenido: String, numero_linea: int) -> Dictionary:
 			"inverted": invertido
 		}
 
-	if condicion in ["spid.hay_mineral", "hay_mineral", "spid.tiene_espacio", "tiene_espacio", "spid.en_base", "en_base"]:
+	# Validación de comparaciones de recursos (ej: spid.minerales_en_nave() < 10)
+	var regex_comp := RegEx.new()
+	if regex_comp.compile("^(?i)(spid\\.)?(minerales_en_nave|minerales_en_rover|minerales)\\(\\)\\s*(<|<=|>|>=|==|!=)\\s*(\\d+)$") == OK:
+		var match := regex_comp.search(condicion)
+		if match != null:
+			return {
+				"ok": true,
+				"condition": condicion,
+				"inverted": invertido
+			}
+
+	var regex_sin_parentesis := RegEx.new()
+	if regex_sin_parentesis.compile("^(?i)(spid\\.)?(minerales_en_nave|minerales_en_rover|minerales)\\s*(<|<=|>|>=|==|!=)") == OK:
+		if regex_sin_parentesis.search(condicion) != null:
+			return _error_de_linea(
+				numero_linea,
+				contenido,
+				"Te faltaron los paréntesis '()' en la función: usa 'spid.minerales_en_nave() < ...'"
+			)
+
+	if condicion in ["spid.hay_mineral", "hay_mineral", "spid.tiene_espacio", "tiene_espacio", "spid.en_base", "en_base", "spid.minerales_en_nave", "minerales_en_nave", "spid.minerales_en_rover", "minerales_en_rover"]:
 		return _error_de_linea(
 			numero_linea,
 			contenido,
@@ -1117,7 +1142,7 @@ func _analizar_while(contenido: String, numero_linea: int) -> Dictionary:
 	return _error_de_linea(
 		numero_linea,
 		contenido,
-		"Condición no válida para while. Puedes usar True, False " +
-		"o los sensores spid.tiene_espacio(), spid.en_base() " +
-		"y spid.hay_mineral()."
+		"Condición no válida para while. Puedes usar True, False, " +
+		"sensores como spid.tiene_espacio(), o comparaciones como " +
+		"spid.minerales_en_nave() < 10."
 	)
