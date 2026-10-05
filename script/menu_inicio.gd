@@ -11,6 +11,7 @@ const ESCENA_PERFIL = "res://escenas/perfil.tscn"
 @onready var dropdown: PanelContainer = $ProfileDropdown
 @onready var boton_ver_perfil: Button = $ProfileDropdown/Options/VerPerfil
 @onready var boton_cerrar_sesion: Button = $ProfileDropdown/Options/CerrarSesion
+@onready var boton_configuracion: Button = $PanelMenu/ContenedorPrincipal/BotonConfiguracion
 var dropdown_abierto := false
 var cargando_progreso := false
 
@@ -22,6 +23,7 @@ func _ready() -> void:
 	boton_ver_perfil.mouse_exited.connect(_animar_opcion_hover.bind(boton_ver_perfil, false))
 	boton_cerrar_sesion.mouse_entered.connect(_animar_opcion_hover.bind(boton_cerrar_sesion, true))
 	boton_cerrar_sesion.mouse_exited.connect(_animar_opcion_hover.bind(boton_cerrar_sesion, false))
+	boton_configuracion.pressed.connect(_on_boton_configuracion_pressed)
 	ProgressService.progress_loaded.connect(_on_progress_loaded)
 	ProgressService.progress_load_failed.connect(_on_progress_load_failed)
 	actualizar_estado_autenticacion()
@@ -132,3 +134,11 @@ func _abrir_mundo() -> void:
 # Se ejecuta al hacer clic en "Salir"
 func _on_boton_salir_pressed() -> void:
 	get_tree().quit()
+
+func _on_boton_configuracion_pressed() -> void:
+	var MenuConfiguracion = load("res://script/menu_configuracion.gd")
+	var config_menu = MenuConfiguracion.new()
+	add_child(config_menu)
+	var contenedor = $PanelMenu/ContenedorPrincipal
+	contenedor.hide()
+	config_menu.tree_exited.connect(func(): contenedor.show())
