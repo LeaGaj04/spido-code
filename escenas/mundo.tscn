@@ -509,10 +509,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -500.0
-offset_top = -280.0
-offset_right = 500.0
-offset_bottom = 280.0
+offset_left = -520.0
+offset_top = -310.0
+offset_right = 520.0
+offset_bottom = 310.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_tienda_panel")
@@ -527,7 +527,7 @@ theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
 theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 26
-text = "◆ CENTRO DE MEJORAS ◆"
+text = "◆ RUTA DE PROGRESIÓN ◆"
 
 [node name="Subtitulo" type="Label" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=532504738]
 layout_mode = 0
@@ -537,82 +537,86 @@ offset_right = 670.0
 offset_bottom = 88.0
 theme_override_colors/font_color = Color(0.6003543, 0.86491835, 0.62992954, 1)
 theme_override_font_sizes/font_size = 14
-text = "Invierte los minerales de la nave para ampliar las capacidades de spid."
+text = "Expande el mapa, completa misiones y activa nuevos conceptos de Python."
 
 [node name="LineaProg1" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=256662853]
+visible = false
 points = PackedVector2Array(410, 225, 330, 225, 330, 170, 250, 170)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="LineaProg2" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1749080935]
+visible = false
 points = PackedVector2Array(165, 205, 165, 250)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="LineaProg3" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1908208215]
+visible = false
 points = PackedVector2Array(165, 320, 165, 365)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="LineaTerr1" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=849995506]
-points = PackedVector2Array(590, 225, 670, 225, 670, 170, 750, 170)
+points = PackedVector2Array(500, 205, 500, 210)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="LineaTerr2" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=849995507]
-points = PackedVector2Array(835, 205, 835, 250)
+points = PackedVector2Array(500, 290, 500, 340)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="LineaTerr3" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=849995508]
-points = PackedVector2Array(835, 320, 835, 365)
+points = PackedVector2Array(500, 420, 500, 470)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="LineaHard1" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=849995509]
+visible = false
 points = PackedVector2Array(500, 255, 500, 365)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="HeaderProg" type="Label" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=111222331]
 layout_mode = 0
-offset_left = 80.0
+offset_left = 700.0
 offset_top = 102.0
-offset_right = 250.0
+offset_right = 960.0
 offset_bottom = 126.0
 theme_override_colors/font_color = Color(0.35, 0.75, 1, 1)
 theme_override_font_sizes/font_size = 14
-text = "PROGRAMACIÓN"
+text = "SINTAXIS INSTALADA"
 horizontal_alignment = 1
 
 [node name="HeaderTerr" type="Label" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=111222332]
 layout_mode = 0
-offset_left = 750.0
-offset_top = 102.0
-offset_right = 920.0
-offset_bottom = 126.0
+offset_left = 350.0
+offset_top = 92.0
+offset_right = 650.0
+offset_bottom = 122.0
 theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
 theme_override_font_sizes/font_size = 14
-text = "TERRENO"
+text = "RUTA PRINCIPAL"
 horizontal_alignment = 1
 
 [node name="HeaderHard" type="Label" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=111222333]
 layout_mode = 0
-offset_left = 410.0
-offset_top = 336.0
-offset_right = 590.0
-offset_bottom = 360.0
+offset_left = 350.0
+offset_top = 515.0
+offset_right = 650.0
+offset_bottom = 539.0
 theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
 theme_override_font_sizes/font_size = 14
-text = "HARDWARE"
+text = "MEJORAS OPCIONALES"
 horizontal_alignment = 1
 
 [node name="NodoSpidoCode" type="Panel" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=987654321]
 layout_mode = 0
-offset_left = 410.0
-offset_top = 195.0
-offset_right = 590.0
-offset_bottom = 255.0
+offset_left = 350.0
+offset_top = 135.0
+offset_right = 650.0
+offset_bottom = 205.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_nucleo")
 
 [node name="LabelSpidoCode" type="Label" parent="CanvasLayer/PanelTienda/LienzoArbol/NodoSpidoCode" unique_id=987654322]
@@ -624,21 +628,19 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.2, 0.95, 0.85, 1)
 theme_override_font_sizes/font_size = 13
-text = "NÚCLEO SPIDOCODE
-SISTEMA BASE SPID"
+text = "BASE 1X1
+PUNTO DE PARTIDA"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ButtonWhile" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1074921425]
 layout_mode = 0
-offset_left = 80.0
-offset_top = 135.0
-offset_right = 250.0
-offset_bottom = 205.0
+offset_left = 700.0
+offset_top = 145.0
+offset_right = 960.0
+offset_bottom = 210.0
 tooltip_text = "Bucle While
-Permite automatizar tareas repetitivas basadas en condiciones lógicas.
-
-Costo: 15 minerales"
+Se instala al completar la misión de calibración."
 theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
 theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
 theme_override_font_sizes/font_size = 15
@@ -646,37 +648,33 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
 text = "[ BUCLE WHILE ]
-15 MINERALES"
+POR MISIÓN"
 
 [node name="ButtonIf" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1252370721]
 layout_mode = 0
-offset_left = 80.0
-offset_top = 250.0
-offset_right = 250.0
-offset_bottom = 320.0
-tooltip_text = "Condicional If
-Desbloquea el análisis de sensores para tomar decisiones lógicas antes de perforar.
-
-Costo: 10 minerales"
+offset_left = 700.0
+offset_top = 285.0
+offset_right = 960.0
+offset_bottom = 350.0
+tooltip_text = "IF / ELSE
+Se instala automáticamente al adquirir el Sector 2x3."
 theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
 theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
-text = "[ CONDICIONAL IF ]
-10 MINERALES"
+text = "[ IF / ELSE ]
+EN SECTOR 2X3"
 
 [node name="ButtonFor" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=75203908]
 layout_mode = 0
-offset_left = 80.0
-offset_top = 365.0
-offset_right = 250.0
-offset_bottom = 435.0
-tooltip_text = "Bucle For
-Desbloquea la capacidad de repetir comandos un número exacto de veces.
-
-Costo: 10 minerales"
+offset_left = 700.0
+offset_top = 425.0
+offset_right = 960.0
+offset_bottom = 490.0
+tooltip_text = "Bucle FOR
+Se instala automáticamente al adquirir el Sector 3x3."
 theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
 theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
 theme_override_font_sizes/font_size = 15
@@ -684,19 +682,20 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
 text = "[ BUCLE FOR ]
-BLOQUEADO"
+EN SECTOR 3X3"
 
 [node name="LineaProg4" type="Line2D" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1908208216]
+visible = false
 points = PackedVector2Array(165, 435, 165, 475)
 width = 4.0
 default_color = Color(0.3, 0.33, 0.38, 1)
 
 [node name="ButtonVariables" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=75203909]
 layout_mode = 0
-offset_left = 80.0
-offset_top = 475.0
-offset_right = 250.0
-offset_bottom = 545.0
+offset_left = 700.0
+offset_top = 535.0
+offset_right = 960.0
+offset_bottom = 600.0
 tooltip_text = "Variables Dinámicas
 Capacidad de almacenar datos en memoria para reutilizarlos en métodos y bucles.
 
@@ -709,14 +708,14 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
 disabled = true
 text = "[ VARIABLES ]
-DESBLOQUEADO"
+PRÓXIMA FASE"
 
 [node name="ButtonExpansion1" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1665977669]
 layout_mode = 0
-offset_left = 750.0
-offset_top = 135.0
-offset_right = 920.0
-offset_bottom = 205.0
+offset_left = 350.0
+offset_top = 210.0
+offset_right = 650.0
+offset_bottom = 290.0
 tooltip_text = "Corredor 1x3
 Desbloquea un corredor de tres casillas para aprender secuencias.
 
@@ -732,12 +731,12 @@ text = "[ CORREDOR 1X3 ]
 
 [node name="ButtonExpansion2" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=448735514]
 layout_mode = 0
-offset_left = 750.0
-offset_top = 250.0
-offset_right = 920.0
-offset_bottom = 320.0
+offset_left = 350.0
+offset_top = 340.0
+offset_right = 650.0
+offset_bottom = 420.0
 tooltip_text = "Sector 2x3 (+3 Casillas)
-Agrega tres casillas y habilita dos depósitos aleatorios. Requiere completar Ciclo de recolección.
+Agrega tres casillas y habilita dos depósitos aleatorios. Instala automáticamente IF / ELSE.
 
 Costo: 10 minerales"
 theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
@@ -752,12 +751,12 @@ text = "[ +3 CASILLAS ]
 
 [node name="ButtonExpansion3" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1665977670]
 layout_mode = 0
-offset_left = 750.0
-offset_top = 365.0
-offset_right = 920.0
-offset_bottom = 435.0
+offset_left = 350.0
+offset_top = 470.0
+offset_right = 650.0
+offset_bottom = 550.0
 tooltip_text = "Sector 3x3
-Expande el terreno a un cuadrante completo de 3x3 casillas para exploración avanzada.
+Expande el terreno a un cuadrante completo de 3x3 casillas. Requiere completar la misión IF / ELSE e instala automáticamente FOR.
 
 Costo: 20 minerales"
 theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
@@ -772,10 +771,10 @@ text = "[ SECTOR 3X3 ]
 
 [node name="ButtonMineria" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=542620933]
 layout_mode = 0
-offset_left = 410.0
-offset_top = 365.0
-offset_right = 590.0
-offset_bottom = 435.0
+offset_left = 350.0
+offset_top = 545.0
+offset_right = 650.0
+offset_bottom = 615.0
 tooltip_text = "Minería Rápida
 Optimiza el taladro dspid reduciendo el tiempo de extracción de 3 a 1 segundo.
 
@@ -787,7 +786,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_hard")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
 text = "[ MINERÍA RÁPIDA ]
-15 MINERALES"
+MEJORA OPCIONAL"
 
 [node name="BotonCerrar" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=2013989778]
 layout_mode = 0
