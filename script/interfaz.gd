@@ -1027,10 +1027,10 @@ func _on_mision_completada(mision_id: String) -> void:
 			)
 		"senales_inciertas":
 			var msg_if := (
-				"¡Lecturas confirmadas! Has dominado el condicional if y la lectura de sensores.\n" +
-				"Spid ahora solo extrae recursos cuando detecta mineral.\n" +
-				"Conocimiento desbloqueado: CONDICIONAL IF.\n" +
-				"¡Se activa la misión CICLO AUTÓNOMO! Combina while con if para patrullar continuamente."
+				"¡Lecturas confirmadas! Has dominado el condicional IF/ELSE y la lectura de sensores.\n" +
+				"Spid ahora toma decisiones lógicas y ejecuta rutas alternativas ante la incertidumbre.\n" +
+				"Conocimiento desbloqueado: CONDICIONAL IF / ELSE.\n" +
+				"Próximo objetivo: reúne 20 minerales para adquirir el [ SECTOR 3X3 ] en Mejoras y desbloquear el BUCLE FOR."
 			)
 			transmision_ada.mostrar_mensaje(msg_if, "completado", 15.0)
 		"comprar_while":

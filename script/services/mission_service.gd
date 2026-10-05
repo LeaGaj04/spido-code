@@ -443,15 +443,22 @@ func get_objetivo_actual() -> String:
 
 	if objective_id == "senales_inciertas":
 		return (
-			"SEÑALES INCIERTAS (SENSORES E IF / ELSE)\n" +
-			"Las lecturas minerales en este nuevo sector 2x3 son inestables y variables.\n" +
-			"Usa el sensor spid.hay_mineral() y la estructura condicional con else:\n\n" +
+			"SEÑALES INCIERTAS (CONDICIONAL IF / ELSE)\n" +
+			"Las lecturas minerales en el nuevo Sector 2x3 son inestables y variables.\n" +
+			"Spid debe censar el terreno antes de actuar. Puedes resolverlo de dos formas:\n\n" +
+			"• Opción 1: Plan de contingencia (IF / ELSE):\n" +
+			"spid.norte()\n" +
 			"if spid.hay_mineral():\n" +
 			"    spid.minar()\n" +
 			"else:\n" +
-			"    # acción alternativa si no hay recurso\n\n" +
-			"Tu desafío: navega por el sector 2x3, evalúa con 'if' si hay mineral " +
-			"antes de extraerlo, y transfiere el cargamento a la nave."
+			"    spid.este()\n" +
+			"    spid.minar()\n" +
+			"    spid.oeste()\n" +
+			"spid.sur()\n" +
+			"spid.transferir()\n\n" +
+			"• Opción 2: Patrulla continua (WHILE con IF / ELSE):\n" +
+			"Recorre el sector combinando while con if (o if/else) para censar casillas.\n\n" +
+			"Tu desafío: extrae al menos 1 mineral usando condicionales y transfiérelo a la nave."
 		)
 
 	if objective_id == "comprar_while":
@@ -963,23 +970,39 @@ func iniciar_senales_inciertas() -> void:
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var if_evaluations: int = int(resultado.get("if_evaluations", 0))
 	var recolectados: int = int(resultado.get("minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+
 	if if_evaluations < 1:
 		objetivo_actualizado.emit(
 			objective_id,
-			"Debes usar la estructura 'if spid.hay_mineral():' para evaluar " +
-			"la presencia de recursos antes de tomar una decisión."
+			"Debes usar la estructura condicional 'if spid.hay_mineral():' para censar " +
+			"la casilla antes de intentar minar."
 		)
 		return
+
+	var usa_else: bool = codigo.contains("else:")
+	var usa_bucle_patrulla: bool = codigo.contains("while") and if_evaluations >= 2
+
+	if not usa_else and not usa_bucle_patrulla:
+		objetivo_actualizado.emit(
+			objective_id,
+			"El sensor funcionó, pero debes aplicar una estrategia completa:\n" +
+			"1) Un plan de contingencia con 'else:' (si no hay mineral, buscar en otra casilla).\n" +
+			"2) O una patrulla continua con 'while' censando cada casilla con 'if'."
+		)
+		return
+
 	if recolectados < 1 or transferidos < 1:
 		objetivo_actualizado.emit(
 			objective_id,
-			"Buen uso del sensor, pero debes localizar una casilla con mineral, " +
-			"extraerlo con el condicional y transferirlo a la nave en la base."
+			"Buen planteamiento condicional, pero Spid debe localizar al menos 1 mineral, " +
+			"extraerlo con la rutina y transferirlo a la nave en la base."
 		)
 		return
+
 	objective_completed = true
 	estado_actual = EstadoMision.COMPLETADA
 	if objective_id not in completed_missions:
