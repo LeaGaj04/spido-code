@@ -309,14 +309,14 @@ func _resaltar_casilla_principal() -> void:
 		var malla = PlaneMesh.new()
 		malla.size = Vector2(1.8, 1.8)
 		var material = StandardMaterial3D.new()
-		material.albedo_color = Color(0.2, 0.8, 0.3, 0.35)
+		material.albedo_color = Color(0.0, 0.8, 1.0, 0.45)
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		material.emission_enabled = true
-		material.emission = Color(0.2, 0.8, 0.3)
-		material.emission_energy_multiplier = 1.5
+		material.emission = Color(0.0, 0.8, 1.0)
+		material.emission_energy_multiplier = 3.0
 		malla.material = material
 		resaltador.mesh = malla
 		grid_map.add_child(resaltador)
 	
 	var centro_local = grid_map.map_to_local(CASILLA_INICIAL)
-	resaltador.position = centro_local + Vector3(0, 0.02, 0)
+	resaltador.position = centro_local + Vector3(0, 0.11, 0)
