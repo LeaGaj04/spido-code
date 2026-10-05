@@ -73,6 +73,7 @@ var minerales_spid : int = 0
 
 var mineria_rapida_desbloqueada: bool = false
 var _interfaz_inicializada: bool = false
+var _conservar_aviso_senales: bool = false
 
 const PRECIOS = {
 	"while": 15,
@@ -85,6 +86,7 @@ const PRECIOS = {
 }
 
 func _ready() -> void:
+	preload("res://script/tienda_layout.gd").construir(panel_tienda)
 	barra_codigo.gui_input.connect(_on_barra_codigo_gui_input)
 	caja_codigo.code_completion_enabled = true
 	caja_codigo.code_completion_prefixes = PackedStringArray(["."])
@@ -557,16 +559,20 @@ func actualizar_mejoras_visual() -> void:
 	var exp1_on: bool = mundo != null and bool(mundo.corredor_1x3_desbloqueado)
 	var exp2_on: bool = mundo != null and bool(mundo.casillas_extra_desbloqueadas)
 	var exp3_on: bool = mundo != null and bool(mundo.mapa_3x3_desbloqueado)
+	var fase3_completada: bool = "senales_inciertas" in MissionService.get_completed_missions()
+	var calibracion_completada: bool = "ruta_calibracion" in MissionService.get_completed_missions()
+	var trabajo_continuo_completado: bool = "trabajo_continuo" in MissionService.get_completed_missions()
+	var cuota_completada: bool = "cuota_suministro" in MissionService.get_completed_missions()
 
 	if boton_while != null:
 		boton_while.disabled = while_on
 		boton_while.text = "[ BUCLE WHILE ]\nDESBLOQUEADO" if while_on else "[ BUCLE WHILE ]\nPOR MISIÓN"
 	if boton_if != null:
 		boton_if.disabled = true
-		boton_if.text = "[ IF / ELSE ]\nDESBLOQUEADO" if if_on else "[ IF / ELSE ]\nEN SECTOR 2X3"
+		boton_if.text = "[ IF / ELSE ]\nINSTALADO" if if_on else "[ IF / ELSE ]\nEN SECTOR 2X3"
 	if boton_for != null:
 		boton_for.disabled = true
-		boton_for.text = "[ BUCLE FOR ]\nDESBLOQUEADO" if for_on else "[ BUCLE FOR ]\nEN SECTOR 3X3"
+		boton_for.text = "[ BUCLE FOR ]\nINSTALADO" if for_on else "[ BUCLE FOR ]\nEN SECTOR 3X3"
 
 	var vars_on: bool = (
 		"variable" in MissionService.get_unlocked_knowledge()
@@ -581,11 +587,20 @@ func actualizar_mejoras_visual() -> void:
 		boton_expansion.disabled = exp1_on
 		boton_expansion.text = "[ CORREDOR 1X3 ]\nDESBLOQUEADO" if exp1_on else "[ CORREDOR 1X3 ]\n1 MINERAL"
 	if boton_expansion_2 != null:
-		boton_expansion_2.disabled = not (exp1_on and not exp2_on)
-		boton_expansion_2.text = "[ +3 CASILLAS ]\nDESBLOQUEADO" if exp2_on else ("[ +3 CASILLAS ]\n10 MINERALES" if exp1_on else "[ +3 CASILLAS ]\nBLOQUEADO")
+		boton_expansion_2.disabled = not (exp1_on and calibracion_completada and trabajo_continuo_completado and cuota_completada and not exp2_on)
+		if exp2_on:
+			boton_expansion_2.text = "[ +3 CASILLAS ]\nDESBLOQUEADO"
+		elif not calibracion_completada:
+			boton_expansion_2.text = "[ +3 CASILLAS ]\nCOMPLETA CALIBRACIÓN"
+		elif not trabajo_continuo_completado:
+			boton_expansion_2.text = "[ +3 CASILLAS ]\nCOMPLETA\nTRABAJO CONTINUO"
+		elif not cuota_completada:
+			boton_expansion_2.text = "[ +3 CASILLAS ]\nCOMPLETA\nCUOTA DE SUMINISTRO"
+		else:
+			boton_expansion_2.text = "[ +3 CASILLAS ]\n10 MINERALES" if exp1_on else "[ +3 CASILLAS ]\nBLOQUEADO"
 	if boton_expansion_3 != null:
-		boton_expansion_3.disabled = not (exp2_on and not exp3_on)
-		boton_expansion_3.text = "[ SECTOR 3X3 ]\nDESBLOQUEADO" if exp3_on else ("[ SECTOR 3X3 ]\n20 MINERALES" if exp2_on else "[ SECTOR 3X3 ]\nBLOQUEADO")
+		boton_expansion_3.disabled = not (exp2_on and fase3_completada and not exp3_on)
+		boton_expansion_3.text = "[ SECTOR 3X3 ]\nDESBLOQUEADO" if exp3_on else ("[ SECTOR 3X3 ]\n20 MINERALES" if exp2_on and fase3_completada else "[ SECTOR 3X3 ]\nTRAS MISIÓN IF / ELSE")
 
 	if boton_mineria != null:
 		boton_mineria.disabled = mineria_rapida_desbloqueada
@@ -788,6 +803,15 @@ func _on_button_expansion_2_pressed() -> void:
 	var mundo := get_parent()
 	if mundo == null or mundo.casillas_extra_desbloqueadas or not mundo.corredor_1x3_desbloqueado:
 		return
+	if "ruta_calibracion" not in MissionService.get_completed_missions():
+		transmision_ada.mostrar_mensaje("Completa Ruta de calibración antes de comprar el Sector 2x3.", "error")
+		return
+	if "trabajo_continuo" not in MissionService.get_completed_missions():
+		transmision_ada.mostrar_mensaje("Completa Trabajo continuo antes de comprar el Sector 2x3.", "error")
+		return
+	if "cuota_suministro" not in MissionService.get_completed_missions():
+		transmision_ada.mostrar_mensaje("Completa Cuota de suministro antes de comprar el Sector 2x3.", "error")
+		return
 	if CodeExecutor.ejecutando:
 		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de expandir el mapa.", "error")
 		return
@@ -810,7 +834,7 @@ func _on_button_expansion_2_pressed() -> void:
 
 func _on_button_expansion_3_pressed() -> void:
 	var mundo := get_parent()
-	if mundo == null or mundo.mapa_3x3_desbloqueado or not mundo.casillas_extra_desbloqueadas:
+	if mundo == null or mundo.mapa_3x3_desbloqueado or not mundo.casillas_extra_desbloqueadas or not ("senales_inciertas" in MissionService.get_completed_missions()):
 		return
 	if CodeExecutor.ejecutando:
 		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de expandir el mapa.", "error")
@@ -948,6 +972,10 @@ func _on_progreso_ejecucion(resultado: Dictionary) -> void:
 func _on_objetivo_actualizado(_mision_id: String, objetivo: String) -> void:
 	actualizar_panel_mision()
 	_animar_nueva_mision()
+	if _conservar_aviso_senales:
+		_conservar_aviso_senales = false
+		if _mision_id == "comprar_mapa_3x3":
+			return
 	if _interfaz_inicializada and not MissionService.objective_completed and not objetivo.is_empty():
 		transmision_ada.mostrar_mensaje(objetivo, "progreso", 12.0)
 
@@ -1026,6 +1054,7 @@ func _on_mision_completada(mision_id: String) -> void:
 				10.0
 			)
 		"senales_inciertas":
+			_conservar_aviso_senales = true
 			var msg_if := (
 				"¡Lecturas confirmadas! Has dominado el condicional IF/ELSE y la lectura de sensores.\n" +
 				"Spid ahora toma decisiones lógicas y ejecuta rutas alternativas ante la incertidumbre.\n" +
@@ -1121,6 +1150,7 @@ func _on_mision_completada(mision_id: String) -> void:
 				8.0
 			)
 	# Guarda después de que MissionService marque la misión como completada.
+	actualizar_mejoras_visual()
 	_solicitar_guardado_progreso()
 
 func _on_conocimiento_desbloqueado(conocimiento_id: String) -> void:
