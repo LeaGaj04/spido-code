@@ -309,10 +309,10 @@ func _resaltar_casilla_principal() -> void:
 		var malla = PlaneMesh.new()
 		malla.size = Vector2(1.8, 1.8)
 		var material = StandardMaterial3D.new()
-		material.albedo_color = Color(0.9, 0.7, 0.2, 0.25)
+		material.albedo_color = Color(0.15, 0.45, 0.3, 0.4)
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		material.emission_enabled = true
-		material.emission = Color(0.9, 0.7, 0.2)
+		material.emission = Color(0.15, 0.45, 0.3)
 		material.emission_energy_multiplier = 0.8
 		malla.material = material
 		resaltador.mesh = malla
