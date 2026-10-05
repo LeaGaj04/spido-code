@@ -1,4 +1,4 @@
-﻿extends Control
+extends Control
 
 signal cerrado
 
@@ -80,10 +80,10 @@ const CONOCIMIENTOS := {
 		"nombre": "Movimiento",
 		"categoria": "Comandos",
 		"descripcion": "Ordena al Spid desplazarse por la cuadrícula del mapa. Recibe de forma opcional el número de casillas a avanzar como parámetro.",
-		"sintaxis": "spid.norte([pasos])
-spid.sur([pasos])
-spid.este([pasos])
-spid.oeste([pasos])",
+		"sintaxis": "spid.norte(pasos)
+spid.sur(pasos)
+spid.este(pasos)
+spid.oeste(pasos)",
 		"ejemplo": "spid.norte()   # Avanza 1 casilla\nspid.sur(2)    # Avanza 2 casillas",
 		"errores": "Chocar con los límites del mapa o ingresar parámetros no numéricos."
 	},
@@ -108,7 +108,7 @@ spid.en_base()
 spid.minerales_en_rover()
 spid.minerales_en_nave()",
 		"ejemplo": "if spid.hay_mineral():
-    spid.minar()",
+	spid.minar()",
 		"errores": "Olvidar los paréntesis al llamar al sensor, o usar un sensor fuera de una condición o evaluación."
 	}
 }
@@ -300,4 +300,3 @@ func _seleccionar_concepto(id_clave: String) -> void:
 		txt_sintaxis.text = "[code]??? [/code]"
 		txt_ejemplo.text = "[code]# ACCESO DENEGADO POR SEGURIDAD DE A.D.A.[/code]"
 		txt_errores.text = "InformaciÃ³n clasificada hasta nueva asignaciÃ³n de misiÃ³n."
-
