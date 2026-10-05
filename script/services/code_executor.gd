@@ -647,6 +647,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 			var sangria_base := _contar_espacios_sangria(linea_original)
 			var cuerpo_if: Array = []
+			var sangria_cuerpo_if_top := -1
 			indice += 1
 
 			while indice < lineas.size():
@@ -657,6 +658,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 				var sangria_cuerpo := _contar_espacios_sangria(linea_cuerpo)
 				if sangria_cuerpo <= sangria_base:
+					break
+
+				if sangria_cuerpo_if_top == -1:
+					sangria_cuerpo_if_top = sangria_cuerpo
+				elif sangria_cuerpo < sangria_cuerpo_if_top:
 					break
 
 				var contenido_cuerpo := linea_cuerpo.strip_edges()
@@ -715,6 +721,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 					else_numero = idx_la + 1
 					else_contenido = cont_p_else
 					indice = idx_la + 1
+					var sangria_cuerpo_else_top := -1
 
 					while indice < lineas.size():
 						var linea_c_else: String = lineas[indice]
@@ -724,6 +731,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 						var sangria_c_else := _contar_espacios_sangria(linea_c_else)
 						if sangria_c_else <= sangria_base:
+							break
+
+						if sangria_cuerpo_else_top == -1:
+							sangria_cuerpo_else_top = sangria_c_else
+						elif sangria_c_else < sangria_cuerpo_else_top:
 							break
 
 						var cont_c_else := linea_c_else.strip_edges()
@@ -816,6 +828,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 					var sangria_if := sangria_cuerpo
 					var cuerpo_if_anidado: Array = []
+					var sangria_cuerpo_if_for := -1
 					indice += 1
 
 					while indice < lineas.size():
@@ -826,6 +839,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 						var sangria_sub := _contar_espacios_sangria(linea_sub)
 						if sangria_sub <= sangria_if:
+							break
+
+						if sangria_cuerpo_if_for == -1:
+							sangria_cuerpo_if_for = sangria_sub
+						elif sangria_sub < sangria_cuerpo_if_for:
 							break
 
 						var cont_sub := linea_sub.strip_edges()
@@ -924,6 +942,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 					var sangria_if := sangria_cuerpo
 					var cuerpo_if_anidado: Array = []
+					var sangria_cuerpo_if := -1
 					indice += 1
 
 					while indice < lineas.size():
@@ -934,6 +953,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 						var sangria_sub := _contar_espacios_sangria(linea_sub)
 						if sangria_sub <= sangria_if:
+							break
+
+						if sangria_cuerpo_if == -1:
+							sangria_cuerpo_if = sangria_sub
+						elif sangria_sub < sangria_cuerpo_if:
 							break
 
 						var cont_sub := linea_sub.strip_edges()
@@ -992,6 +1016,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 							else_num_anidado = idx_la_w + 1
 							else_cont_anidado = cont_p_else_w
 							indice = idx_la_w + 1
+							var sangria_cuerpo_else_w := -1
 
 							while indice < lineas.size():
 								var linea_c_else_w: String = lineas[indice]
@@ -1001,6 +1026,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 								var sangria_c_else_w := _contar_espacios_sangria(linea_c_else_w)
 								if sangria_c_else_w <= sangria_if:
+									break
+
+								if sangria_cuerpo_else_w == -1:
+									sangria_cuerpo_else_w = sangria_c_else_w
+								elif sangria_c_else_w < sangria_cuerpo_else_w:
 									break
 
 								var cont_c_else_w := linea_c_else_w.strip_edges()
