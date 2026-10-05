@@ -160,6 +160,18 @@ func en_base() -> bool:
 		return mundo.spid_esta_en_casilla_transferencia(self)
 	return false
 
+func minerales_en_nave() -> int:
+	var interfaz := get_tree().current_scene.get_node_or_null("CanvasLayer")
+	if interfaz != null:
+		return int(interfaz.minerales_nave)
+	return 0
+
+func minerales_en_rover() -> int:
+	var interfaz := get_tree().current_scene.get_node_or_null("CanvasLayer")
+	if interfaz != null:
+		return int(interfaz.minerales_spid)
+	return 0
+
 func minar() -> Dictionary:
 	var grid_map := get_parent() as GridMap
 	if grid_map == null:

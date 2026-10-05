@@ -13,6 +13,7 @@ enum EstadoMision {
 	COMPRAR_CASILLAS,
 	CICLO_RECOLECCION,
 	TRABAJO_CONTINUO,
+	CUOTA_SUMINISTRO,
 	CAMINO_LARGO,
 	RETORNO_BASE,
 	VARIABLES,
@@ -80,6 +81,10 @@ func preparar_mision_expansion() -> void:
 		return
 
 	if objective_id == "trabajo_continuo":
+		iniciar_cuota_suministro()
+		return
+
+	if objective_id == "cuota_suministro":
 		iniciar_mision_comprar_casillas()
 		return
 
@@ -105,10 +110,7 @@ func iniciar_mision_comprar_casillas() -> void:
 	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
 	objective_completed = "comprar_casillas" in completed_missions or map_tier >= 2
 	if objective_completed:
-		if GestorSintaxis.esta_desbloqueada("if") or "comprar_if" in completed_missions:
-			iniciar_senales_inciertas()
-		else:
-			iniciar_mision_comprar_if()
+		iniciar_senales_inciertas()
 		return
 	estado_actual = EstadoMision.COMPRAR_CASILLAS
 	mision_iniciada.emit(objective_id)
@@ -120,14 +122,16 @@ func registrar_compra_casillas() -> void:
 	if "comprar_casillas" not in completed_missions:
 		completed_missions.append("comprar_casillas")
 
+	# DESBLOQUEO DE FASE 3: IF y ELSE al expandir a 2x3
+	GestorSintaxis.desbloquear_sintaxis("if")
+	GestorSintaxis.desbloquear_sintaxis("else")
+	desbloquear_conocimiento("condicional_if")
+
 	if objective_id == "comprar_casillas":
 		objective_completed = true
 		estado_actual = EstadoMision.COMPLETADA
 		mision_completada.emit("comprar_casillas")
-		if GestorSintaxis.esta_desbloqueada("if") or "comprar_if" in completed_missions:
-			iniciar_senales_inciertas()
-		else:
-			iniciar_mision_comprar_if()
+		iniciar_senales_inciertas()
 	else:
 		mision_completada.emit("compra_temprana_casillas")
 
@@ -243,20 +247,26 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "trabajo_continuo" and objective_completed)
 		or (objective_id == "trabajo_continuo" and "trabajo_continuo" in completed_missions)
 	):
-		iniciar_mision_comprar_casillas()
+		iniciar_cuota_suministro()
 		return
 	if objective_id == "trabajo_continuo":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.TRABAJO_CONTINUO
+		return
+	if (
+		(objective_id == "cuota_suministro" and objective_completed)
+		or (objective_id == "cuota_suministro" and "cuota_suministro" in completed_missions)
+	):
+		iniciar_mision_comprar_casillas()
+		return
+	if objective_id == "cuota_suministro":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CUOTA_SUMINISTRO
 		return
 	if (
 		(objective_id == "comprar_casillas" and objective_completed)
 		or (objective_id == "comprar_casillas" and "comprar_casillas" in completed_missions)
 		or (objective_id == "comprar_casillas" and int(progress.get("map_tier", 0)) >= 2)
 	):
-		if GestorSintaxis.esta_desbloqueada("if") or "comprar_if" in completed_missions:
-			iniciar_senales_inciertas()
-		else:
-			iniciar_mision_comprar_if()
+		iniciar_senales_inciertas()
 		return
 	if objective_id == "comprar_casillas":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_CASILLAS
@@ -358,9 +368,28 @@ func get_objetivo_actual() -> String:
 		return "Misión completada."
 	if objective_id == "trabajo_continuo":
 		return (
-			"CICLO DE SUMINISTRO (BUCLE WHILE)\n" +
-			"Programa spid para viajar al mineral del norte, extraerlo, " +
-			"regresar a la base y transferirlo. Repite el ciclo usando while."
+			"AUTOMATIZACIÓN CONTINUA (WHILE TRUE)\n" +
+			"Un bucle 'while True:' repite instrucciones indefinidamente.\n\n" +
+			"while True:\n" +
+			"    spid.norte()\n" +
+			"    spid.minar()\n" +
+			"    spid.sur()\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: programa a spid para abastecer la nave de forma continua. " +
+			"Deja que complete al menos 2 ciclos de recolección."
+		)
+
+	if objective_id == "cuota_suministro":
+		return (
+			"CUOTA DE SUMINISTRO (CONDICIÓN WHILE)\n" +
+			"La nave nodriza necesita 10 minerales para fabricar el nuevo Sector 2x3.\n" +
+			"Usa una condición de parada para que spid se detenga al alcanzar la cuota:\n\n" +
+			"while spid.minerales_en_nave() < 10:\n" +
+			"    spid.norte()\n" +
+			"    spid.minar()\n" +
+			"    spid.sur()\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: acumula 10 minerales en la nave nodriza usando un bucle condicional."
 		)
 
 	if objective_id == "comprar_casillas":
@@ -521,6 +550,10 @@ func evaluar_programa(resultado: Dictionary) -> void:
 		_evaluar_variables(resultado)
 		return
 	
+	if objective_id == "cuota_suministro":
+		_evaluar_cuota_suministro(resultado)
+		return
+
 	if objective_id == "trabajo_continuo":
 		_evaluar_trabajo_continuo(resultado)
 		return
@@ -561,13 +594,22 @@ func evaluar_programa(resultado: Dictionary) -> void:
 		)
 
 func _evaluar_trabajo_continuo(resultado: Dictionary) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var comandos: Array = resultado.get("commands_used", [])
 	var bucle_detectado: int = int(resultado.get("loop_count", 0))
 	var iteraciones: int = int(resultado.get("loop_iterations", 0))
 
+	var usa_while_true: bool = codigo.contains("whiletrue:") or codigo.contains("while1:")
+
+	if not usa_while_true or bucle_detectado < 1:
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para esta misión de automatización continua debes usar 'while True:'."
+		)
+		return
+
 	var cumple_objetivo: bool = (
-		bucle_detectado > 0
-		and iteraciones >= 2
+		iteraciones >= 2
 		and comandos.count("norte") >= 2
 		and comandos.count("minar") >= 2
 		and comandos.count("sur") >= 2
@@ -578,8 +620,8 @@ func _evaluar_trabajo_continuo(resultado: Dictionary) -> void:
 		objetivo_actualizado.emit(
 			objective_id,
 			"El ciclo todavía está incompleto. " +
-			"Debes repetir al menos dos veces la rutina " +
-			"norte, minar, sur y transferir usando while."
+			"Spid debe repetir al menos dos veces la rutina " +
+			"norte, minar, sur y transferir usando 'while True:'."
 		)
 		return
 
@@ -590,8 +632,8 @@ func _evaluar_trabajo_continuo(resultado: Dictionary) -> void:
 		completed_missions.append(objective_id)
 
 	mision_completada.emit(objective_id)
-	print("Misión de ciclo de suministro completada.")
-	iniciar_mision_comprar_casillas()
+	print("Misión de automatización (while True) completada.")
+	iniciar_cuota_suministro()
 
 func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 	var comandos: Array = resultado.get("commands_used", [])
@@ -657,6 +699,59 @@ func iniciar_trabajo_continuo() -> void:
 	mision_iniciada.emit(objective_id)
 	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
 	print("Misión iniciada: trabajo_continuo")
+
+
+func iniciar_cuota_suministro() -> void:
+	objective_id = "cuota_suministro"
+	var progreso_actual: Dictionary = ProgressService.get_current_progress()
+	var minerales_nave: int = int(progreso_actual.get("minerals_ship", 0))
+	objective_completed = "cuota_suministro" in completed_missions or minerales_nave >= 10
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CUOTA_SUMINISTRO
+
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: cuota_suministro")
+
+
+func _evaluar_cuota_suministro(resultado: Dictionary) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
+	var iteraciones: int = int(resultado.get("loop_iterations", 0))
+	var progreso_actual: Dictionary = ProgressService.get_current_progress()
+	var minerales_nave: int = int(progreso_actual.get("minerals_ship", 0))
+
+	if codigo.contains("whiletrue:") or codigo.contains("while1:"):
+		objetivo_actualizado.emit(
+			objective_id,
+			"En esta misión no debes usar un bucle infinito 'while True:'. " +
+			"Usa una condición de parada lógica, como 'while spid.minerales_en_nave() < 10:'."
+		)
+		return
+
+	if iteraciones < 1 or not codigo.contains("while"):
+		objetivo_actualizado.emit(
+			objective_id,
+			"Debes usar un bucle 'while' con una condición de comparación " +
+			"(ej: 'while spid.minerales_en_nave() < 10:')."
+		)
+		return
+
+	if minerales_nave < 10:
+		objetivo_actualizado.emit(
+			objective_id,
+			"Tienes %d de 10 minerales en la nave. " % minerales_nave +
+			"Deja que el bucle continúe recolectando hasta alcanzar la meta de 10 minerales."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	mision_completada.emit(objective_id)
+	print("Misión cuota_suministro completada.")
+	iniciar_mision_comprar_casillas()
 
 func iniciar_camino_largo() -> void:
 	objective_id = "camino_largo"
@@ -945,6 +1040,11 @@ func iniciar_mision_comprar_mapa_3x3() -> void:
 func registrar_compra_mapa_3x3() -> void:
 	if "comprar_mapa_3x3" not in completed_missions:
 		completed_missions.append("comprar_mapa_3x3")
+
+	# DESBLOQUEO DE FASE 4: FOR e IN RANGE al expandir a 3x3
+	GestorSintaxis.desbloquear_sintaxis("for")
+	GestorSintaxis.desbloquear_sintaxis("in range")
+	desbloquear_conocimiento("bucle_for")
 
 	if objective_id == "comprar_mapa_3x3":
 		objective_completed = true

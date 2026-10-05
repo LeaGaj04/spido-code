@@ -150,7 +150,9 @@ func _on_code_completion_requested() -> void:
 		["\u200cspid.este()", "este()", "Mover al este", Color(0.18, 0.86, 1, 1)],
 		["\u200cspid.oeste()", "oeste()", "Mover al oeste", Color(0.18, 0.86, 1, 1)],
 		["\u200dspid.hay_mineral()", "hay_mineral()", "Consultar sensor de mineral", Color(1, 0.35, 0.85, 1)],
-		["\u200dspid.tiene_espacio()", "tiene_espacio()", "Consultar capacidad de Spid", Color(1, 0.35, 0.85, 1)]
+		["\u200dspid.tiene_espacio()", "tiene_espacio()", "Consultar capacidad de Spid", Color(1, 0.35, 0.85, 1)],
+		["\u200dspid.minerales_en_nave()", "minerales_en_nave()", "Consultar minerales en la nave", Color(1, 0.35, 0.85, 1)],
+		["\u200dspid.minerales_en_rover()", "minerales_en_rover()", "Consultar minerales en Spid", Color(1, 0.35, 0.85, 1)]
 	]
 
 	for opcion in opciones:
@@ -449,6 +451,32 @@ func evaluar_condicion_spid(condicion: String) -> bool:
 		if mundo != null and mundo.has_method("spid_esta_en_casilla_transferencia"):
 			return mundo.spid_esta_en_casilla_transferencia(mi_spid)
 		return false
+
+	var regex_comp := RegEx.new()
+	if regex_comp.compile("^(?i)(spid\\.)?(minerales_en_nave|minerales_en_rover|minerales)\\(\\)\\s*(<|<=|>|>=|==|!=)\\s*(\\d+)$") == OK:
+		var match := regex_comp.search(condicion)
+		if match != null:
+			var target_var := match.get_string(2).to_lower()
+			var operador := match.get_string(3)
+			var valor_meta := int(match.get_string(4))
+			var valor_actual: int = minerales_nave
+			if target_var == "minerales_en_rover":
+				valor_actual = minerales_spid
+
+			match operador:
+				"<":
+					return valor_actual < valor_meta
+				"<=":
+					return valor_actual <= valor_meta
+				">":
+					return valor_actual > valor_meta
+				">=":
+					return valor_actual >= valor_meta
+				"==":
+					return valor_actual == valor_meta
+				"!=":
+					return valor_actual != valor_meta
+
 	return false
 
 func _on_boton_cerrar_pressed() -> void:
@@ -938,6 +966,7 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 		and MissionService.objective_id in [
 			"ruta_calibracion",
 			"trabajo_continuo",
+			"cuota_suministro",
 			"ciclo_autonomo",
 			"exploracion_3x3",
 			"ciclo_recoleccion"
