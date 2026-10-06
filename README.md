@@ -2,6 +2,8 @@
 
 <img width="1920" height="1039" alt="SpidoCode" src="https://github.com/user-attachments/assets/34b3facc-bd29-45d0-9deb-be397d7b284f" />
 
+<img width="1436" height="833" alt="1" src="https://github.com/user-attachments/assets/90dd54d5-7a4c-4e72-9d96-04954db64601" />
+
 
 # spidocode
 
