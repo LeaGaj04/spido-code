@@ -45,7 +45,7 @@ static func construir(panel: Control) -> void:
 	ruta.add_theme_constant_override("separation", 16)
 	scroll.add_child(ruta)
 	_etapa(ruta, "00  /  BASE 1×1", "Punto de partida · Aprende a extraer y transferir minerales.", null, null, Color("52d5c1"))
-	_etapa(ruta, "01  /  CORREDOR 1×3", "Calibra una ruta con movimientos en secuencia.\nCompleta la calibración para activar WHILE.", originales["ButtonExpansion1"], originales["ButtonWhile"], Color("69dba2"))
+	_etapa(ruta, "01  /  SECTOR 1×3", "Calibra una ruta con movimientos en secuencia.\nCompleta la calibración para activar WHILE.", originales["ButtonExpansion1"], originales["ButtonWhile"], Color("69dba2"))
 	_etapa(ruta, "02  /  SECTOR 2×3", "Tres casillas nuevas y depósitos aleatorios.\nIncluye IF / ELSE para detectar minerales y tomar decisiones.", originales["ButtonExpansion2"], originales["ButtonIf"], Color("69dba2"))
 	_etapa(ruta, "03  /  SECTOR 3×3", "Completa Señales inciertas para habilitar esta expansión.\nIncluye FOR e IN RANGE para recorrer el cuadrante.", originales["ButtonExpansion3"], originales["ButtonFor"], Color("69dba2"))
 	_etapa(ruta, "04  /  PARÁMETROS Y VARIABLES", "Continúa las misiones del Sector 3×3 para reutilizar valores en tus programas.", null, originales["ButtonVariables"], Color("84bfe8"))

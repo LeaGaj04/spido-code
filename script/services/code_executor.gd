@@ -438,7 +438,7 @@ func _ejecutar_instruccion_simple(
 	):
 		detener_solicitado = true
 	elif (
-		_objective_id_at_start in ["ciclo_recoleccion", "variables", "camino_largo"]
+		_objective_id_at_start in ["variables", "camino_largo"]
 		and int(resultado.get("minerals_transferred", 0)) >= 1
 	):
 		detener_solicitado = true
