@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dorjiuvlmgpes"]
 
 [ext_resource type="Script" uid="uid://xb6duvsny44v" path="res://script/menu_inicio.gd" id="1_leqng"]
-[ext_resource type="Texture2D" path="res://Fondos/estrellas_frames/frame_00.png" id="2_lkhye"]
+[ext_resource type="Texture2D" uid="uid://b2xmqppbtemv8" path="res://Fondos/estrellas_frames/frame_00.png" id="2_lkhye"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ppgcv"]
 content_margin_left = 16.0
@@ -114,20 +114,19 @@ stretch_mode = 6
 
 [node name="Titulo" type="Label" parent="." unique_id=1829891911]
 layout_mode = 1
-anchors_preset = 0
 offset_left = 20.0
 offset_top = 34.0
 offset_right = 1200.0
 offset_bottom = 250.0
 theme_override_colors/font_color = Color(0.91, 1, 0.97, 1)
-theme_override_colors/font_outline_color = Color(0.16, 0.82, 0.64, 1)
 theme_override_colors/font_shadow_color = Color(0.35, 0.08, 0.85, 0.8)
-theme_override_constants/outline_size = 15
+theme_override_colors/font_outline_color = Color(0.16, 0.82, 0.64, 1)
 theme_override_constants/shadow_offset_x = 5
 theme_override_constants/shadow_offset_y = 7
+theme_override_constants/outline_size = 15
 theme_override_font_sizes/font_size = 150
-horizontal_alignment = 1
 text = "SPIDOCODE"
+horizontal_alignment = 1
 
 [node name="PanelMenu" type="PanelContainer" parent="." unique_id=1374027253]
 layout_mode = 1

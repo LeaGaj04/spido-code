@@ -10,6 +10,7 @@ var _ambient_player: AudioStreamPlayer
 var _connected_buttons: Dictionary = {}
 
 func _ready() -> void:
+	_configurar_buses()
 	_click = _crear_sonido_click()
 	_hover = _crear_sonido_hover()
 	_ambient = _crear_sonido_ambiente()
@@ -17,11 +18,25 @@ func _ready() -> void:
 	_ambient_player.name = "AmbienteEspacial"
 	_ambient_player.stream = _ambient
 	_ambient_player.volume_db = -20.0
+	_ambient_player.bus = "Musica"
 	add_child(_ambient_player)
 	get_tree().node_added.connect(_on_node_added)
 	_conectar_botones(get_tree().root)
 	_actualizar_ambiente()
 	get_tree().scene_changed.connect(_actualizar_ambiente)
+
+func _configurar_buses() -> void:
+	if AudioServer.get_bus_index("Musica") == -1:
+		AudioServer.add_bus()
+		var idx = AudioServer.get_bus_count() - 1
+		AudioServer.set_bus_name(idx, "Musica")
+		AudioServer.set_bus_send(idx, "Master")
+	
+	if AudioServer.get_bus_index("Efectos") == -1:
+		AudioServer.add_bus()
+		var idx = AudioServer.get_bus_count() - 1
+		AudioServer.set_bus_name(idx, "Efectos")
+		AudioServer.set_bus_send(idx, "Master")
 
 func _on_node_added(node: Node) -> void:
 	if node is Button:
@@ -50,6 +65,7 @@ func _reproducir_efecto(sonido: AudioStream, volumen: float) -> void:
 	var player := AudioStreamPlayer.new()
 	player.stream = sonido
 	player.volume_db = volumen
+	player.bus = "Efectos"
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()

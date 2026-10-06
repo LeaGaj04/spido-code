@@ -455,6 +455,8 @@ func _ejecutar_instruccion_simple(
 		resultado["error_message"] = error_comando["message"]
 		resultado["errors"].append(error_comando)
 		error_detectado.emit(error_comando)
+	else:
+		MissionService.evaluar_progreso_programa(resultado)
 	linea_finalizada.emit(numero_linea, contenido)
 	return resultado_comando
 
@@ -1274,7 +1276,9 @@ func _finalizar(resultado: Dictionary) -> void:
 		Time.get_ticks_msec() - _tiempo_inicio_msec
 	) / 1000.0
 
-	MissionService.evaluar_programa(resultado)
+	# Una misión completada en vivo ya puede haber activado la siguiente.
+	if MissionService.objective_id == _objective_id_at_start:
+		MissionService.evaluar_programa(resultado)
 	var completed_missions := MissionService.get_completed_missions()
 	var objective_is_completed := (
 		(

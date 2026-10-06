@@ -969,13 +969,24 @@ func iniciar_senales_inciertas() -> void:
 	print("Misión iniciada: senales_inciertas")
 
 
-func _evaluar_senales_inciertas(resultado: Dictionary) -> void:
+func evaluar_progreso_programa(resultado: Dictionary) -> void:
+	# El resultado parcial no tiene success=true hasta finalizar el programa.
+	if objective_completed or objective_id != "senales_inciertas":
+		return
+	if resultado.get("objective_id", "") != objective_id or not resultado.get("errors", []).is_empty():
+		return
+	_evaluar_senales_inciertas(resultado, false)
+
+
+func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:
 	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var if_evaluations: int = int(resultado.get("if_evaluations", 0))
 	var recolectados: int = int(resultado.get("minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
 
 	if if_evaluations < 1:
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Debes usar la estructura condicional 'if spid.hay_mineral():' para censar " +
@@ -987,6 +998,8 @@ func _evaluar_senales_inciertas(resultado: Dictionary) -> void:
 	var usa_bucle_patrulla: bool = codigo.contains("while") and if_evaluations >= 2
 
 	if not usa_else and not usa_bucle_patrulla:
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"El sensor funcionó, pero debes aplicar una estrategia completa:\n" +
@@ -996,6 +1009,8 @@ func _evaluar_senales_inciertas(resultado: Dictionary) -> void:
 		return
 
 	if recolectados < 1 or transferidos < 1:
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Buen planteamiento condicional, pero Spid debe localizar al menos 1 mineral, " +

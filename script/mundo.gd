@@ -37,6 +37,7 @@ func _ready():
 
 	aplicar_progreso_mapa(map_tier)
 	_posicionar_spid_en_casilla_inicial()
+	_resaltar_casilla_principal()
 	generar_minerales_iniciales()
 	var spid := grid_map.get_node_or_null("Spid")
 	if spid != null and spid.has_signal("mineral_minado"):
@@ -298,3 +299,24 @@ func expandir_mapa_3x3() -> bool:
 
 func get_map_tier() -> int:
 	return radio_mapa_desbloqueado
+
+
+func _resaltar_casilla_principal() -> void:
+	var resaltador = grid_map.get_node_or_null("ResaltadorBase")
+	if resaltador == null:
+		resaltador = MeshInstance3D.new()
+		resaltador.name = "ResaltadorBase"
+		var malla = PlaneMesh.new()
+		malla.size = Vector2(1.8, 1.8)
+		var material = StandardMaterial3D.new()
+		material.albedo_color = Color(0.15, 0.45, 0.3, 0.4)
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.emission_enabled = true
+		material.emission = Color(0.15, 0.45, 0.3)
+		material.emission_energy_multiplier = 0.8
+		malla.material = material
+		resaltador.mesh = malla
+		grid_map.add_child(resaltador)
+	
+	var centro_local = grid_map.map_to_local(CASILLA_INICIAL)
+	resaltador.position = centro_local + Vector3(0, 0.11, 0)
