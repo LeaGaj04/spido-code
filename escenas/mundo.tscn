@@ -941,6 +941,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.692646, -3.315782, -6.873)
 [node name="CentroJugable" type="Marker3D" parent="." unique_id=53366813]
 transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9998309, 2.4590905, 0.4190023, -2.6192255)
 
+
+[node name="LuzEstadio" type="SpotLight3D" parent="."]
+transform = Transform3D(0.965926, -0.183013, 0.183013, 0, 0.707107, 0.707107, -0.258819, -0.683013, 0.683013, 2.0, 6.0, -8.0)
+light_color = Color(1, 0.941176, 0.784314, 1)
+light_energy = 8.0
+shadow_enabled = true
+spot_range = 35.0
+spot_angle = 55.0
+
+[node name="BrilloBombilla" type="OmniLight3D" parent="LuzEstadio"]
+light_color = Color(1, 0.941176, 0.784314, 1)
+light_energy = 3.0
+omni_range = 6.0
+
 [connection signal="pressed" from="CanvasLayer/PanelCodigo/BarraTitulo/BotonMinimizar" to="CanvasLayer" method="_on_boton_minimizar_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelCodigo/Contenido/BarraControles/BotonResetBase" to="CanvasLayer" method="_on_boton_reset_base_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelCodigo/Contenido/BarraControles/BotonPaso" to="CanvasLayer" method="_on_boton_paso_pressed"]
@@ -956,3 +970,4 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonMineria" to="CanvasLayer" method="_on_button_mineria_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/BotonCerrar" to="CanvasLayer" method="_on_boton_cerrar_pressed"]
 [connection signal="pressed" from="CanvasLayer/MenuPausa/Centro/Panel/Contenido/BotonSalirMenu" to="CanvasLayer/MenuPausa" method="_on_boton_salir_menu_pressed"]
+
