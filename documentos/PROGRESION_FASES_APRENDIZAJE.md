@@ -131,6 +131,8 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
    - El compilador detecta el fin de un bloque `if` o `else` cuando la línea siguiente tiene una sangría menor que la del cuerpo del bloque (previniendo que espacios accidentales absorban instrucciones posteriores).
 4. **Consulta de minerales en vivo:**
    - El servicio de misiones consulta directamente el contador en vivo de la nave (`interfaz.minerales_nave`) evitando desincronizaciones de caché con Supabase o partidas de invitados.
+5. **Ejecución completa de bucles `for` en `range(N)` (06/10/2026):**
+   - Se eliminó `ciclo_recoleccion` del auto-corte prematuro tras 1 mineral transferido en `code_executor.gd`. Los bucles `for` deben ejecutar siempre la totalidad de las iteraciones fijadas por el estudiante en `range(N)` para cumplir con el requisito de 2 minerales recolectados y transferidos.
 
 ---
 
