@@ -1,6 +1,4 @@
-<img width="1920" height="1021" alt="image" src="https://github.com/user-attachments/assets/d6100085-377e-4cf8-a454-2ce147ed9e77" />
-
-<img width="1920" height="1039" alt="SpidoCode" src="https://github.com/user-attachments/assets/34b3facc-bd29-45d0-9deb-be397d7b284f" />
+<img width="1431" height="836" alt="2" src="https://github.com/user-attachments/assets/b6b3ccbd-2195-4cfb-8b71-affba48e10bc" />
 
 <img width="1436" height="833" alt="1" src="https://github.com/user-attachments/assets/90dd54d5-7a4c-4e72-9d96-04954db64601" />
 
