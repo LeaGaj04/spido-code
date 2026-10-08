@@ -506,7 +506,15 @@ func actualizar_contadores() -> void:
 
 # Aplica solamente el estado persistente que corresponde a la interfaz.
 func aplicar_progreso(progress: Dictionary) -> void:
+	if progress.is_empty():
+		print("PanelMision antes: progress_empty=true objective_id=", MissionService.objective_id)
 	MissionService.aplicar_progreso(progress)
+	if progress.is_empty():
+		print("PanelMision después: objective_id=", MissionService.objective_id,
+			" estado_actual=", MissionService.estado_actual,
+			" completed_missions_count=", MissionService.completed_missions.size())
+		print("PanelMision antes de actualizar: objective_id=", MissionService.objective_id)
+	actualizar_panel_mision()
 
 	minerales_nave = maxi(
 		0,
