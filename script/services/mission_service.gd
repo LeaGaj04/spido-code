@@ -48,7 +48,7 @@ func iniciar_mision() -> void:
 
 	objetivo_actualizado.emit(
 		objective_id,
-		"Encuentra una muestra y ejecuta spid.minar()."
+		"Muestra mineral detectada bajo el Spid. Mina el terreno y transfiere la carga a la nave."
 	)
 	
 func iniciar_ruta_calibracion() -> void:
@@ -60,9 +60,9 @@ func iniciar_ruta_calibracion() -> void:
 
 	objetivo_actualizado.emit(
 		objective_id,
-		"RUTA DE CALIBRACION\n" +
-		"Programa una secuencia para avanzar al mineral, " +
-        "extraerlo, regresar a la casilla inicial y transferirlo."
+		"RUTA DE CALIBRACIÓN\n" +
+		"Yacimiento detectado al norte. Avanza hacia él, " +
+		"mina el mineral, regresa a la nave y transfiere la carga."
 	)
 
 	print("Mision iniciada: ruta_calibracion")
@@ -437,8 +437,8 @@ func get_objetivo_actual() -> String:
 
 	if objective_id == "ruta_calibracion":
 		return (
-			"Ejecuta norte, minar, sur y transferir " +
-			"una sola vez, en ese orden y en un mismo programa."
+			"Yacimiento detectado al norte. Avanza hacia él, " +
+			"mina el mineral, regresa al sur a la nave y transfiere la muestra en una sola rutina."
 		)
 
 	if objective_id == "senales_inciertas":

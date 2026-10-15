@@ -1022,7 +1022,7 @@ func _on_mision_completada(mision_id: String) -> void:
 			transmision_ada.mostrar_mensaje(
 				"¡Sector 2x3 desbloqueado!\n" +
 				"El terreno se ha expandido con dos depósitos de mineral.\n" +
-				"Próximo paso: Adquiere el [ CONDICIONAL IF ] en Mejoras para evaluar casillas antes de perforar.",
+				"Próximo paso: Adquiere el [ CONDICIONAL IF ] en Mejoras para evaluar casillas antes de minar.",
 				"completado",
 				15.0
 			)
@@ -1205,33 +1205,35 @@ func _animar_mision_completada() -> void:
 func _get_objetivo_panel(mision_id: String) -> String:
 	match mision_id:
 		"recolectar_primer_mineral":
-			return "Mina y transfiere tu primera muestra."
-		"comprar_casillas":
-			return "Adquiere el sector de exploración 2x3 (+3 Casillas)."
+			return "Muestra mineral detectada bajo el Spid. Mina el terreno y transfiere la carga a la nave."
 		"ruta_calibracion":
-			return "Completa una ruta de exploración y regresa a la base."
+			return "Yacimiento detectado al norte. Avanza hacia él, mina el mineral y regresa a la nave para transferirlo."
 		"trabajo_continuo":
-			return "Automatiza un ciclo de suministro repetitivo con while."
+			return "La veta se regenera al norte. Enlaza tu ruta en un ciclo infinito ('while True:') para minar y suministrar sin parar."
+		"cuota_suministro":
+			return "La nave necesita recursos. Automatiza el ciclo de minado con una condición de parada hasta reunir 10 minerales."
+		"comprar_casillas":
+			return "Cuota de minerales alcanzada. Abre Mejoras e instala [+3 CASILLAS] para ampliar el terreno."
+		"senales_inciertas":
+			return "Apariciones impredecibles en el sector 2x3. Recorre las casillas y usa 'if' para comprobar si hay mineral antes de minar."
+		"comprar_mapa_3x3":
+			return "Reúne 20 minerales en la nave y desbloquea el [SECTOR 3X3] en Mejoras para acceder al nuevo territorio."
 		"ciclo_recoleccion":
-			return "Recolecta y entrega minerales en el sector 2x3 usando for."
+			return "Optimiza la faena: utiliza un bucle 'for' con range() para repetir una cantidad exacta de ciclos de minado."
+		"exploracion_3x3":
+			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":
-			return "Navega una distancia extendida usando parámetros."
+			return "Reduce líneas de código: envía la distancia como parámetro a tus órdenes de movimiento (ej. spid.norte(2))."
 		"retorno_base":
 			return "Navega de retorno usando la condición while not en_base()."
 		"variables":
-			return "Define y utiliza variables dinámicas para controlar al spid."
+			return "Almacena distancias y valores en variables reutilizables para guiar al Spid por el terreno."
 		"comprar_if":
-			return "Adquiere el módulo de decisiones condicionales."
-		"senales_inciertas":
-			return "Haz que spid reaccione a las señales del entorno."
+			return "Adquiere el módulo de decisiones condicionales en el Centro de Mejoras."
 		"comprar_while":
-			return "Adquiere el módulo de automatización condicional."
+			return "Adquiere el módulo de automatización condicional en el Centro de Mejoras."
 		"ciclo_autonomo":
-			return "Mantén una operación autónoma hasta completar la carga."
-		"comprar_mapa_3x3":
-			return "Adquiere el sector de exploración 3x3."
-		"exploracion_3x3":
-			return "Recolecta y entrega 3 minerales en el sector 3x3 usando bucles y sensores."
+			return "Mantén una operación autónoma de minado con while hasta completar la carga."
 		_:
 			return "Completa el objetivo de la misión actual."
 	
