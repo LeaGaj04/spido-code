@@ -6,6 +6,8 @@ var misiones: Node
 var casos := 0
 var fallos := 0
 var comandos_ejecutados: Array = []
+var errores_emitidos: Array = []
+var pasos_esperados: Array = []
 
 
 func _initialize() -> void:
@@ -15,6 +17,7 @@ func _initialize() -> void:
 func ejecutar_suite() -> void:
 	executor = root.get_node("CodeExecutor")
 	misiones = root.get_node("MissionService")
+	executor.error_detectado.connect(_registrar_error)
 	root.get_node("GestorSintaxis").aplicar_sintaxis_desbloqueada({
 		"for": true,
 		"while": true,
@@ -104,13 +107,52 @@ func ejecutar_suite() -> void:
 	_verificar(range_literal.get("ok", false), "range literal compila")
 	_verificar(range_literal.get("instrucciones", []).size() == 2, "range literal expande el cuerpo dos veces")
 
-	var range_variable_grande: Dictionary = executor.compilar_programa("pasos = 51\nfor i in range(pasos):\n    spid.norte()")
-	_verificar(range_variable_grande.get("ok", false), "LIMITACIÓN: range(variable) mayor a 50 se acepta actualmente")
-	_verificar(range_variable_grande.get("instrucciones", []).size() == 52, "LIMITACIÓN: range(51) expande 51 comandos sin revalidar el límite")
+	# Literales y variables comparten límites y mensajes, antes de ejecutar comandos.
+	for n in [0, -1, 51]:
+		var literal: Dictionary = executor.compilar_programa("for i in range(%d):\n    spid.norte()" % n)
+		var variable: Dictionary = executor.compilar_programa("n = %d\nfor i in range(n):\n    spid.norte()" % n)
+		_verificar(not literal.get("ok", false), "literal inválido %d se rechaza" % n)
+		_verificar(not variable.get("ok", false), "variable inválida %d se rechaza" % n)
+		if not variable.get("ok", false) and not literal.get("ok", false):
+			_verificar(variable["error"]["message"] == literal["error"]["message"], "literal y variable %d comparten mensaje" % n)
+			_verificar(variable["error"]["line"] == 2, "error de range se asocia a la línea del for")
 
-	var range_variable_inexistente: Dictionary = executor.compilar_programa("for i in range(pasos):\n    spid.norte()")
-	_verificar(range_variable_inexistente.get("ok", false), "LIMITACIÓN: range(variable) inexistente se acepta actualmente")
-	_verificar(range_variable_inexistente.get("instrucciones", []).size() == 1, "LIMITACIÓN: variable inexistente en range se interpreta como una repetición")
+	var inexistente: Dictionary = await _ejecutar("for i in range(no_existe):\n    spid.norte()")
+	_verificar(not inexistente.get("success", false), "range rechaza variable inexistente")
+	_verificar(comandos_ejecutados.is_empty(), "range inexistente no ejecuta comandos")
+	_verificar(not inexistente.get("errors", []).is_empty(), "range inexistente informa error normal")
+	_verificar(errores_emitidos == inexistente.get("errors", []), "error_detectado conserva el error y línea usados por la interfaz")
+	if not inexistente.get("errors", []).is_empty():
+		_verificar(inexistente["errors"][0]["line"] == 1, "variable inexistente informa la línea del for")
+		_verificar("no_existe" in inexistente["errors"][0]["message"], "error identifica la variable inexistente")
+
+	for n in [1, 2, 50]:
+		var literal: Dictionary = await _ejecutar("for i in range(%d):\n    spid.norte()" % n)
+		_verificar(literal.get("success", false) and comandos_ejecutados.size() == n, "literal %d conserva sus repeticiones" % n)
+		var variable: Dictionary = await _ejecutar("n = %d\nfor i in range(n):\n    spid.norte()" % n)
+		_verificar(variable.get("success", false) and comandos_ejecutados.size() == n, "variable %d ejecuta las repeticiones esperadas" % n)
+		_verificar(variable.get("loop_count", 0) == literal.get("loop_count", 0), "literal y variable conservan loop_count")
+		_verificar(variable.get("loop_iterations", 0) == n, "variable conserva loop_iterations")
+
+	var copia_range: Dictionary = await _ejecutar("a = 3\nb = a\nfor i in range(b):\n    spid.norte()")
+	_verificar(copia_range.get("success", false) and comandos_ejecutados.size() == 3, "range resuelve copia de variable")
+	_verificar(copia_range.get("variables_defined", []) == ["a", "b"], "range conserva las definiciones")
+	_verificar(copia_range.get("variables_used", []) == ["a"], "range conserva la métrica de uso actual, sin contar b")
+
+	# La expansión conserva líneas originales y el modo Paso a Paso.
+	comandos_ejecutados.clear()
+	executor.paso_esperando.connect(_avanzar_paso)
+	var por_pasos: Dictionary = await executor.ejecutar_codigo("n = 2\nfor i in range(n):\n    spid.norte()", _ejecutar_comando, Callable(), true)
+	executor.paso_esperando.disconnect(_avanzar_paso)
+	_verificar(por_pasos.get("success", false) and comandos_ejecutados.size() == 2, "range(variable) funciona Paso a Paso")
+	_verificar(pasos_esperados == [1, 3, 3], "Paso a Paso conserva líneas originales para resaltado")
+
+	comandos_ejecutados.clear()
+	var limite_while: Dictionary = await executor.ejecutar_codigo("while True:\n    spid.norte()", _ejecutar_comando, _siempre_verdadero)
+	_verificar(not limite_while.get("success", false), "while infinito sigue rechazándose por seguridad")
+	_verificar(comandos_ejecutados.size() == 50, "while conserva el límite de 50 iteraciones")
+	_verificar(limite_while.get("loop_iterations", 0) == 50, "while conserva su métrica de iteraciones")
+	_verificar(limite_while.get("loop_count", 0) == 1, "while conserva su métrica de bucles")
 
 	root.get_node("ProgressService").clear_progress()
 	misiones.completed_missions.clear()
@@ -119,13 +161,27 @@ func ejecutar_suite() -> void:
 		push_error("Suite parámetros y variables: %d de %d comprobaciones fallaron." % [fallos, casos])
 		quit(1)
 		return
-	print("OK: %d comprobaciones de parámetros, variables, Camino Largo y caracterización de range(variable)." % casos)
+	print("OK: %d comprobaciones de parámetros, variables, Camino Largo, range y regresiones de ejecución." % casos)
 	quit(0)
 
 
 func _ejecutar(codigo: String) -> Dictionary:
 	comandos_ejecutados.clear()
+	errores_emitidos.clear()
 	return await executor.ejecutar_codigo(codigo, _ejecutar_comando)
+
+
+func _registrar_error(error: Dictionary) -> void:
+	errores_emitidos.append(error.duplicate(true))
+
+
+func _avanzar_paso(numero: int, _contenido: String) -> void:
+	pasos_esperados.append(numero)
+	executor.call_deferred("avanzar_un_paso")
+
+
+func _siempre_verdadero(_condicion: String) -> bool:
+	return true
 
 
 func _ejecutar_comando(comando: String, pasos: int) -> Dictionary:
