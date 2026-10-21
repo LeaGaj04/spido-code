@@ -425,14 +425,9 @@ func get_objetivo_actual() -> String:
 	if objective_id == "ciclo_recoleccion":
 		return (
 			"CICLO DE RECOLECCIÓN (BUCLE FOR)\n" +
-			"Un bucle for repite instrucciones un número exacto de veces: for ciclo in range(N):\n\n" +
-			"for ciclo in range(3):\n" +
-			"    spid.norte()\n" +
-			"    spid.minar()\n" +
-			"    spid.sur()\n" +
-			"    spid.transferir()\n\n" +
-			"Tu desafío: en el nuevo sector 3x3, usa 'for' y 'range()' para recolectar al menos 2 minerales " +
-			"y transferirlos a la nave en la base."
+			"Un bucle for con range() repite instrucciones una cantidad definida de veces.\n\n" +
+			"En el sector 3x3, ejecuta al menos dos iteraciones de FOR y recoge al menos 2 minerales " +
+			"mediante instrucciones de su cuerpo. Después, transfiere al menos 2 minerales a la nave."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -674,28 +669,22 @@ func _evaluar_trabajo_continuo(resultado: Dictionary) -> void:
 	iniciar_cuota_suministro()
 
 func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
-	var comandos: Array = resultado.get("commands_used", [])
-	var bucle_detectado: int = int(resultado.get("loop_count", 0))
-	var iteraciones: int = int(resultado.get("loop_iterations", 0))
-	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var iteraciones: int = int(resultado.get("for_iterations", 0))
+	var recolectados: int = int(resultado.get("for_minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
 
-	var _termina_transfiriendo: bool = false
-	if not comandos.is_empty():
-		_termina_transfiriendo = comandos.back() == "transferir"
-
-	if bucle_detectado < 1 and iteraciones < 1:
+	if iteraciones < 2:
 		objetivo_actualizado.emit(
 			objective_id,
-			"Debes usar la estructura 'for <variable> in range(<N>):' para automatizar la repetición."
+			"Ejecuta al menos dos iteraciones de FOR con range() para practicar la repetición definida."
 		)
 		return
 
 	if recolectados < 2 or transferidos < 2:
 		objetivo_actualizado.emit(
 			objective_id,
-			"Programa terminado. Recogiste %d minerales y transferiste %d. " % [recolectados, transferidos] +
-			"El desafío requiere recoger al menos 2 minerales usando for y transferirlos a la base."
+			"Programa terminado. Recogiste %d minerales dentro de FOR y transferiste %d. " % [recolectados, transferidos] +
+			"Recoge al menos 2 minerales mediante instrucciones dentro de FOR y transfiere al menos 2 a la nave."
 		)
 		return
 

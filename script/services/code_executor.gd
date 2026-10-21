@@ -171,6 +171,8 @@ func ejecutar_codigo(
 				break
 
 			var cumple_condicion: bool = false
+			if instruccion.get("for_iteration_start", false):
+				resultado["for_iterations"] += 1
 			if evaluar_condicion.is_valid():
 				cumple_condicion = await evaluar_condicion.call(instruccion["condition"])
 
@@ -186,6 +188,7 @@ func ejecutar_codigo(
 						break
 					if int(instruccion.get("loop_iteration", 0)) > 0:
 						sub_instruccion["loop_iteration"] = instruccion["loop_iteration"]
+					sub_instruccion["in_for"] = instruccion.get("in_for", false)
 					var res_sub: Dictionary = await _ejecutar_instruccion_simple(
 						sub_instruccion,
 						ejecutar_comando,
@@ -206,6 +209,7 @@ func ejecutar_codigo(
 						break
 					if int(instruccion.get("loop_iteration", 0)) > 0:
 						sub_instruccion["loop_iteration"] = instruccion["loop_iteration"]
+					sub_instruccion["in_for"] = instruccion.get("in_for", false)
 					var res_sub: Dictionary = await _ejecutar_instruccion_simple(
 						sub_instruccion,
 						ejecutar_comando,
@@ -407,6 +411,8 @@ func _ejecutar_instruccion_simple(
 		linea_finalizada.emit(numero_linea, contenido)
 		return {"ok": true}
 
+	if instruccion.get("for_iteration_start", false):
+		resultado["for_iterations"] += 1
 	var resultado_comando: Dictionary = await ejecutar_comando.call(
 		comando,
 		pasos
@@ -444,6 +450,8 @@ func _ejecutar_instruccion_simple(
 		detener_solicitado = true
 	if int(instruccion.get("loop_iteration", 0)) > 0:
 		resultado["loop_minerals_collected"] += recolectados
+	if instruccion.get("in_for", false):
+		resultado["for_minerals_collected"] += recolectados
 	if not resultado_comando.get("ok", false):
 		var error_comando := {
 			"type": resultado_comando.get("error_type", "ejecucion"),
@@ -907,9 +915,11 @@ func compilar_programa(codigo: String) -> Dictionary:
 				)
 
 			for iteracion in range(repeticiones):
-				for instruccion in cuerpo_for:
-					var copia: Dictionary = instruccion.duplicate(true)
+				for indice_cuerpo in range(cuerpo_for.size()):
+					var copia: Dictionary = cuerpo_for[indice_cuerpo].duplicate(true)
 					copia["loop_iteration"] = iteracion + 1
+					copia["in_for"] = true
+					copia["for_iteration_start"] = indice_cuerpo == 0
 					instrucciones.append(copia)
 
 			continue
@@ -1246,6 +1256,9 @@ func _crear_resultado(codigo: String) -> Dictionary:
 		"minerals_collected": 0,
 		"minerals_transferred": 0,
 		"loop_minerals_collected": 0,
+		# Actividad real del FOR; los contadores loop_* también incluyen WHILE.
+		"for_iterations": 0,
+		"for_minerals_collected": 0,
 		"if_evaluations": 0,
 		"if_branch_taken": false,
 		"else_branch_taken": false,
