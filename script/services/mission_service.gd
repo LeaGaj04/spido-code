@@ -356,6 +356,12 @@ func aplicar_progreso(progress: Dictionary) -> void:
 	if objective_id == "camino_largo":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CAMINO_LARGO
 		return
+	if objective_id == "variables" and not objective_completed:
+		estado_actual = EstadoMision.VARIABLES
+		return
+	if objective_id == "retorno_base" and not objective_completed:
+		estado_actual = EstadoMision.RETORNO_BASE
+		return
 	if (
 		objective_id == "recolectar_primer_mineral"
 		and objective_completed
