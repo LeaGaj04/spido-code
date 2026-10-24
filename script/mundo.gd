@@ -57,14 +57,25 @@ func _ready():
 	if interfaz != null:
 		interfaz.aplicar_progreso(progreso)
 
-func _on_veta_lineal_solicitada(indice: int) -> void:
-	generar_veta_lineal(indice)
+func _on_veta_lineal_solicitada(_indice: int) -> void:
+	generar_circuito_for_2x3()
 
 func _on_mineral_minado(celda: Vector3i) -> void:
 	ultima_celda_minada = celda
 	if MissionService != null and MissionService.objective_id == "ciclo_recoleccion":
+		call_deferred("_verificar_regeneracion_circuito_2x3")
 		return
 	spawn_mineral_aleatorio()
+
+func _verificar_regeneracion_circuito_2x3() -> void:
+	var activos: int = 0
+	for mineral in get_tree().get_nodes_in_group("minerales"):
+		var obj := mineral.get_parent() as Node
+		if obj and not obj.is_queued_for_deletion():
+			activos += 1
+	if activos == 0:
+		for casilla in CIRCUITO_FOR_2X3:
+			instanciar_mineral_en_casilla(casilla)
 
 # Reconstruye el mapa desde el tier persistido. No valida costos ni emite
 # efectos de compra, por lo que también se puede usar al restaurar progreso.
@@ -88,14 +99,14 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 
 	grid_map.clear()
 
-	# Sector 3x3: tres columnas y tres filas hacia el norte frente a la base
+	# Sector 3x3: tres columnas y tres filas.
 	if mapa_3x3_desbloqueado:
 		for x in range(
 			CASILLA_INICIAL.x - 1,
 			CASILLA_INICIAL.x + 2
 		):
 			for z in range(
-				CASILLA_INICIAL.z - 3,
+				CASILLA_INICIAL.z - 1,
 				CASILLA_INICIAL.z + 2
 			):
 				var tipo_casilla := (
@@ -170,13 +181,28 @@ func resetear_posicion_spid() -> void:
 		spid.global_position = centro_global
 		spid.rotation = Vector3.ZERO
 
+const CIRCUITO_FOR_2X3: Array[Vector3i] = [
+	Vector3i(0, 0, -1), # Norte
+	Vector3i(1, 0, -1), # Noreste
+	Vector3i(1, 0, 0)   # Este
+]
+
+func generar_circuito_for_2x3() -> void:
+	for mineral in get_tree().get_nodes_in_group("minerales"):
+		var objeto := mineral.get_parent() as Node
+		if objeto and not objeto.is_queued_for_deletion():
+			objeto.queue_free()
+
+	for casilla in CIRCUITO_FOR_2X3:
+		instanciar_mineral_en_casilla(casilla)
+
 func generar_minerales_iniciales():
 	# Si el radio es 0 (solo 1 casilla), solo hacemos aparecer 1 mineral
 	if radio_mapa_desbloqueado == 0:
 		max_minerales = 1
 	
 	if MissionService != null and MissionService.objective_id == "ciclo_recoleccion":
-		generar_veta_lineal(MissionService.vetas_lineales_completadas)
+		generar_circuito_for_2x3()
 		return
 
 	for i in range(max_minerales):
@@ -190,26 +216,6 @@ func instanciar_mineral_en_casilla(casilla: Vector3i) -> void:
 	var nuevo_mineral = mineral_scene.instantiate()
 	add_child(nuevo_mineral)
 	nuevo_mineral.global_position = centro_global + Vector3(0, -0.4, 0.3)
-
-func generar_veta_lineal(indice_veta: int = 0) -> void:
-	for mineral in get_tree().get_nodes_in_group("minerales"):
-		var objeto := mineral.get_parent() as Node
-		if objeto and not objeto.is_queued_for_deletion():
-			objeto.queue_free()
-
-	# Definir 3 vetas lineales continuas hacia el norte (3 minerales consecutivos)
-	var vetas := [
-		# Veta 1: Columna Central directa frente a la nave
-		[Vector3i(0, 0, -1), Vector3i(0, 0, -2), Vector3i(0, 0, -3)],
-		# Veta 2: Columna Este
-		[Vector3i(1, 0, -1), Vector3i(1, 0, -2), Vector3i(1, 0, -3)],
-		# Veta 3: Columna Oeste
-		[Vector3i(-1, 0, -1), Vector3i(-1, 0, -2), Vector3i(-1, 0, -3)]
-	]
-
-	var veta_actual: Array = vetas[indice_veta % vetas.size()]
-	for casilla in veta_actual:
-		instanciar_mineral_en_casilla(casilla)
 
 func spawn_mineral_aleatorio() -> void:
 	var ocupadas: Array[Vector3i] = []

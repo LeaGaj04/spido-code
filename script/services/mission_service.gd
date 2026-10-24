@@ -426,10 +426,12 @@ func get_objetivo_actual() -> String:
 
 	if objective_id == "ciclo_recoleccion":
 		return (
-			"VETAS LINEALES (BUCLE FOR)\n" +
-			"Una veta de 3 minerales continuos se extiende en línea recta hacia el norte.\n\n" +
-			"Veta actual: Lote %d de 3.\n" +
-			"Usa un bucle 'for paso in range(3):' para avanzar y minar los 3 minerales consecutivamente, luego regresa al sur y transfiere la carga a la nave." % (vetas_lineales_completadas + 1)
+			"CIRCUITO DE RECOLECCIÓN (BUCLE FOR)\n" +
+			"Tres depósitos minerales activos en el Sector 2x3: Norte, Noreste y Este.\n\n" +
+			"Usa 'for vuelta in range(3):' para repetir el circuito de recolección:\n" +
+			"• Avanza y mina en cada depósito (norte, este, sur).\n" +
+			"• Regresa al oeste a la nave nodriza al cerrar cada vuelta.\n" +
+			"• Transfiere la carga a la nave al completar las 3 vueltas."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -681,7 +683,7 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 	if codigo.contains("while"):
 		objetivo_actualizado.emit(
 			objective_id,
-			"Has usado un bucle 'while'. Para recolectar una veta lineal con un número exacto de pasos, debes utilizar 'for <variable> in range(N):'."
+			"Has usado un bucle 'while'. Para recorrer el circuito un número exacto de vueltas, debes utilizar 'for <variable> in range(N):'."
 		)
 		return
 
@@ -689,35 +691,20 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 	if not (codigo.contains("for") and (codigo.contains("inrange") or codigo.contains("range("))):
 		objetivo_actualizado.emit(
 			objective_id,
-			"Debes usar la estructura 'for <variable> in range(3):' para recorrer y minar la veta lineal de forma continua."
+			"Debes usar la estructura 'for <variable> in range(3):' para automatizar las vueltas del circuito de recolección."
 		)
 		return
 
-	# 3. Verificar que haya recolectado y transferido al menos la veta de 3 minerales
+	# 3. Verificar que haya recolectado y transferido al menos una vuelta completa (3 minerales)
 	if recolectados < 3 or transferidos < 3:
 		objetivo_actualizado.emit(
 			objective_id,
 			"Programa terminado. Recolectaste %d minerales y transferiste %d. " % [recolectados, transferidos] +
-			"Cada veta lineal contiene 3 minerales. Recorre y transfiere la veta completa usando 'for'."
+			"El circuito contiene 3 depósitos. Completa la ronda usando 'for' y transfiere a la nave."
 		)
 		return
 
-	# Sumar el lote de vetas completado
-	var lotes_en_corrida: int = maxi(1, int(recolectados / 3))
-	vetas_lineales_completadas += lotes_en_corrida
-
-	if vetas_lineales_completadas < 3:
-		veta_lineal_solicitada.emit(vetas_lineales_completadas)
-		objetivo_actualizado.emit(
-			objective_id,
-			"¡Veta %d de 3 asegurada! (%d/3 completadas).\nNueva veta lineal detectada en los sensores. ¡Continúa con el siguiente lote usando for!" % [
-				vetas_lineales_completadas,
-				vetas_lineales_completadas
-			]
-		)
-		return
-
-	# Al completar las 3 vetas requeridas
+	# Al completar la recolección con for
 	objective_completed = true
 	estado_actual = EstadoMision.COMPLETADA
 
@@ -725,7 +712,7 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 		completed_missions.append(objective_id)
 
 	mision_completada.emit(objective_id)
-	print("¡Ciclo de recolección de 3 vetas lineales completado con éxito!")
+	print("¡Misión ciclo_recoleccion completada con éxito usando bucle for en sector 2x3!")
 	iniciar_exploracion_3x3()
 
 	
