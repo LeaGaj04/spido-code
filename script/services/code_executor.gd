@@ -21,6 +21,7 @@ const PALABRAS_RESERVADAS := [
 	"spid", "for", "while", "if", "else", "in", "range",
 	"not", "and", "or", "true", "false", "True", "False"
 ]
+const MAX_FOR_ITER := 50
 
 func _es_identificador_valido(nombre: String) -> bool:
 	var regex := RegEx.new()
@@ -810,7 +811,14 @@ func compilar_programa(codigo: String) -> Dictionary:
 				if variables_compile_env.has(range_var):
 					repeticiones = int(variables_compile_env[range_var])
 				else:
-					repeticiones = 1
+					return _error_de_linea(
+						numero_linea,
+						contenido,
+						"La variable '" + range_var + "' no ha sido definida antes de su uso en range()."
+					)
+				var validacion := _validar_repeticiones_for(repeticiones, contenido, numero_linea)
+				if not validacion["ok"]:
+					return validacion
 
 			var sangria_for := _contar_espacios_sangria(linea_original)
 			var cuerpo_for: Array = []
@@ -1188,6 +1196,10 @@ func _analizar_for(
 			"range_var": range_var
 		}
 
+	return _validar_repeticiones_for(repeticiones, contenido, numero_linea)
+
+
+func _validar_repeticiones_for(repeticiones: int, contenido: String, numero_linea: int) -> Dictionary:
 	if repeticiones <= 0:
 		return _error_de_linea(
 			numero_linea,
@@ -1195,11 +1207,11 @@ func _analizar_for(
 			"range() debe contener un número mayor que cero."
 		)
 
-	if repeticiones > 50:
+	if repeticiones > MAX_FOR_ITER:
 		return _error_de_linea(
 			numero_linea,
 			contenido,
-			"Por seguridad, el bucle no puede superar 50 repeticiones."
+			"Por seguridad, el bucle no puede superar %d repeticiones." % MAX_FOR_ITER
 		)
 
 	return {
