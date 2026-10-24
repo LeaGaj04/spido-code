@@ -4,6 +4,7 @@ signal mision_iniciada(mision_id: String)
 signal objetivo_actualizado(mision_id: String, objetivo: String)
 signal mision_completada(mision_id: String)
 signal conocimiento_desbloqueado(conocimiento_id: String)
+signal veta_lineal_solicitada(indice: int)
 
 enum EstadoMision {
 	SIN_INICIAR,
@@ -34,6 +35,7 @@ var unlocked_knowledge: Array = [
 	"objeto",
 	"metodo"
 ]
+var vetas_lineales_completadas: int = 0
 
 
 func _ready() -> void:
@@ -319,7 +321,7 @@ func aplicar_progreso(progress: Dictionary) -> void:
 
 	if (
 		objective_id == "comprar_mapa_3x3"
-		and (objective_completed or tier_guardado >= 3 or "comprar_mapa_3x3" in completed_missions)
+		and (objective_completed or GestorSintaxis.esta_desbloqueada("for") or "comprar_mapa_3x3" in completed_missions)
 	):
 		iniciar_ciclo_recoleccion()
 		return
@@ -430,15 +432,12 @@ func get_objetivo_actual() -> String:
 
 	if objective_id == "ciclo_recoleccion":
 		return (
-			"CICLO DE RECOLECCIÓN (BUCLE FOR)\n" +
-			"Un bucle for repite instrucciones un número exacto de veces: for ciclo in range(N):\n\n" +
-			"for ciclo in range(3):\n" +
-			"    spid.norte()\n" +
-			"    spid.minar()\n" +
-			"    spid.sur()\n" +
-			"    spid.transferir()\n\n" +
-			"Tu desafío: en el nuevo sector 3x3, usa 'for' y 'range()' para recolectar al menos 2 minerales " +
-			"y transferirlos a la nave en la base."
+			"CIRCUITO DE RECOLECCIÓN (BUCLE FOR)\n" +
+			"Tres depósitos minerales activos en el Sector 2x3: Norte, Noreste y Este.\n\n" +
+			"Usa 'for vuelta in range(3):' para repetir el circuito de recolección:\n" +
+			"• Avanza y mina en cada depósito (norte, este, sur).\n" +
+			"• Regresa al oeste a la nave nodriza al cerrar cada vuelta.\n" +
+			"• Transfiere la carga a la nave al completar las 3 vueltas."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -486,9 +485,9 @@ func get_objetivo_actual() -> String:
 		)
 	if objective_id == "comprar_mapa_3x3":
 		return (
-			"EXPANSIÓN DE SECTOR (SECTOR 3X3)\n" +
-			"Reúne 20 minerales en la nave y adquiere el [ SECTOR 3X3 ] " +
-			"en el Centro de Mejoras para ampliar el terreno e instalar el módulo BUCLE FOR."
+			"ACTUALIZACIÓN DE FIRMWARE (CICLO FOR)\n" +
+			"Reúne 20 minerales en la nave y adquiere el [ CICLO FOR ] " +
+			"en el Centro de Mejoras para instalar el módulo BUCLE FOR en la consola."
 		)
 	if objective_id == "exploracion_3x3":
 		return (
@@ -558,12 +557,12 @@ func evaluar_programa(resultado: Dictionary) -> void:
 		if minerales_nave >= 20:
 			objetivo_actualizado.emit(
 				objective_id,
-				"¡Ya tienes los 20 minerales necesarios! Ve al menú MEJORAS y adquiere el [ SECTOR 3X3 ] para continuar."
+				"¡Ya tienes los 20 minerales necesarios! Ve al menú MEJORAS y adquiere el [ CICLO FOR ] para continuar."
 			)
 		else:
 			objetivo_actualizado.emit(
 				objective_id,
-				"Tienes %d de 20 minerales en la nave. Sigue recolectando y luego adquiere el [ SECTOR 3X3 ] en MEJORAS." % minerales_nave
+				"Tienes %d de 20 minerales en la nave. Sigue recolectando y luego adquiere el [ CICLO FOR ] en MEJORAS." % minerales_nave
 			)
 		return
 
@@ -680,31 +679,38 @@ func _evaluar_trabajo_continuo(resultado: Dictionary) -> void:
 	iniciar_cuota_suministro()
 
 func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var comandos: Array = resultado.get("commands_used", [])
-	var bucle_detectado: int = int(resultado.get("loop_count", 0))
-	var iteraciones: int = int(resultado.get("loop_iterations", 0))
 	var recolectados: int = int(resultado.get("minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var iteraciones: int = int(resultado.get("loop_iterations", 0))
 
-	var _termina_transfiriendo: bool = false
-	if not comandos.is_empty():
-		_termina_transfiriendo = comandos.back() == "transferir"
-
-	if bucle_detectado < 1 and iteraciones < 1:
+	# 1. Prohibir while en esta misión
+	if codigo.contains("while"):
 		objetivo_actualizado.emit(
 			objective_id,
-			"Debes usar la estructura 'for <variable> in range(<N>):' para automatizar la repetición."
+			"Has usado un bucle 'while'. Para recorrer el circuito un número exacto de vueltas, debes utilizar 'for <variable> in range(N):'."
 		)
 		return
 
-	if recolectados < 2 or transferidos < 2:
+	# 2. Exigir for e in range
+	if not (codigo.contains("for") and (codigo.contains("inrange") or codigo.contains("range("))):
 		objetivo_actualizado.emit(
 			objective_id,
-			"Programa terminado. Recogiste %d minerales y transferiste %d. " % [recolectados, transferidos] +
-			"El desafío requiere recoger al menos 2 minerales usando for y transferirlos a la base."
+			"Debes usar la estructura 'for <variable> in range(3):' para automatizar las vueltas del circuito de recolección."
 		)
 		return
 
+	# 3. Verificar que haya recolectado y transferido al menos una vuelta completa (3 minerales)
+	if recolectados < 3 or transferidos < 3:
+		objetivo_actualizado.emit(
+			objective_id,
+			"Programa terminado. Recolectaste %d minerales y transferiste %d. " % [recolectados, transferidos] +
+			"El circuito contiene 3 depósitos. Completa la ronda usando 'for' y transfiere a la nave."
+		)
+		return
+
+	# Al completar la recolección con for
 	objective_completed = true
 	estado_actual = EstadoMision.COMPLETADA
 
@@ -712,7 +718,7 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 		completed_missions.append(objective_id)
 
 	mision_completada.emit(objective_id)
-	print("Ciclo de recolección completado.")
+	print("¡Misión ciclo_recoleccion completada con éxito usando bucle for en sector 2x3!")
 	iniciar_exploracion_3x3()
 
 	
@@ -729,11 +735,13 @@ func iniciar_ciclo_recoleccion() -> void:
 	objective_id = "ciclo_recoleccion"
 	objective_completed = "ciclo_recoleccion" in completed_missions
 	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CICLO_RECOLECCION
+	vetas_lineales_completadas = 0
 
 	desbloquear_modulo_for()
 	mision_iniciada.emit(objective_id)
+	veta_lineal_solicitada.emit(0)
 	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
-	print("Misión iniciada: ciclo_recoleccion")
+	print("Misión iniciada: ciclo_recoleccion con vetas lineales")
 
 func iniciar_trabajo_continuo() -> void:
 	objective_id = "trabajo_continuo"
@@ -1107,9 +1115,8 @@ func _evaluar_ciclo_autonomo(resultado: Dictionary) -> void:
 
 
 func iniciar_mision_comprar_mapa_3x3() -> void:
-	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
 	objective_id = "comprar_mapa_3x3"
-	objective_completed = "comprar_mapa_3x3" in completed_missions or map_tier >= 3
+	objective_completed = "comprar_mapa_3x3" in completed_missions or GestorSintaxis.esta_desbloqueada("for")
 	if objective_completed:
 		iniciar_ciclo_recoleccion()
 		return

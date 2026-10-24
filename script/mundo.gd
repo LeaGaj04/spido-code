@@ -35,6 +35,9 @@ func _ready():
 		else:
 			push_error("Sesión autenticada sin progreso cargado. Se inicia un mundo seguro sin restaurar datos.")
 
+	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "senales_inciertas"]:
+		map_tier = mini(map_tier, 2)
+
 	aplicar_progreso_mapa(map_tier)
 	_posicionar_spid_en_casilla_inicial()
 	_resaltar_casilla_principal()
@@ -42,6 +45,9 @@ func _ready():
 	var spid := grid_map.get_node_or_null("Spid")
 	if spid != null and spid.has_signal("mineral_minado"):
 		spid.mineral_minado.connect(_on_mineral_minado)
+
+	if MissionService != null and MissionService.has_signal("veta_lineal_solicitada"):
+		MissionService.veta_lineal_solicitada.connect(_on_veta_lineal_solicitada)
 
 	if restaurar_progreso:
 		var sintaxis = progreso.get("unlocked_syntax", {})
@@ -54,14 +60,35 @@ func _ready():
 	if interfaz != null:
 		interfaz.aplicar_progreso(progreso)
 
+func _on_veta_lineal_solicitada(_indice: int) -> void:
+	generar_circuito_for_2x3()
+
 func _on_mineral_minado(celda: Vector3i) -> void:
 	ultima_celda_minada = celda
+	if MissionService != null and MissionService.objective_id == "ciclo_recoleccion":
+		call_deferred("_verificar_regeneracion_circuito_2x3")
+		return
 	spawn_mineral_aleatorio()
+
+func _verificar_regeneracion_circuito_2x3() -> void:
+	var activos: int = 0
+	for mineral in get_tree().get_nodes_in_group("minerales"):
+		var obj := mineral.get_parent() as Node
+		if obj and not obj.is_queued_for_deletion():
+			activos += 1
+	if activos == 0:
+		for casilla in CIRCUITO_FOR_2X3:
+			instanciar_mineral_en_casilla(casilla)
 
 # Reconstruye el mapa desde el tier persistido. No valida costos ni emite
 # efectos de compra, por lo que también se puede usar al restaurar progreso.
 func aplicar_progreso_mapa(map_tier: int) -> void:
-	radio_mapa_desbloqueado = maxi(0, map_tier)
+	var tier_seguro := maxi(0, map_tier)
+	# Durante la fase de bucle for y misiones del sector 2x3, el mapa se mantiene en sector 2x3 (tier 2)
+	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "senales_inciertas", "comprar_casillas"]:
+		tier_seguro = mini(tier_seguro, 2)
+
+	radio_mapa_desbloqueado = tier_seguro
 
 	corredor_1x3_desbloqueado = (
 		radio_mapa_desbloqueado >= 1
@@ -162,13 +189,41 @@ func resetear_posicion_spid() -> void:
 		spid.global_position = centro_global
 		spid.rotation = Vector3.ZERO
 
+const CIRCUITO_FOR_2X3: Array[Vector3i] = [
+	Vector3i(0, 0, -1), # Norte
+	Vector3i(1, 0, -1), # Noreste
+	Vector3i(1, 0, 0)   # Este
+]
+
+func generar_circuito_for_2x3() -> void:
+	for mineral in get_tree().get_nodes_in_group("minerales"):
+		var objeto := mineral.get_parent() as Node
+		if objeto and not objeto.is_queued_for_deletion():
+			objeto.queue_free()
+
+	for casilla in CIRCUITO_FOR_2X3:
+		instanciar_mineral_en_casilla(casilla)
+
 func generar_minerales_iniciales():
 	# Si el radio es 0 (solo 1 casilla), solo hacemos aparecer 1 mineral
 	if radio_mapa_desbloqueado == 0:
 		max_minerales = 1
 	
+	if MissionService != null and MissionService.objective_id == "ciclo_recoleccion":
+		generar_circuito_for_2x3()
+		return
+
 	for i in range(max_minerales):
 		spawn_mineral_aleatorio()
+
+func instanciar_mineral_en_casilla(casilla: Vector3i) -> void:
+	if mineral_scene == null:
+		return
+	var centro_local := grid_map.map_to_local(casilla)
+	var centro_global := grid_map.to_global(centro_local)
+	var nuevo_mineral = mineral_scene.instantiate()
+	add_child(nuevo_mineral)
+	nuevo_mineral.global_position = centro_global + Vector3(0, -0.4, 0.3)
 
 func spawn_mineral_aleatorio() -> void:
 	var ocupadas: Array[Vector3i] = []
