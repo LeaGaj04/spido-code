@@ -580,7 +580,7 @@ func actualizar_mejoras_visual() -> void:
 		boton_if.text = "[ IF / ELSE ]\nINSTALADO" if if_on else "[ IF / ELSE ]\nEN SECTOR 2X3"
 	if boton_for != null:
 		boton_for.disabled = true
-		boton_for.text = "[ BUCLE FOR ]\nINSTALADO" if for_on else "[ BUCLE FOR ]\nEN SECTOR 3X3"
+		boton_for.text = "[ BUCLE FOR ]\nINSTALADO" if for_on else "[ BUCLE FOR ]\nEN CICLO FOR"
 
 	var vars_on: bool = (
 		"variable" in MissionService.get_unlocked_knowledge()
@@ -606,9 +606,17 @@ func actualizar_mejoras_visual() -> void:
 			boton_expansion_2.text = "[ +3 CASILLAS ]\nCOMPLETA\nCUOTA DE SUMINISTRO"
 		else:
 			boton_expansion_2.text = "[ +3 CASILLAS ]\n10 MINERALES" if exp1_on else "[ +3 CASILLAS ]\nBLOQUEADO"
+	var ciclo_for_comprado: bool = for_on or ("comprar_mapa_3x3" in MissionService.get_completed_missions())
 	if boton_expansion_3 != null:
-		boton_expansion_3.disabled = not (exp2_on and fase3_completada and not exp3_on)
-		boton_expansion_3.text = "[ SECTOR 3X3 ]\nDESBLOQUEADO" if exp3_on else ("[ SECTOR 3X3 ]\n20 MINERALES" if exp2_on and fase3_completada else "[ SECTOR 3X3 ]\nTRAS MISIÓN IF / ELSE")
+		boton_expansion_3.disabled = not (exp2_on and fase3_completada and not ciclo_for_comprado)
+		if ciclo_for_comprado:
+			boton_expansion_3.text = "[ CICLO FOR ]\nDESBLOQUEADO"
+		elif not exp2_on:
+			boton_expansion_3.text = "[ CICLO FOR ]\nREQUIERE SECTOR 2X3"
+		elif not fase3_completada:
+			boton_expansion_3.text = "[ CICLO FOR ]\nTRAS MISIÓN IF / ELSE"
+		else:
+			boton_expansion_3.text = "[ CICLO FOR ]\n20 MINERALES"
 
 	if boton_mineria != null:
 		boton_mineria.disabled = mineria_rapida_desbloqueada
@@ -628,7 +636,7 @@ func actualizar_mejoras_visual() -> void:
 	if linea_terr_2 != null:
 		linea_terr_2.default_color = Color(0.3, 0.9, 0.5) if exp2_on else Color(0.3, 0.33, 0.38)
 	if linea_terr_3 != null:
-		linea_terr_3.default_color = Color(0.3, 0.9, 0.5) if exp3_on else Color(0.3, 0.33, 0.38)
+		linea_terr_3.default_color = Color(0.3, 0.9, 0.5) if ciclo_for_comprado else Color(0.3, 0.33, 0.38)
 
 	if linea_hard_1 != null:
 		linea_hard_1.default_color = Color(1.0, 0.84, 0.0) if mineria_rapida_desbloqueada else Color(0.3, 0.33, 0.38)
@@ -767,7 +775,7 @@ func _on_button_for_pressed() -> void:
 		transmision_ada.mostrar_mensaje("El módulo Bucle FOR ya está activo en tu consola.", "completado", 4.0)
 		return
 	transmision_ada.mostrar_mensaje(
-		"El Bucle FOR se instala automáticamente al adquirir [ SECTOR 3X3 ] en navegación.",
+		"El Bucle FOR se instala automáticamente al adquirir [ CICLO FOR ] en mejoras.",
 		"objetivo",
 		5.0
 	)
@@ -842,26 +850,27 @@ func _on_button_expansion_2_pressed() -> void:
 
 func _on_button_expansion_3_pressed() -> void:
 	var mundo := get_parent()
-	if mundo == null or mundo.mapa_3x3_desbloqueado or not mundo.casillas_extra_desbloqueadas or not ("senales_inciertas" in MissionService.get_completed_missions()):
+	var ciclo_for_comprado: bool = GestorSintaxis.esta_desbloqueada("for") or ("comprar_mapa_3x3" in MissionService.get_completed_missions())
+	if mundo == null or ciclo_for_comprado or not mundo.casillas_extra_desbloqueadas or not ("senales_inciertas" in MissionService.get_completed_missions()):
 		return
 	if CodeExecutor.ejecutando:
-		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de expandir el mapa.", "error")
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
 		return
 	var costo: int = PRECIOS["mapa_3x3"]
 	if minerales_nave < costo:
 		transmision_ada.mostrar_mensaje("Necesitas %d minerales en la nave. Recolecta y transfiere más minerales antes de comprar." % costo, "error")
 		return
-	if mundo.expandir_mapa_3x3():
-		minerales_nave -= costo
-		actualizar_contadores()
-		MissionService.registrar_compra_mapa_3x3()
-		actualizar_mejoras_visual()
-		_solicitar_guardado_progreso()
-		transmision_ada.mostrar_mensaje(
-			"¡Sector 3x3 expandido! Módulo de barrido BUCLE FOR instalado en la consola.",
-			"completado",
-			6.0
-		)
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_mapa_3x3()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Módulo CICLO FOR instalado en la consola! Ya puedes utilizar for e in range.",
+		"completado",
+		6.0
+	)
 
 
 func _on_button_mineria_pressed() -> void:
@@ -1214,7 +1223,7 @@ func _get_objetivo_panel(mision_id: String) -> String:
 		"senales_inciertas":
 			return "Apariciones impredecibles en el sector 2x3. Recorre las casillas y usa 'if' para comprobar si hay mineral antes de minar."
 		"comprar_mapa_3x3":
-			return "Reúne 20 minerales en la nave y desbloquea el [SECTOR 3X3] en Mejoras para acceder al nuevo territorio."
+			return "Reúne 20 minerales en la nave y desbloquea el [CICLO FOR] en Mejoras para instalar el módulo BUCLE FOR."
 		"ciclo_recoleccion":
 			return "Circuito 2x3: usa 'for vuelta in range(3):' para recorrer los depósitos y transferir a la nave."
 		"exploracion_3x3":

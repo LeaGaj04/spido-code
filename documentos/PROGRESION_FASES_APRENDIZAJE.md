@@ -94,7 +94,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
       spid.sur()
       spid.transferir()
       ```
-* **Transición de salida:** Al completar la extracción condicional y transferencia, se desbloquea el hito de adquirir **[ SECTOR 3X3 ]** (Coste: 20 minerales).
+* **Transición de salida:** Al completar la extracción condicional y transferencia, se desbloquea el hito de adquirir **[ CICLO FOR ]** (Coste: 20 minerales) en Mejoras para instalar el módulo `for` e `in range` en la consola.
 
 ---
 

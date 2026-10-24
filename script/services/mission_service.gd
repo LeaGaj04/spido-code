@@ -321,7 +321,7 @@ func aplicar_progreso(progress: Dictionary) -> void:
 
 	if (
 		objective_id == "comprar_mapa_3x3"
-		and (objective_completed or tier_guardado >= 3 or "comprar_mapa_3x3" in completed_missions)
+		and (objective_completed or GestorSintaxis.esta_desbloqueada("for") or "comprar_mapa_3x3" in completed_missions)
 	):
 		iniciar_ciclo_recoleccion()
 		return
@@ -479,9 +479,9 @@ func get_objetivo_actual() -> String:
 		)
 	if objective_id == "comprar_mapa_3x3":
 		return (
-			"EXPANSIÓN DE SECTOR (SECTOR 3X3)\n" +
-			"Reúne 20 minerales en la nave y adquiere el [ SECTOR 3X3 ] " +
-			"en el Centro de Mejoras para ampliar el terreno e instalar el módulo BUCLE FOR."
+			"ACTUALIZACIÓN DE FIRMWARE (CICLO FOR)\n" +
+			"Reúne 20 minerales en la nave y adquiere el [ CICLO FOR ] " +
+			"en el Centro de Mejoras para instalar el módulo BUCLE FOR en la consola."
 		)
 	if objective_id == "exploracion_3x3":
 		return (
@@ -551,12 +551,12 @@ func evaluar_programa(resultado: Dictionary) -> void:
 		if minerales_nave >= 20:
 			objetivo_actualizado.emit(
 				objective_id,
-				"¡Ya tienes los 20 minerales necesarios! Ve al menú MEJORAS y adquiere el [ SECTOR 3X3 ] para continuar."
+				"¡Ya tienes los 20 minerales necesarios! Ve al menú MEJORAS y adquiere el [ CICLO FOR ] para continuar."
 			)
 		else:
 			objetivo_actualizado.emit(
 				objective_id,
-				"Tienes %d de 20 minerales en la nave. Sigue recolectando y luego adquiere el [ SECTOR 3X3 ] en MEJORAS." % minerales_nave
+				"Tienes %d de 20 minerales en la nave. Sigue recolectando y luego adquiere el [ CICLO FOR ] en MEJORAS." % minerales_nave
 			)
 		return
 
@@ -1109,9 +1109,8 @@ func _evaluar_ciclo_autonomo(resultado: Dictionary) -> void:
 
 
 func iniciar_mision_comprar_mapa_3x3() -> void:
-	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
 	objective_id = "comprar_mapa_3x3"
-	objective_completed = "comprar_mapa_3x3" in completed_missions or map_tier >= 3
+	objective_completed = "comprar_mapa_3x3" in completed_missions or GestorSintaxis.esta_desbloqueada("for")
 	if objective_completed:
 		iniciar_ciclo_recoleccion()
 		return

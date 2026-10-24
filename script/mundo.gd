@@ -35,6 +35,9 @@ func _ready():
 		else:
 			push_error("Sesión autenticada sin progreso cargado. Se inicia un mundo seguro sin restaurar datos.")
 
+	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "senales_inciertas"]:
+		map_tier = mini(map_tier, 2)
+
 	aplicar_progreso_mapa(map_tier)
 	_posicionar_spid_en_casilla_inicial()
 	_resaltar_casilla_principal()
@@ -80,7 +83,12 @@ func _verificar_regeneracion_circuito_2x3() -> void:
 # Reconstruye el mapa desde el tier persistido. No valida costos ni emite
 # efectos de compra, por lo que también se puede usar al restaurar progreso.
 func aplicar_progreso_mapa(map_tier: int) -> void:
-	radio_mapa_desbloqueado = maxi(0, map_tier)
+	var tier_seguro := maxi(0, map_tier)
+	# Durante la fase de bucle for y misiones del sector 2x3, el mapa se mantiene en sector 2x3 (tier 2)
+	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "senales_inciertas", "comprar_casillas"]:
+		tier_seguro = mini(tier_seguro, 2)
+
+	radio_mapa_desbloqueado = tier_seguro
 
 	corredor_1x3_desbloqueado = (
 		radio_mapa_desbloqueado >= 1
