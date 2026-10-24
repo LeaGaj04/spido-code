@@ -1046,10 +1046,17 @@ func _on_mision_completada(mision_id: String) -> void:
 			var msg_for := (
 				"¡Circuito de recolección completado con éxito!\n" +
 				"Has dominado el uso de range() y el bucle for en el sector 2x3.\n" +
-				"Conocimiento desbloqueado: BUCLE FOR.\n" +
-				"Próximo paso: Adquiere el [ SECTOR 3X3 ] en Mejoras para acceder al asteroide profundo."
+				"Nueva misión: EL ROVER AUTÓNOMO (Fase 4.5).\n" +
+				"Enlaza tu circuito en 'while True:' con 'if spid.hay_mineral():' para una operación 100% desatendida."
 			)
 			transmision_ada.mostrar_mensaje(msg_for, "completado", 15.0)
+		"patrulla_autonoma":
+			var msg_auto := (
+				"¡Protocolo autónomo verificado! Has creado tu primer Rover 100% Desatendido.\n" +
+				"Spid ahora opera continuamente combinando bucles while, for y sensores condicionales.\n" +
+				"¡Fase 4.5 completada con honores!"
+			)
+			transmision_ada.mostrar_mensaje(msg_auto, "completado", 15.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
 				"¡Módulo Condicional IF instalado!\n" +
@@ -1226,6 +1233,8 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Reúne 20 minerales en la nave y desbloquea el [CICLO FOR] en Mejoras para instalar el módulo BUCLE FOR."
 		"ciclo_recoleccion":
 			return "Circuito 2x3: usa 'for vuelta in range(3):' para recorrer los depósitos y transferir a la nave."
+		"patrulla_autonoma":
+			return "Operación continua: combina 'while True:', 'for' e 'if spid.hay_mineral():' para una patrulla 100% desatendida."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

@@ -24,6 +24,7 @@ enum EstadoMision {
 	CICLO_AUTONOMO,
 	COMPRAR_MAPA_3X3,
 	EXPLORACION_3X3,
+	PATRULLA_AUTONOMA,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -103,6 +104,10 @@ func preparar_mision_expansion() -> void:
 		return
 
 	if objective_id == "ciclo_recoleccion":
+		iniciar_patrulla_autonoma()
+		return
+
+	if objective_id == "patrulla_autonoma":
 		iniciar_exploracion_3x3()
 		return
 
@@ -333,10 +338,20 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "ciclo_recoleccion" and objective_completed)
 		or (objective_id == "ciclo_recoleccion" and "ciclo_recoleccion" in completed_missions)
 	):
-		iniciar_exploracion_3x3()
+		iniciar_patrulla_autonoma()
 		return
 	if objective_id == "ciclo_recoleccion":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CICLO_RECOLECCION
+		return
+
+	if (
+		(objective_id == "patrulla_autonoma" and objective_completed)
+		or (objective_id == "patrulla_autonoma" and "patrulla_autonoma" in completed_missions)
+	):
+		iniciar_exploracion_3x3()
+		return
+	if objective_id == "patrulla_autonoma":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_AUTONOMA
 		return
 
 	if (
@@ -438,6 +453,15 @@ func get_objetivo_actual() -> String:
 			"• Avanza y mina en cada depósito (norte, este, sur).\n" +
 			"• Regresa al oeste a la nave nodriza al cerrar cada vuelta.\n" +
 			"• Transfiere la carga a la nave al completar las 3 vueltas."
+		)
+
+	if objective_id == "patrulla_autonoma":
+		return (
+			"EL ROVER AUTÓNOMO (WHILE + FOR + IF)\n" +
+			"Es momento de crear tu primer sistema desatendido. Enlaza tu circuito de patrulla " +
+			"dentro de un bucle 'while True:' para operar continuamente.\n\n" +
+			"Para evitar fallas en casillas vacías, verifica cada punto usando 'if spid.hay_mineral():' " +
+			"antes de minar. Cada ronda de patrulla, Spid pasará por la base a transferir y continuará su labor."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -605,6 +629,10 @@ func evaluar_programa(resultado: Dictionary) -> void:
 		_evaluar_ciclo_recoleccion(resultado)
 		return
 
+	if objective_id == "patrulla_autonoma":
+		_evaluar_patrulla_autonoma(resultado)
+		return
+
 	if objective_id != "ruta_calibracion":
 		return
 
@@ -719,7 +747,65 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 
 	mision_completada.emit(objective_id)
 	print("¡Misión ciclo_recoleccion completada con éxito usando bucle for en sector 2x3!")
-	iniciar_exploracion_3x3()
+	iniciar_patrulla_autonoma()
+
+
+func iniciar_patrulla_autonoma() -> void:
+	objective_id = "patrulla_autonoma"
+	objective_completed = "patrulla_autonoma" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_AUTONOMA
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	veta_lineal_solicitada.emit(1)
+	print("Misión iniciada: patrulla_autonoma")
+
+
+func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var if_evaluations: int = int(resultado.get("if_evaluations", 0))
+
+	# 1. Requiere bucle while para operación continua
+	if not codigo.contains("while"):
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para una operación desatendida y continua, debes envolver la rutina en un bucle 'while True:'."
+		)
+		return
+
+	# 2. Requiere bucle for in range dentro de la rutina
+	if not (codigo.contains("for") and (codigo.contains("inrange") or codigo.contains("range("))):
+		objetivo_actualizado.emit(
+			objective_id,
+			"Debes organizar las vueltas de la patrulla utilizando un bucle 'for i in range(2):' dentro del 'while'."
+		)
+		return
+
+	# 3. Requiere sensor condicional if spid.hay_mineral():
+	if not codigo.contains("if") or (not codigo.contains("hay_mineral") and if_evaluations == 0):
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para evitar errores en casillas vacías, debes consultar 'if spid.hay_mineral():' antes de ejecutar 'spid.minar()'."
+		)
+		return
+
+	# 4. Requiere haber recolectado y transferido minerales de forma autónoma
+	if recolectados < 2 or transferidos < 2:
+		objetivo_actualizado.emit(
+			objective_id,
+			"Spid ejecutó la patrulla pero debe recolectar y transferir al menos 2 minerales a la nave para validar el ciclo autónomo."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	mision_completada.emit(objective_id)
+	print("¡Misión patrulla_autonoma completada con éxito!")
 
 	
 func desbloquear_modulo_for() -> void:

@@ -35,7 +35,7 @@ func _ready():
 		else:
 			push_error("Sesión autenticada sin progreso cargado. Se inicia un mundo seguro sin restaurar datos.")
 
-	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "senales_inciertas"]:
+	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "patrulla_autonoma", "senales_inciertas"]:
 		map_tier = mini(map_tier, 2)
 
 	aplicar_progreso_mapa(map_tier)
@@ -65,7 +65,7 @@ func _on_veta_lineal_solicitada(_indice: int) -> void:
 
 func _on_mineral_minado(celda: Vector3i) -> void:
 	ultima_celda_minada = celda
-	if MissionService != null and MissionService.objective_id == "ciclo_recoleccion":
+	if MissionService != null and MissionService.objective_id in ["ciclo_recoleccion", "patrulla_autonoma"]:
 		call_deferred("_verificar_regeneracion_circuito_2x3")
 		return
 	spawn_mineral_aleatorio()
@@ -85,7 +85,7 @@ func _verificar_regeneracion_circuito_2x3() -> void:
 func aplicar_progreso_mapa(map_tier: int) -> void:
 	var tier_seguro := maxi(0, map_tier)
 	# Durante la fase de bucle for y misiones del sector 2x3, el mapa se mantiene en sector 2x3 (tier 2)
-	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "senales_inciertas", "comprar_casillas"]:
+	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "patrulla_autonoma", "senales_inciertas", "comprar_casillas"]:
 		tier_seguro = mini(tier_seguro, 2)
 
 	radio_mapa_desbloqueado = tier_seguro
@@ -209,7 +209,7 @@ func generar_minerales_iniciales():
 	if radio_mapa_desbloqueado == 0:
 		max_minerales = 1
 	
-	if MissionService != null and MissionService.objective_id == "ciclo_recoleccion":
+	if MissionService != null and MissionService.objective_id in ["ciclo_recoleccion", "patrulla_autonoma"]:
 		generar_circuito_for_2x3()
 		return
 
