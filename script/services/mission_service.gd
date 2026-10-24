@@ -427,10 +427,9 @@ func get_objetivo_actual() -> String:
 	if objective_id == "ciclo_recoleccion":
 		return (
 			"VETAS LINEALES (BUCLE FOR)\n" +
-			"Un bucle 'for' es la herramienta ideal para recorrer y minar una veta continua con un número exacto de pasos.\n\n" +
-			"Sintaxis: for paso in range(3):\n" +
+			"Una veta de 3 minerales continuos se extiende en línea recta hacia el norte.\n\n" +
 			"Veta actual: Lote %d de 3.\n" +
-			"Tu desafío: Posiciona al Spid al inicio de la veta lineal, extrae las 3 muestras con 'for paso in range(3):' y transfiérelas a la nave. Completa al menos 3 vetas sucesivas." % (vetas_lineales_completadas + 1)
+			"Usa un bucle 'for paso in range(3):' para avanzar y minar los 3 minerales consecutivamente, luego regresa al sur y transfiere la carga a la nave." % (vetas_lineales_completadas + 1)
 		)
 
 	if objective_id == "ruta_calibracion":

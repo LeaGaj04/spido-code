@@ -88,14 +88,14 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 
 	grid_map.clear()
 
-	# Sector 3x3: tres columnas y tres filas.
+	# Sector 3x3: tres columnas y tres filas hacia el norte frente a la base
 	if mapa_3x3_desbloqueado:
 		for x in range(
 			CASILLA_INICIAL.x - 1,
 			CASILLA_INICIAL.x + 2
 		):
 			for z in range(
-				CASILLA_INICIAL.z - 1,
+				CASILLA_INICIAL.z - 3,
 				CASILLA_INICIAL.z + 2
 			):
 				var tipo_casilla := (
@@ -197,14 +197,14 @@ func generar_veta_lineal(indice_veta: int = 0) -> void:
 		if objeto and not objeto.is_queued_for_deletion():
 			objeto.queue_free()
 
-	# Definir 3 vetas lineales sucesivas en los lados del Sector 3x3
+	# Definir 3 vetas lineales continuas hacia el norte (3 minerales consecutivos)
 	var vetas := [
-		# Veta 1: Fila Norte (Oeste a Este)
-		[Vector3i(-1, 0, -1), Vector3i(0, 0, -1), Vector3i(1, 0, -1)],
-		# Veta 2: Columna Este (Norte a Sur)
-		[Vector3i(1, 0, -1), Vector3i(1, 0, 0), Vector3i(1, 0, 1)],
-		# Veta 3: Fila Sur (Este a Oeste)
-		[Vector3i(1, 0, 1), Vector3i(0, 0, 1), Vector3i(-1, 0, 1)]
+		# Veta 1: Columna Central directa frente a la nave
+		[Vector3i(0, 0, -1), Vector3i(0, 0, -2), Vector3i(0, 0, -3)],
+		# Veta 2: Columna Este
+		[Vector3i(1, 0, -1), Vector3i(1, 0, -2), Vector3i(1, 0, -3)],
+		# Veta 3: Columna Oeste
+		[Vector3i(-1, 0, -1), Vector3i(-1, 0, -2), Vector3i(-1, 0, -3)]
 	]
 
 	var veta_actual: Array = vetas[indice_veta % vetas.size()]

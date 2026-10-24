@@ -1216,7 +1216,7 @@ func _get_objetivo_panel(mision_id: String) -> String:
 		"comprar_mapa_3x3":
 			return "Reúne 20 minerales en la nave y desbloquea el [SECTOR 3X3] en Mejoras para acceder al nuevo territorio."
 		"ciclo_recoleccion":
-			return "Vetas lineales detectadas. Usa 'for paso in range(3):' para minar y transferir las 3 vetas sucesivas."
+			return "Veta lineal al norte: usa 'for paso in range(3):' para avanzar, minar y regresar a transferir."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":
