@@ -11,7 +11,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **1** | **Secuencia Lineal** | 1x1 (Base) $\rightarrow$ Corredor 1x3 | Comandos básicos (`norte`, `sur`, `este`, `oeste`, `minar`, `transferir`) | `recolectar_primer_mineral`<br>`ruta_calibracion` | **100%** |
 | **2** | **Bucle `while`** | Corredor 1x3 (1 mineral) | `while`, comparación numérica (`<`, `<=`, `>`, `>=`, `==`) | `trabajo_continuo` (`while True`)<br>`cuota_suministro` (`while < 10`) | **100%** |
 | **3** | **Condicionales `if / else`** | Sector 2x3 (10 minerales) | `if`, `else`, sensor `spid.hay_mineral()` | `senales_inciertas` (Patrulla y Plan B)<br>`comprar_mapa_3x3` | **100%** |
-| **4** | **Bucle `for`** | Sector 3x3 (20 minerales) | `for`, `in range(N)` | `ciclo_recoleccion`<br>`exploracion_3x3` | **Planificado (70%)** |
+| **4** | **Bucle `for`** | Sector 3x3 (20 minerales) | `for`, `in range(N)` | `ciclo_recoleccion`<br>`exploracion_3x3` | **100%** |
 | **5** | **Parámetros y Variables** | Sector 3x3 | Argumentos numéricos `spid.norte(2)`, variables `pasos = 2` | `camino_largo`<br>`variables` | **Planificado (60%)** |
 | **6** | **Listas y Colecciones** | Sector 3x3 / Terreno abierto | Listas `rutas = ["norte", "este"]`, indexación | *Por definir* | **Pendiente** |
 | **7** | **Funciones (`def`)** | Sector ampliado | `def patrullar():`, `return` | *Por definir* | **Pendiente** |
@@ -98,15 +98,19 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 
 ---
 
-### Fase 4: Bucle `for` (Estructurada - 70%)
-* **Objetivo:** Aprender repetición acotada y barridos con número determinado de iteraciones usando `for ciclo in range(N):`.
-* **Terreno:** Sector 3x3 (Cuadrante ampliado de 9 casillas con 3 depósitos simultáneos).
+### Fase 4: Bucle `for` (100% Completada)
+* **Objetivo:** Aprender repetición acotada y exacta usando `for paso in range(N):` en situaciones con número conocido de pasos o muestras.
+* **Terreno:** Sector 3x3 (Cuadrante ampliado de 9 casillas).
 * **Desbloqueo orgánico:** Al comprar **[ SECTOR 3X3 ]**, se instala automáticamente el módulo **`for` e `in range`**.
+* **Mecánica de Vetas Lineales:**
+  - Para evitar que `spid.minar()` falle en casillas vacías por spawns aleatorios, la misión genera 3 minerales alineados en fila o columna en el mapa.
+  - La misión exige recolectar al menos 3 vetas sucesivas (9 minerales en total) utilizando obligatoriamente `for` con `in range(3)`.
+  - Se prohíbe el uso de `while` con feedback explicativo de A.D.A.
 * **Misiones:**
   1. `ciclo_recoleccion`:
-     - Repetición acotada con `for ciclo in range(3):` para extraer al menos 2 minerales.
+     - Extracción secuencial de 3 vetas lineales continuas usando `for paso in range(3):`.
   2. `exploracion_3x3`:
-     - Barrido matricial combinando `for` con `if spid.hay_mineral():` para limpiar el cuadrante.
+     - Barrido matricial combinando bucles `for` con sensores condicionales `if spid.hay_mineral():` para limpiar el cuadrante.
 
 ---
 
@@ -133,6 +137,8 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
    - El servicio de misiones consulta directamente el contador en vivo de la nave (`interfaz.minerales_nave`) evitando desincronizaciones de caché con Supabase o partidas de invitados.
 5. **Ejecución completa de bucles `for` en `range(N)` (06/10/2026):**
    - Se eliminó `ciclo_recoleccion` del auto-corte prematuro tras 1 mineral transferido en `code_executor.gd`. Los bucles `for` deben ejecutar siempre la totalidad de las iteraciones fijadas por el estudiante en `range(N)` para cumplir con el requisito de 2 minerales recolectados y transferidos.
+6. **Vetas lineales en bucle `for` (24/10/2026):**
+   - Para evitar detenciones por minar en casillas vacías y garantizar la asimilación del bucle determinado, en `ciclo_recoleccion` se generan vetas continuas de 3 minerales en fila o columna a lo largo del Sector 3x3. El desafío exige completar 3 vetas sucesivas usando `for ... in range(3):` y prohíbe explícitamente el uso de `while`.
 
 ---
 

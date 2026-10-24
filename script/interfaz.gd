@@ -1035,14 +1035,11 @@ func _on_mision_completada(mision_id: String) -> void:
 			)
 		"ciclo_recoleccion":
 			var msg_for := (
-				"¡Recolección completada con éxito!\n" +
-				"Has dominado el uso de range() y el bucle for en el sector 2x3.\n" +
-				"Conocimiento desbloqueado: BUCLE FOR.\n"
+				"¡Extracción de las 3 vetas lineales completada con éxito!\n" +
+				"Has dominado el bucle for con range() en el Sector 3x3.\n" +
+				"Conocimiento desbloqueado: BUCLE FOR.\n" +
+				"Siguiente desafío: Combina bucles for con sensores if en la misión BARRIDO DE CUADRANTE."
 			)
-			if GestorSintaxis.esta_desbloqueada("if"):
-				msg_for += "Como ya adquiriste el Condicional IF, ¡se activa la misión SEÑALES INCIERTAS!"
-			else:
-				msg_for += "Próximo paso: Adquiere el [ CONDICIONAL IF ] en Mejoras."
 			transmision_ada.mostrar_mensaje(msg_for, "completado", 15.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
@@ -1219,7 +1216,7 @@ func _get_objetivo_panel(mision_id: String) -> String:
 		"comprar_mapa_3x3":
 			return "Reúne 20 minerales en la nave y desbloquea el [SECTOR 3X3] en Mejoras para acceder al nuevo territorio."
 		"ciclo_recoleccion":
-			return "Optimiza la faena: utiliza un bucle 'for' con range() para repetir una cantidad exacta de ciclos de minado."
+			return "Vetas lineales detectadas. Usa 'for paso in range(3):' para minar y transferir las 3 vetas sucesivas."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

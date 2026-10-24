@@ -4,6 +4,7 @@ signal mision_iniciada(mision_id: String)
 signal objetivo_actualizado(mision_id: String, objetivo: String)
 signal mision_completada(mision_id: String)
 signal conocimiento_desbloqueado(conocimiento_id: String)
+signal veta_lineal_solicitada(indice: int)
 
 enum EstadoMision {
 	SIN_INICIAR,
@@ -34,6 +35,7 @@ var unlocked_knowledge: Array = [
 	"objeto",
 	"metodo"
 ]
+var vetas_lineales_completadas: int = 0
 
 
 func _ready() -> void:
@@ -424,15 +426,11 @@ func get_objetivo_actual() -> String:
 
 	if objective_id == "ciclo_recoleccion":
 		return (
-			"CICLO DE RECOLECCIÓN (BUCLE FOR)\n" +
-			"Un bucle for repite instrucciones un número exacto de veces: for ciclo in range(N):\n\n" +
-			"for ciclo in range(3):\n" +
-			"    spid.norte()\n" +
-			"    spid.minar()\n" +
-			"    spid.sur()\n" +
-			"    spid.transferir()\n\n" +
-			"Tu desafío: en el nuevo sector 3x3, usa 'for' y 'range()' para recolectar al menos 2 minerales " +
-			"y transferirlos a la nave en la base."
+			"VETAS LINEALES (BUCLE FOR)\n" +
+			"Un bucle 'for' es la herramienta ideal para recorrer y minar una veta continua con un número exacto de pasos.\n\n" +
+			"Sintaxis: for paso in range(3):\n" +
+			"Veta actual: Lote %d de 3.\n" +
+			"Tu desafío: Posiciona al Spid al inicio de la veta lineal, extrae las 3 muestras con 'for paso in range(3):' y transfiérelas a la nave. Completa al menos 3 vetas sucesivas." % (vetas_lineales_completadas + 1)
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -674,31 +672,53 @@ func _evaluar_trabajo_continuo(resultado: Dictionary) -> void:
 	iniciar_cuota_suministro()
 
 func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var comandos: Array = resultado.get("commands_used", [])
-	var bucle_detectado: int = int(resultado.get("loop_count", 0))
-	var iteraciones: int = int(resultado.get("loop_iterations", 0))
 	var recolectados: int = int(resultado.get("minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var iteraciones: int = int(resultado.get("loop_iterations", 0))
 
-	var _termina_transfiriendo: bool = false
-	if not comandos.is_empty():
-		_termina_transfiriendo = comandos.back() == "transferir"
-
-	if bucle_detectado < 1 and iteraciones < 1:
+	# 1. Prohibir while en esta misión
+	if codigo.contains("while"):
 		objetivo_actualizado.emit(
 			objective_id,
-			"Debes usar la estructura 'for <variable> in range(<N>):' para automatizar la repetición."
+			"Has usado un bucle 'while'. Para recolectar una veta lineal con un número exacto de pasos, debes utilizar 'for <variable> in range(N):'."
 		)
 		return
 
-	if recolectados < 2 or transferidos < 2:
+	# 2. Exigir for e in range
+	if not (codigo.contains("for") and (codigo.contains("inrange") or codigo.contains("range("))):
 		objetivo_actualizado.emit(
 			objective_id,
-			"Programa terminado. Recogiste %d minerales y transferiste %d. " % [recolectados, transferidos] +
-			"El desafío requiere recoger al menos 2 minerales usando for y transferirlos a la base."
+			"Debes usar la estructura 'for <variable> in range(3):' para recorrer y minar la veta lineal de forma continua."
 		)
 		return
 
+	# 3. Verificar que haya recolectado y transferido al menos la veta de 3 minerales
+	if recolectados < 3 or transferidos < 3:
+		objetivo_actualizado.emit(
+			objective_id,
+			"Programa terminado. Recolectaste %d minerales y transferiste %d. " % [recolectados, transferidos] +
+			"Cada veta lineal contiene 3 minerales. Recorre y transfiere la veta completa usando 'for'."
+		)
+		return
+
+	# Sumar el lote de vetas completado
+	var lotes_en_corrida: int = maxi(1, int(recolectados / 3))
+	vetas_lineales_completadas += lotes_en_corrida
+
+	if vetas_lineales_completadas < 3:
+		veta_lineal_solicitada.emit(vetas_lineales_completadas)
+		objetivo_actualizado.emit(
+			objective_id,
+			"¡Veta %d de 3 asegurada! (%d/3 completadas).\nNueva veta lineal detectada en los sensores. ¡Continúa con el siguiente lote usando for!" % [
+				vetas_lineales_completadas,
+				vetas_lineales_completadas
+			]
+		)
+		return
+
+	# Al completar las 3 vetas requeridas
 	objective_completed = true
 	estado_actual = EstadoMision.COMPLETADA
 
@@ -706,7 +726,7 @@ func _evaluar_ciclo_recoleccion(resultado: Dictionary) -> void:
 		completed_missions.append(objective_id)
 
 	mision_completada.emit(objective_id)
-	print("Ciclo de recolección completado.")
+	print("¡Ciclo de recolección de 3 vetas lineales completado con éxito!")
 	iniciar_exploracion_3x3()
 
 	
@@ -723,11 +743,13 @@ func iniciar_ciclo_recoleccion() -> void:
 	objective_id = "ciclo_recoleccion"
 	objective_completed = "ciclo_recoleccion" in completed_missions
 	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CICLO_RECOLECCION
+	vetas_lineales_completadas = 0
 
 	desbloquear_modulo_for()
 	mision_iniciada.emit(objective_id)
+	veta_lineal_solicitada.emit(0)
 	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
-	print("Misión iniciada: ciclo_recoleccion")
+	print("Misión iniciada: ciclo_recoleccion con vetas lineales")
 
 func iniciar_trabajo_continuo() -> void:
 	objective_id = "trabajo_continuo"
