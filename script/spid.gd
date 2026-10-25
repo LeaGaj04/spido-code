@@ -155,9 +155,11 @@ func tiene_espacio() -> bool:
 	return true
 
 func en_base() -> bool:
-	var mundo := get_parent()
-	if mundo != null and mundo.has_method("spid_esta_en_casilla_transferencia"):
-		return mundo.spid_esta_en_casilla_transferencia(self)
+	var nodo = get_parent()
+	while nodo != null and not nodo.has_method("spid_esta_en_casilla_transferencia"):
+		nodo = nodo.get_parent()
+	if nodo != null:
+		return nodo.spid_esta_en_casilla_transferencia(self)
 	return false
 
 func minerales_en_nave() -> int:
@@ -173,11 +175,13 @@ func minerales_en_rover() -> int:
 	return 0
 
 func tamano_mundo() -> int:
-	var mundo := get_parent()
-	if mundo == null:
-		mundo = get_tree().current_scene
-	if mundo != null and mundo.has_method("get_map_tier"):
-		var tier: int = mundo.get_map_tier()
+	var nodo = get_parent()
+	while nodo != null and not nodo.has_method("get_map_tier"):
+		nodo = nodo.get_parent()
+	if nodo == null and get_tree() != null and get_tree().current_scene != null:
+		nodo = get_tree().current_scene
+	if nodo != null and nodo.has_method("get_map_tier"):
+		var tier: int = nodo.get_map_tier()
 		if tier >= 3:
 			return 3
 		elif tier >= 2:

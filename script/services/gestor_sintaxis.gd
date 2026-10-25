@@ -10,9 +10,10 @@ var sintaxis_desbloqueada: Dictionary = {
 	"if": false,
 	"else": false,
 	"in range": false,
+	"tamano_mundo": false,
 }
 
-const CLAVES_CONOCIDAS := ["for", "while", "if", "else", "in range"]
+const CLAVES_CONOCIDAS := ["for", "while", "if", "else", "in range", "tamano_mundo"]
 
 
 # Restaura únicamente las mejoras de sintaxis que conoce el juego. Las claves

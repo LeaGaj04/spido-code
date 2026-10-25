@@ -27,6 +27,8 @@ enum EstadoMision {
 	PATRULLA_AUTONOMA,
 	COMPRAR_SECTOR_3X3,
 	CALIBRACION_VARIABLES,
+	COMPRAR_TELEMETRIA,
+	TELEMETRIA_DINAMICA,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -118,7 +120,15 @@ func preparar_mision_expansion() -> void:
 		return
 
 	if objective_id == "calibracion_variables":
-		# Siguiente mision Fase 5.5
+		iniciar_mision_comprar_telemetria()
+		return
+
+	if objective_id == "comprar_telemetria":
+		iniciar_telemetria_dinamica()
+		return
+
+	if objective_id == "telemetria_dinamica":
+		# Siguiente mision Fase 6
 		return
 
 	if objective_id == "exploracion_3x3":
@@ -378,10 +388,31 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "calibracion_variables" and objective_completed)
 		or (objective_id == "calibracion_variables" and "calibracion_variables" in completed_missions)
 	):
-		estado_actual = EstadoMision.COMPLETADA
+		iniciar_mision_comprar_telemetria()
 		return
 	if objective_id == "calibracion_variables":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CALIBRACION_VARIABLES
+		return
+
+	if (
+		(objective_id == "comprar_telemetria" and objective_completed)
+		or (objective_id == "comprar_telemetria" and "comprar_telemetria" in completed_missions)
+		or GestorSintaxis.esta_desbloqueada("tamano_mundo")
+	):
+		iniciar_telemetria_dinamica()
+		return
+	if objective_id == "comprar_telemetria":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_TELEMETRIA
+		return
+
+	if (
+		(objective_id == "telemetria_dinamica" and objective_completed)
+		or (objective_id == "telemetria_dinamica" and "telemetria_dinamica" in completed_missions)
+	):
+		estado_actual = EstadoMision.COMPLETADA
+		return
+	if objective_id == "telemetria_dinamica":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.TELEMETRIA_DINAMICA
 		return
 
 	if (
@@ -514,6 +545,29 @@ func get_objetivo_actual() -> String:
 			"    spid.sur(pasos)\n\n" +
 			"spid.transferir()\n\n" +
 			"Tu desafío: parametriza la distancia y las repeticiones con variables para minar 2 minerales del depósito norte y transferirlos a la nave."
+		)
+
+	if objective_id == "comprar_telemetria":
+		return (
+			"EXPANSIÓN DE SENSORES (TELEMETRÍA DINÁMICA)\n" +
+			"¡Calibración de variables completada! Reúne 10 minerales en la nave nodriza y adquiere " +
+			"[ TELEMETRÍA DINÁMICA ] en el Centro de Mejoras para habilitar el sensor spid.tamano_mundo()."
+		)
+
+	if objective_id == "telemetria_dinamica":
+		return (
+			"TELEMETRÍA DINÁMICA DE SENSORES (tamano_mundo)\n" +
+			"Obtén la dimensión del sector en tiempo real con 'spid.tamano_mundo()':\n\n" +
+			"limite = spid.tamano_mundo()\n" +
+			"vueltas = 3\n\n" +
+			"while True:\n" +
+			"    for i in range(vueltas):\n" +
+			"        spid.norte(limite - 1)\n" +
+			"        if spid.hay_mineral():\n" +
+			"            spid.minar()\n" +
+			"        spid.sur(limite - 1)\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: parametriza la distancia con 'limite - 1' y ejecuta la patrulla continua hasta transferir al menos 3 minerales a la nave."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -656,6 +710,20 @@ func evaluar_programa(resultado: Dictionary) -> void:
 			)
 		return
 
+	if objective_id == "comprar_telemetria":
+		var minerales_nave: int = _obtener_minerales_nave()
+		if minerales_nave >= 10:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes los 10 minerales necesarios! Ve al menú MEJORAS y adquiere [ TELEMETRÍA DINÁMICA ] para continuar."
+			)
+		else:
+			objetivo_actualizado.emit(
+				objective_id,
+				"Tienes %d de 10 minerales en la nave. Sigue recolectando y luego adquiere [ TELEMETRÍA DINÁMICA ] en MEJORAS." % minerales_nave
+			)
+		return
+
 	if objective_id == "ciclo_autonomo":
 		_evaluar_ciclo_autonomo(resultado)
 		return
@@ -701,6 +769,10 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "calibracion_variables":
 		_evaluar_calibracion_variables(resultado)
+		return
+
+	if objective_id == "telemetria_dinamica":
+		_evaluar_telemetria_dinamica(resultado)
 		return
 
 	if objective_id != "ruta_calibracion":
@@ -970,6 +1042,108 @@ func _evaluar_calibracion_variables(resultado: Dictionary) -> void:
 	desbloquear_conocimiento("parametro")
 	mision_completada.emit(objective_id)
 	print("¡Misión calibracion_variables completada con éxito!")
+	iniciar_mision_comprar_telemetria()
+
+
+func iniciar_mision_comprar_telemetria() -> void:
+	objective_id = "comprar_telemetria"
+	objective_completed = "comprar_telemetria" in completed_missions or GestorSintaxis.esta_desbloqueada("tamano_mundo")
+	if objective_completed:
+		iniciar_telemetria_dinamica()
+		return
+	estado_actual = EstadoMision.COMPRAR_TELEMETRIA
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: comprar_telemetria")
+
+
+func registrar_compra_telemetria() -> void:
+	if "comprar_telemetria" not in completed_missions:
+		completed_missions.append("comprar_telemetria")
+	GestorSintaxis.desbloquear_sintaxis("tamano_mundo")
+	desbloquear_conocimiento("telemetria")
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+	mision_completada.emit("comprar_telemetria")
+	iniciar_telemetria_dinamica()
+
+
+func iniciar_telemetria_dinamica() -> void:
+	objective_id = "telemetria_dinamica"
+	objective_completed = "telemetria_dinamica" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.TELEMETRIA_DINAMICA
+	mision_iniciada.emit(objective_id)
+	veta_lineal_solicitada.emit(0)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: telemetria_dinamica (Fase 5.5)")
+
+
+func _evaluar_telemetria_dinamica(resultado: Dictionary, informar_pendientes: bool = true) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
+	var variables_usadas: Array = resultado.get("variables_used", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var if_evaluations: int = int(resultado.get("if_evaluations", 0))
+
+	# 1. Requiere uso de telemetría tamano_mundo()
+	if not (codigo.contains("tamano_mundo()") or "spid.tamano_mundo()" in variables_usadas):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Debes consultar la dimensión del sector asignando 'limite = spid.tamano_mundo()' a una variable."
+		)
+		return
+
+	# 2. Requiere bucle while y bucle for
+	if not codigo.contains("while"):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para una operación de recolección continua, envuelve el circuito en 'while True:'."
+		)
+		return
+
+	if not (codigo.contains("for") and (codigo.contains("inrange") or codigo.contains("range("))):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Usa 'for i in range(vueltas):' para organizar las vueltas de minado."
+		)
+		return
+
+	# 3. Requiere sensor condicional if spid.hay_mineral():
+	if not codigo.contains("if") or (not codigo.contains("hay_mineral") and if_evaluations == 0):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Verifica cada casilla con 'if spid.hay_mineral():' antes de minar."
+		)
+		return
+
+	# 4. Requiere transferir al menos 3 minerales a la nave
+	if recolectados < 3 or transferidos < 3:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Spid ejecutó la rutina pero debe extraer y transferir al menos 3 minerales a la nave para validar la telemetría dinámica."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("telemetria")
+	mision_completada.emit(objective_id)
+	print("¡Misión telemetria_dinamica completada con éxito!")
+	CodeExecutor.call_deferred("detener_ejecucion")
 
 	
 func desbloquear_modulo_for() -> void:
@@ -1243,6 +1417,8 @@ func evaluar_progreso_programa(resultado: Dictionary) -> void:
 		_evaluar_senales_inciertas(resultado, false)
 	elif objective_id == "patrulla_autonoma":
 		_evaluar_patrulla_autonoma(resultado, false)
+	elif objective_id == "telemetria_dinamica":
+		_evaluar_telemetria_dinamica(resultado, false)
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:
