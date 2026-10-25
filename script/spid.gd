@@ -172,6 +172,20 @@ func minerales_en_rover() -> int:
 		return int(interfaz.minerales_spid)
 	return 0
 
+func tamano_mundo() -> int:
+	var mundo := get_parent()
+	if mundo == null:
+		mundo = get_tree().current_scene
+	if mundo != null and mundo.has_method("get_map_tier"):
+		var tier: int = mundo.get_map_tier()
+		if tier >= 3:
+			return 3
+		elif tier >= 2:
+			return 2
+		elif tier >= 1:
+			return 1
+	return 3
+
 func minar() -> Dictionary:
 	var grid_map := get_parent() as GridMap
 	if grid_map == null:

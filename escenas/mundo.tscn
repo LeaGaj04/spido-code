@@ -948,6 +948,7 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/ContenedorTienda/BotonArchivo" to="CanvasLayer" method="_on_boton_archivo_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonWhile" to="CanvasLayer" method="_on_button_while_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonFor" to="CanvasLayer" method="_on_button_for_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonVariables" to="CanvasLayer" method="_on_button_variables_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonIf" to="CanvasLayer" method="_on_button_if_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion1" to="CanvasLayer" method="_on_button_expansion_1_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion2" to="CanvasLayer" method="_on_button_expansion_2_pressed"]

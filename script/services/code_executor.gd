@@ -266,6 +266,65 @@ func ejecutar_codigo(
 					if detener_solicitado:
 						break
 					var sub_tipo: String = sub_ins.get("tipo", "comando")
+					if sub_tipo == "for":
+						var num_for: int = sub_ins["numero"]
+						var cont_for: String = sub_ins["contenido"]
+						var repeticiones_for: int = int(sub_ins.get("repeticiones", 1))
+						var cuerpo_for_sub: Array = sub_ins.get("cuerpo", [])
+						resultado["loop_count"] = maxi(int(resultado.get("loop_count", 0)), 1)
+						for it_for in range(repeticiones_for):
+							if detener_solicitado:
+								break
+							resultado["loop_iterations"] = maxi(int(resultado.get("loop_iterations", 0)), it_for + 1)
+							linea_iniciada.emit(num_for, cont_for)
+							await _esperar_paso_si_aplica(num_for, cont_for)
+							linea_finalizada.emit(num_for, cont_for)
+							for cmd_for in cuerpo_for_sub:
+								if detener_solicitado:
+									break
+								if cmd_for.get("tipo", "") == "if":
+									var num_if: int = cmd_for["numero"]
+									var cont_if: String = cmd_for["contenido"]
+									linea_iniciada.emit(num_if, cont_if)
+									await _esperar_paso_si_aplica(num_if, cont_if)
+									if detener_solicitado:
+										linea_finalizada.emit(num_if, cont_if)
+										break
+									var cumple_if: bool = false
+									if evaluar_condicion.is_valid():
+										cumple_if = await evaluar_condicion.call(cmd_for["condition"])
+									if cmd_for.get("inverted", false):
+										cumple_if = not cumple_if
+									resultado["if_evaluations"] = resultado.get("if_evaluations", 0) + 1
+									if cumple_if:
+										resultado["if_branch_taken"] = true
+										for sub_cmd in cmd_for.get("cuerpo", []):
+											if detener_solicitado:
+												break
+											sub_cmd["loop_iteration"] = iteracion
+											var res_sub := await _ejecutar_instruccion_simple(
+												sub_cmd,
+												ejecutar_comando,
+												resultado,
+												variables_env
+											)
+											if not res_sub.get("ok", false):
+												_finalizar(resultado)
+												return resultado
+									linea_finalizada.emit(num_if, cont_if)
+								else:
+									cmd_for["loop_iteration"] = iteracion
+									var res_cmd := await _ejecutar_instruccion_simple(
+										cmd_for,
+										ejecutar_comando,
+										resultado,
+										variables_env
+									)
+									if not res_cmd.get("ok", false):
+										_finalizar(resultado)
+										return resultado
+						continue
+
 					if sub_tipo == "if":
 						var num_if: int = sub_ins["numero"]
 						var cont_if: String = sub_ins["contenido"]
@@ -1079,6 +1138,111 @@ func compilar_programa(codigo: String) -> Dictionary:
 						ins_if_anidado["else_contenido"] = else_cont_anidado
 
 					cuerpo_while.append(ins_if_anidado)
+					continue
+
+				if cont_cuerpo_lower.begins_with("for "):
+					var num_linea_for := indice + 1
+					var res_for_anidado := _analizar_for(contenido_cuerpo, num_linea_for)
+					if not res_for_anidado["ok"]:
+						return res_for_anidado
+
+					var sangria_for_anidado := sangria_cuerpo
+					var cuerpo_for_anidado: Array = []
+					indice += 1
+
+					while indice < lineas.size():
+						var linea_sub_for := lineas[indice]
+						if linea_sub_for.strip_edges().is_empty() or linea_sub_for.strip_edges().begins_with("#"):
+							indice += 1
+							continue
+						var sangria_sub_for := _contar_espacios_sangria(linea_sub_for)
+						if sangria_sub_for <= sangria_for_anidado:
+							break
+
+						var cont_sub_for := linea_sub_for.strip_edges()
+						var cont_sub_for_lower := cont_sub_for.to_lower()
+
+						if cont_sub_for_lower.begins_with("if "):
+							var num_if_for := indice + 1
+							var res_if_for := _analizar_if(cont_sub_for, num_if_for)
+							if not res_if_for["ok"]:
+								return res_if_for
+
+							var sangria_if_for := sangria_sub_for
+							var cuerpo_if_for: Array = []
+							indice += 1
+
+							while indice < lineas.size():
+								var linea_if_sub := lineas[indice]
+								if linea_if_sub.strip_edges().is_empty() or linea_if_sub.strip_edges().begins_with("#"):
+									indice += 1
+									continue
+								var sangria_if_sub := _contar_espacios_sangria(linea_if_sub)
+								if sangria_if_sub <= sangria_if_for:
+									break
+
+								var cont_if_sub := linea_if_sub.strip_edges()
+								var analisis_if_sub := analizar_linea(cont_if_sub, indice + 1)
+								if not analisis_if_sub["ok"]:
+									return analisis_if_sub
+
+								cuerpo_if_for.append({
+									"tipo": "comando",
+									"numero": indice + 1,
+									"contenido": cont_if_sub,
+									"command": analisis_if_sub["command"],
+									"steps": analisis_if_sub["steps"],
+									"step_var": analisis_if_sub.get("step_var", "")
+								})
+								indice += 1
+
+							if cuerpo_if_for.is_empty():
+								return _error_de_linea(
+									num_if_for,
+									cont_sub_for,
+									"El condicional if necesita al menos una instrucción con sangría."
+								)
+
+							cuerpo_for_anidado.append({
+								"tipo": "if",
+								"numero": num_if_for,
+								"contenido": cont_sub_for,
+								"condition": res_if_for["condition"],
+								"inverted": res_if_for["inverted"],
+								"cuerpo": cuerpo_if_for
+							})
+							continue
+
+						var analisis_cmd_for := analizar_linea(cont_sub_for, indice + 1)
+						if not analisis_cmd_for["ok"]:
+							return analisis_cmd_for
+
+						cuerpo_for_anidado.append({
+							"tipo": "comando",
+							"numero": indice + 1,
+							"contenido": cont_sub_for,
+							"command": analisis_cmd_for["command"],
+							"steps": analisis_cmd_for["steps"],
+							"step_var": analisis_cmd_for.get("step_var", "")
+						})
+						indice += 1
+
+					if cuerpo_for_anidado.is_empty():
+						return _error_de_linea(
+							num_linea_for,
+							contenido_cuerpo,
+							"El bucle for necesita al menos una instrucción con sangría."
+						)
+
+					var ins_for_anidado: Dictionary = {
+						"tipo": "for",
+						"numero": num_linea_for,
+						"contenido": contenido_cuerpo,
+						"repeticiones": int(res_for_anidado.get("repeticiones", 1)),
+						"range_var": str(res_for_anidado.get("range_var", "")),
+						"cuerpo": cuerpo_for_anidado
+					}
+					cuerpo_while.append(ins_for_anidado)
 					continue
 
 				var analisis_cmd: Dictionary = analizar_linea(contenido_cuerpo, indice + 1)
