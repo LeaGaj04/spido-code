@@ -29,6 +29,8 @@ enum EstadoMision {
 	CALIBRACION_VARIABLES,
 	COMPRAR_TELEMETRIA,
 	TELEMETRIA_DINAMICA,
+	COMPRAR_SECTOR_4X3,
+	PATRULLA_LISTA,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -128,7 +130,11 @@ func preparar_mision_expansion() -> void:
 		return
 
 	if objective_id == "telemetria_dinamica":
-		# Siguiente mision Fase 6
+		iniciar_mision_comprar_sector_4x3()
+		return
+
+	if objective_id == "comprar_sector_4x3":
+		iniciar_patrulla_lista()
 		return
 
 	if objective_id == "exploracion_3x3":
@@ -409,10 +415,31 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "telemetria_dinamica" and objective_completed)
 		or (objective_id == "telemetria_dinamica" and "telemetria_dinamica" in completed_missions)
 	):
-		estado_actual = EstadoMision.COMPLETADA
+		iniciar_mision_comprar_sector_4x3()
 		return
 	if objective_id == "telemetria_dinamica":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.TELEMETRIA_DINAMICA
+		return
+
+	if (
+		(objective_id == "comprar_sector_4x3" and objective_completed)
+		or (objective_id == "comprar_sector_4x3" and "comprar_sector_4x3" in completed_missions)
+		or GestorSintaxis.esta_desbloqueada("listas")
+	):
+		iniciar_patrulla_lista()
+		return
+	if objective_id == "comprar_sector_4x3":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_SECTOR_4X3
+		return
+
+	if (
+		(objective_id == "patrulla_lista" and objective_completed)
+		or (objective_id == "patrulla_lista" and "patrulla_lista" in completed_missions)
+	):
+		estado_actual = EstadoMision.COMPLETADA
+		return
+	if objective_id == "patrulla_lista":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_LISTA
 		return
 
 	if (
@@ -568,6 +595,27 @@ func get_objetivo_actual() -> String:
 			"        spid.sur(limite - 1)\n" +
 			"    spid.transferir()\n\n" +
 			"Tu desafío: parametriza la distancia con 'limite - 1' y ejecuta la patrulla continua hasta transferir al menos 3 minerales a la nave."
+		)
+
+	if objective_id == "comprar_sector_4x3":
+		return (
+			"EXPANSIÓN SECTOR 4X3 Y LISTAS\n" +
+			"¡Telemetría dinámica dominada! Reúne 15 minerales en la nave nodriza y adquiere " +
+			"[ SECTOR 4X3 ] en el Centro de Mejoras para expandir a 4 de ancho y desbloquear listas."
+		)
+
+	if objective_id == "patrulla_lista":
+		return (
+			"PATRULLA CON LISTAS (SECTOR 4X3)\n" +
+			"Las listas agrupan colecciones de datos que puedes recorrer con un bucle 'for':\n\n" +
+			"ruta = [\"norte\", \"norte\", \"este\", \"sur\", \"este\", \"sur\", \"oeste\", \"oeste\"]\n\n" +
+			"while True:\n" +
+			"    for direccion in ruta:\n" +
+			"        spid.mover(direccion)\n" +
+			"        if spid.hay_mineral():\n" +
+			"            spid.minar()\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: define tu circuito en una lista y patrulla hasta transferir al menos 3 minerales a la nave."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -773,6 +821,24 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "telemetria_dinamica":
 		_evaluar_telemetria_dinamica(resultado)
+		return
+
+	if objective_id == "comprar_sector_4x3":
+		var minerales_nave: int = _obtener_minerales_nave()
+		if minerales_nave >= 15:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes los 15 minerales necesarios! Ve al menú MEJORAS y adquiere [ SECTOR 4X3 ] para continuar."
+			)
+		else:
+			objetivo_actualizado.emit(
+				objective_id,
+				"Tienes %d de 15 minerales en la nave. Sigue recolectando y luego adquiere [ SECTOR 4X3 ] en MEJORAS." % minerales_nave
+			)
+		return
+
+	if objective_id == "patrulla_lista":
+		_evaluar_patrulla_lista(resultado)
 		return
 
 	if objective_id != "ruta_calibracion":
@@ -1144,6 +1210,109 @@ func _evaluar_telemetria_dinamica(resultado: Dictionary, informar_pendientes: bo
 	mision_completada.emit(objective_id)
 	print("¡Misión telemetria_dinamica completada con éxito!")
 	CodeExecutor.call_deferred("detener_ejecucion")
+	iniciar_mision_comprar_sector_4x3()
+
+
+func iniciar_mision_comprar_sector_4x3() -> void:
+	objective_id = "comprar_sector_4x3"
+	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
+	objective_completed = "comprar_sector_4x3" in completed_missions or map_tier >= 4 or GestorSintaxis.esta_desbloqueada("listas")
+	if objective_completed:
+		iniciar_patrulla_lista()
+		return
+	estado_actual = EstadoMision.COMPRAR_SECTOR_4X3
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: comprar_sector_4x3")
+
+
+func registrar_compra_sector_4x3() -> void:
+	if "comprar_sector_4x3" not in completed_missions:
+		completed_missions.append("comprar_sector_4x3")
+	GestorSintaxis.desbloquear_sintaxis("listas")
+	desbloquear_conocimiento("lista")
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+	mision_completada.emit("comprar_sector_4x3")
+	iniciar_patrulla_lista()
+
+
+func iniciar_patrulla_lista() -> void:
+	objective_id = "patrulla_lista"
+	objective_completed = "patrulla_lista" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_LISTA
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: patrulla_lista (Fase 6)")
+
+
+func _evaluar_patrulla_lista(resultado: Dictionary, informar_pendientes: bool = true) -> void:
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
+	var comandos_usados: Array = resultado.get("commands_used", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var if_evaluations: int = int(resultado.get("if_evaluations", 0))
+
+	# 1. Requiere sintaxis de lista [...]
+	if not ("[" in codigo and "]" in codigo):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para esta misión debes definir una lista de ruta (ej. 'ruta = [\"norte\", \"este\", ...]') con corchetes []."
+		)
+		return
+
+	# 2. Requiere bucle for recorriendo la lista
+	if not (codigo.contains("for") and (codigo.contains("in") or codigo.contains("inrange"))):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Recorre tu lista usando la estructura 'for direccion in ruta:'."
+		)
+		return
+
+	# 3. Requiere uso de spid.mover()
+	if not (codigo.contains("mover(") or "mover" in comandos_usados):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Utiliza 'spid.mover(direccion)' dentro de tu bucle para ejecutar los pasos de la lista."
+		)
+		return
+
+	# 4. Requiere sensor condicional if spid.hay_mineral():
+	if not codigo.contains("if") or (not codigo.contains("hay_mineral") and if_evaluations == 0):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para minar solo en casillas ocupadas, evalúa 'if spid.hay_mineral():' antes de minar."
+		)
+		return
+
+	# 5. Requiere recolectar y transferir al menos 3 minerales
+	if recolectados < 3 or transferidos < 3:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Spid recorrió el sector pero debe extraer y transferir al menos 3 minerales a la nave nodriza."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("lista")
+	mision_completada.emit(objective_id)
+	print("¡Misión patrulla_lista completada con éxito!")
+	CodeExecutor.call_deferred("detener_ejecucion")
 
 	
 func desbloquear_modulo_for() -> void:
@@ -1419,6 +1588,8 @@ func evaluar_progreso_programa(resultado: Dictionary) -> void:
 		_evaluar_patrulla_autonoma(resultado, false)
 	elif objective_id == "telemetria_dinamica":
 		_evaluar_telemetria_dinamica(resultado, false)
+	elif objective_id == "patrulla_lista":
+		_evaluar_patrulla_lista(resultado, false)
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:

@@ -59,6 +59,26 @@ func este(pasos: int = 1) -> Dictionary:
 	return await _intentar_mover()
 
 
+func mover(direccion: String, pasos: int = 1) -> Dictionary:
+	var dir_limpia := direccion.strip_edges().to_lower().replace('"', '').replace("'", "")
+	match dir_limpia:
+		"norte":
+			return await norte(pasos)
+		"sur":
+			return await sur(pasos)
+		"este":
+			return await este(pasos)
+		"oeste":
+			return await oeste(pasos)
+		_:
+			return {
+				"ok": false,
+				"error_type": "ejecucion",
+				"message": "Dirección desconocida en spid.mover(): '" + direccion + "'. Usa 'norte', 'sur', 'este' u 'oeste'.",
+				"steps_completed": 0
+			}
+
+
 func _intentar_mover() -> Dictionary:
 	var pasos_completados := 0
 
@@ -182,7 +202,9 @@ func tamano_mundo() -> int:
 		nodo = get_tree().current_scene
 	if nodo != null and nodo.has_method("get_map_tier"):
 		var tier: int = nodo.get_map_tier()
-		if tier >= 3:
+		if tier >= 4:
+			return 4
+		elif tier >= 3:
 			return 3
 		elif tier >= 2:
 			return 2
