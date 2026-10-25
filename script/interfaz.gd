@@ -80,7 +80,8 @@ const PRECIOS = {
 	"for": 10,
 	"mapa": 1,
 	"casillas_extra": 10,
-	"mapa_3x3": 20,
+	"mapa_3x3": 10,
+	"sector_3x3": 10,
 	"if": 10,
 	"mineria_rapida": 15
 }
@@ -122,6 +123,8 @@ func _ready() -> void:
 		mi_spid.mineral_recolectado.connect(_sumar_minerales_spid)
 	if panel_archivo != null:
 		panel_archivo.cerrado.connect(_on_archivo_cerrado)
+	if boton_variables != null and not boton_variables.pressed.is_connected(_on_button_variables_pressed):
+		boton_variables.pressed.connect(_on_button_variables_pressed)
 	_marcar_interfaz_inicializada()
 
 
@@ -154,7 +157,8 @@ func _on_code_completion_requested() -> void:
 		["\u200dspid.hay_mineral()", "hay_mineral()", "Consultar sensor de mineral", Color(1, 0.35, 0.85, 1)],
 		["\u200dspid.tiene_espacio()", "tiene_espacio()", "Consultar capacidad de Spid", Color(1, 0.35, 0.85, 1)],
 		["\u200dspid.minerales_en_nave()", "minerales_en_nave()", "Consultar minerales en la nave", Color(1, 0.35, 0.85, 1)],
-		["\u200dspid.minerales_en_rover()", "minerales_en_rover()", "Consultar minerales en Spid", Color(1, 0.35, 0.85, 1)]
+		["\u200dspid.minerales_en_rover()", "minerales_en_rover()", "Consultar minerales en Spid", Color(1, 0.35, 0.85, 1)],
+		["\u200dspid.tamano_mundo()", "tamano_mundo()", "Consultar dimensión del sector", Color(1, 0.35, 0.85, 1)]
 	]
 
 	for opcion in opciones:
@@ -582,14 +586,26 @@ func actualizar_mejoras_visual() -> void:
 		boton_for.disabled = true
 		boton_for.text = "[ BUCLE FOR ]\nINSTALADO" if for_on else "[ BUCLE FOR ]\nEN CICLO FOR"
 
-	var vars_on: bool = (
-		"variable" in MissionService.get_unlocked_knowledge()
-		or "variables" in MissionService.get_completed_missions()
-		or MissionService.objective_id == "variables"
+	var sector_3x3_on: bool = (
+		(mundo != null and mundo.mapa_3x3_desbloqueado)
+		or "comprar_sector_3x3" in MissionService.get_completed_missions()
+		or "calibracion_variables" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "calibracion_variables"
+	)
+	var patrulla_on: bool = (
+		"patrulla_autonoma" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "patrulla_autonoma" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_3x3"
+		or sector_3x3_on
 	)
 	if boton_variables != null:
-		boton_variables.disabled = true
-		boton_variables.text = "[ VARIABLES ]\nDESBLOQUEADO" if vars_on else "[ VARIABLES ]\nPOR MISIÓN"
+		boton_variables.disabled = not (patrulla_on and not sector_3x3_on)
+		if sector_3x3_on:
+			boton_variables.text = "[ SECTOR 3X3 ]\nDESBLOQUEADO"
+		elif not patrulla_on:
+			boton_variables.text = "[ SECTOR 3X3 ]\nTRAS ROVER AUTÓNOMO"
+		else:
+			boton_variables.text = "[ SECTOR 3X3 ]\n10 MINERALES"
 
 	if boton_expansion != null:
 		boton_expansion.disabled = exp1_on
@@ -629,7 +645,7 @@ func actualizar_mejoras_visual() -> void:
 	if linea_prog_3 != null:
 		linea_prog_3.default_color = Color(0.2, 0.8, 1.0) if for_on else Color(0.3, 0.33, 0.38)
 	if linea_prog_4 != null:
-		linea_prog_4.default_color = Color(0.2, 0.8, 1.0) if vars_on else Color(0.3, 0.33, 0.38)
+		linea_prog_4.default_color = Color(0.2, 0.8, 1.0) if sector_3x3_on else Color(0.3, 0.33, 0.38)
 
 	if linea_terr_1 != null:
 		linea_terr_1.default_color = Color(0.3, 0.9, 0.5) if exp1_on else Color(0.3, 0.33, 0.38)
@@ -873,6 +889,49 @@ func _on_button_expansion_3_pressed() -> void:
 	)
 
 
+func _on_button_variables_pressed() -> void:
+	var mundo := get_parent()
+	var sector_3x3_comprado: bool = (
+		(mundo != null and mundo.mapa_3x3_desbloqueado)
+		or "comprar_sector_3x3" in MissionService.get_completed_missions()
+		or "calibracion_variables" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "calibracion_variables"
+	)
+	var patrulla_completada: bool = (
+		"patrulla_autonoma" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "patrulla_autonoma" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_3x3"
+	)
+
+	if mundo == null or sector_3x3_comprado or not patrulla_completada:
+		return
+
+	if CodeExecutor.ejecutando:
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
+		return
+
+	var costo: int = PRECIOS.get("sector_3x3", 10)
+	if minerales_nave < costo:
+		transmision_ada.mostrar_mensaje(
+			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
+			"error",
+			4.0
+		)
+		return
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_sector_3x3()
+	mundo.expandir_mapa_3x3()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Sector 3x3 adquirido y variables desbloqueadas! Nuevo depósito disponible al norte.",
+		"completado",
+		8.0
+	)
+
+
 func _on_button_mineria_pressed() -> void:
 	if mineria_rapida_desbloqueada:
 		return
@@ -974,7 +1033,9 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 			"cuota_suministro",
 			"ciclo_autonomo",
 			"exploracion_3x3",
-			"ciclo_recoleccion"
+			"ciclo_recoleccion",
+			"patrulla_autonoma",
+			"calibracion_variables"
 		]
 	):
 		await get_tree().create_timer(3.0).timeout
@@ -1053,10 +1114,26 @@ func _on_mision_completada(mision_id: String) -> void:
 		"patrulla_autonoma":
 			var msg_auto := (
 				"¡Protocolo autónomo verificado! Has creado tu primer Rover 100% Desatendido.\n" +
-				"Spid ahora opera continuamente combinando bucles while, for y sensores condicionales.\n" +
-				"¡Fase 4.5 completada con honores!"
+				"Spid operó continuamente combinando while, for y sensores condicionales.\n" +
+				"Próximo objetivo: reúne 10 minerales y adquiere el [ SECTOR 3X3 ] en el Centro de Mejoras."
 			)
 			transmision_ada.mostrar_mensaje(msg_auto, "completado", 15.0)
+		"comprar_sector_3x3":
+			transmision_ada.mostrar_mensaje(
+				"¡Sector 3x3 y Variables desbloqueados!\n" +
+				"El terreno se expande a 3x3. Ya puedes declarar variables y parametrizar las órdenes dspid.\n" +
+				"Nueva misión: CALIBRACIÓN CON VARIABLES.",
+				"completado",
+				15.0
+			)
+		"calibracion_variables":
+			var msg_vars := (
+				"¡Calibración de variables completada!\n" +
+				"Has parametrizado con éxito la distancia y el bucle usando variables.\n" +
+				"Spid ahora procesa valores reutilizables en memoria.\n" +
+				"¡Fase 5 completada con éxito!"
+			)
+			transmision_ada.mostrar_mensaje(msg_vars, "completado", 15.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
 				"¡Módulo Condicional IF instalado!\n" +
@@ -1235,6 +1312,10 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Circuito 2x3: usa 'for vuelta in range(3):' para recorrer los depósitos y transferir a la nave."
 		"patrulla_autonoma":
 			return "Operación continua: combina 'while True:', 'for' e 'if spid.hay_mineral():' para una patrulla 100% desatendida."
+		"comprar_sector_3x3":
+			return "Rover autónomo completado. Reúne 10 minerales y adquiere [ SECTOR 3X3 ] en Mejoras para ampliar el terreno a 3x3 y programar con variables."
+		"calibracion_variables":
+			return "Sector 3x3 activo. Declara variables ('vueltas = 2', 'pasos = 2') y úsalas en el bucle 'for' y 'spid.norte(pasos)'."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

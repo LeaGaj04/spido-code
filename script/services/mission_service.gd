@@ -25,6 +25,8 @@ enum EstadoMision {
 	COMPRAR_MAPA_3X3,
 	EXPLORACION_3X3,
 	PATRULLA_AUTONOMA,
+	COMPRAR_SECTOR_3X3,
+	CALIBRACION_VARIABLES,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -108,7 +110,15 @@ func preparar_mision_expansion() -> void:
 		return
 
 	if objective_id == "patrulla_autonoma":
-		iniciar_exploracion_3x3()
+		iniciar_mision_comprar_sector_3x3()
+		return
+
+	if objective_id == "comprar_sector_3x3":
+		iniciar_calibracion_variables()
+		return
+
+	if objective_id == "calibracion_variables":
+		# Siguiente mision Fase 5.5
 		return
 
 	if objective_id == "exploracion_3x3":
@@ -348,10 +358,30 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "patrulla_autonoma" and objective_completed)
 		or (objective_id == "patrulla_autonoma" and "patrulla_autonoma" in completed_missions)
 	):
-		iniciar_exploracion_3x3()
+		iniciar_mision_comprar_sector_3x3()
 		return
 	if objective_id == "patrulla_autonoma":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_AUTONOMA
+		return
+
+	if (
+		(objective_id == "comprar_sector_3x3" and objective_completed)
+		or (objective_id == "comprar_sector_3x3" and "comprar_sector_3x3" in completed_missions)
+	):
+		iniciar_calibracion_variables()
+		return
+	if objective_id == "comprar_sector_3x3":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_SECTOR_3X3
+		return
+
+	if (
+		(objective_id == "calibracion_variables" and objective_completed)
+		or (objective_id == "calibracion_variables" and "calibracion_variables" in completed_missions)
+	):
+		estado_actual = EstadoMision.COMPLETADA
+		return
+	if objective_id == "calibracion_variables":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CALIBRACION_VARIABLES
 		return
 
 	if (
@@ -462,6 +492,28 @@ func get_objetivo_actual() -> String:
 			"dentro de un bucle 'while True:' para operar continuamente.\n\n" +
 			"Para evitar fallas en casillas vacías, verifica cada punto usando 'if spid.hay_mineral():' " +
 			"antes de minar. Cada ronda de patrulla, Spid pasará por la base a transferir y continuará su labor."
+		)
+
+	if objective_id == "comprar_sector_3x3":
+		return (
+			"EXPANSIÓN SECTOR 3X3 Y VARIABLES\n" +
+			"¡Rover autónomo verificado! Reúne 10 minerales en la nave y adquiere el [ SECTOR 3X3 ] " +
+			"en el Centro de Mejoras para expandir el terreno a 3x3 y desbloquear las variables."
+		)
+
+	if objective_id == "calibracion_variables":
+		return (
+			"PARÁMETROS Y VARIABLES (SECTOR 3X3)\n" +
+			"Las variables almacenan datos reutilizables y permiten parametrizar órdenes de movimiento:\n\n" +
+			"vueltas = 2\n" +
+			"pasos = 2\n\n" +
+			"for i in range(vueltas):\n" +
+			"    spid.norte(pasos)\n" +
+			"    if spid.hay_mineral():\n" +
+			"        spid.minar()\n" +
+			"    spid.sur(pasos)\n\n" +
+			"spid.transferir()\n\n" +
+			"Tu desafío: parametriza la distancia y las repeticiones con variables para minar 2 minerales del depósito norte y transferirlos a la nave."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -590,6 +642,20 @@ func evaluar_programa(resultado: Dictionary) -> void:
 			)
 		return
 
+	if objective_id == "comprar_sector_3x3":
+		var minerales_nave: int = _obtener_minerales_nave()
+		if minerales_nave >= 10:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes los 10 minerales necesarios! Ve al menú MEJORAS y adquiere el [ SECTOR 3X3 ] para continuar."
+			)
+		else:
+			objetivo_actualizado.emit(
+				objective_id,
+				"Tienes %d de 10 minerales en la nave. Sigue recolectando y luego adquiere el [ SECTOR 3X3 ] en MEJORAS." % minerales_nave
+			)
+		return
+
 	if objective_id == "ciclo_autonomo":
 		_evaluar_ciclo_autonomo(resultado)
 		return
@@ -631,6 +697,10 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "patrulla_autonoma":
 		_evaluar_patrulla_autonoma(resultado)
+		return
+
+	if objective_id == "calibracion_variables":
+		_evaluar_calibracion_variables(resultado)
 		return
 
 	if objective_id != "ruta_calibracion":
@@ -760,7 +830,7 @@ func iniciar_patrulla_autonoma() -> void:
 	print("Misión iniciada: patrulla_autonoma")
 
 
-func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
+func _evaluar_patrulla_autonoma(resultado: Dictionary, informar_pendientes: bool = true) -> void:
 	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
 	var recolectados: int = int(resultado.get("minerals_collected", 0))
 	var transferidos: int = int(resultado.get("minerals_transferred", 0))
@@ -768,6 +838,8 @@ func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
 
 	# 1. Requiere bucle while para operación continua
 	if not codigo.contains("while"):
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Para una operación desatendida y continua, debes envolver la rutina en un bucle 'while True:'."
@@ -776,6 +848,8 @@ func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
 
 	# 2. Requiere bucle for in range dentro de la rutina
 	if not (codigo.contains("for") and (codigo.contains("inrange") or codigo.contains("range("))):
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Debes organizar las vueltas de la patrulla utilizando un bucle 'for i in range(2):' dentro del 'while'."
@@ -784,6 +858,8 @@ func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
 
 	# 3. Requiere sensor condicional if spid.hay_mineral():
 	if not codigo.contains("if") or (not codigo.contains("hay_mineral") and if_evaluations == 0):
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Para evitar errores en casillas vacías, debes consultar 'if spid.hay_mineral():' antes de ejecutar 'spid.minar()'."
@@ -792,6 +868,8 @@ func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
 
 	# 4. Requiere haber recolectado y transferido minerales de forma autónoma
 	if recolectados < 2 or transferidos < 2:
+		if not informar_pendientes:
+			return
 		objetivo_actualizado.emit(
 			objective_id,
 			"Spid ejecutó la patrulla pero debe recolectar y transferir al menos 2 minerales a la nave para validar el ciclo autónomo."
@@ -806,6 +884,92 @@ func _evaluar_patrulla_autonoma(resultado: Dictionary) -> void:
 
 	mision_completada.emit(objective_id)
 	print("¡Misión patrulla_autonoma completada con éxito!")
+	CodeExecutor.call_deferred("detener_ejecucion")
+
+
+func iniciar_mision_comprar_sector_3x3() -> void:
+	objective_id = "comprar_sector_3x3"
+	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
+	objective_completed = "comprar_sector_3x3" in completed_missions or map_tier >= 3
+	if objective_completed:
+		iniciar_calibracion_variables()
+		return
+	estado_actual = EstadoMision.COMPRAR_SECTOR_3X3
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: comprar_sector_3x3")
+
+
+func registrar_compra_sector_3x3() -> void:
+	if "comprar_sector_3x3" not in completed_missions:
+		completed_missions.append("comprar_sector_3x3")
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+	desbloquear_conocimiento("variable")
+	desbloquear_conocimiento("parametro")
+	mision_completada.emit("comprar_sector_3x3")
+	iniciar_calibracion_variables()
+
+
+func iniciar_calibracion_variables() -> void:
+	objective_id = "calibracion_variables"
+	objective_completed = "calibracion_variables" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.CALIBRACION_VARIABLES
+	mision_iniciada.emit(objective_id)
+	veta_lineal_solicitada.emit(0)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: calibracion_variables")
+
+
+func _evaluar_calibracion_variables(resultado: Dictionary) -> void:
+	var variables_definidas: Array = resultado.get("variables_defined", [])
+	var variables_usadas: Array = resultado.get("variables_used", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
+
+	# 1. Definición de variables (ej. vueltas = 2, pasos = 2)
+	if variables_definidas.is_empty():
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para completar esta misión debes definir variables (ej. 'vueltas = 2' y 'pasos = 2') antes de usarlas."
+		)
+		return
+
+	# 2. Uso de variables en parámetros de movimiento o en range()
+	if variables_usadas.is_empty() and not (codigo.contains("range(") and not codigo.contains("range(1") and not codigo.contains("range(2")):
+		objetivo_actualizado.emit(
+			objective_id,
+			"Definiste variables, pero debes utilizarlas como argumentos en los comandos (ej. 'spid.norte(pasos)') o en 'range(vueltas)'."
+		)
+		return
+
+	# 3. Parametrización en movimiento
+	if not (codigo.contains("norte(") or codigo.contains("sur(")):
+		objetivo_actualizado.emit(
+			objective_id,
+			"Aprovecha los parámetros de distancia en las órdenes de movimiento: 'spid.norte(pasos)' y 'spid.sur(pasos)'."
+		)
+		return
+
+	# 4. Requiere recolectar y transferir al menos 2 minerales
+	if recolectados < 2 or transferidos < 2:
+		objetivo_actualizado.emit(
+			objective_id,
+			"Buen avance con las variables, pero debes completar 2 vueltas de recolección y transferir ambos minerales a la nave."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("variable")
+	desbloquear_conocimiento("parametro")
+	mision_completada.emit(objective_id)
+	print("¡Misión calibracion_variables completada con éxito!")
 
 	
 func desbloquear_modulo_for() -> void:
@@ -1071,11 +1235,14 @@ func iniciar_senales_inciertas() -> void:
 
 func evaluar_progreso_programa(resultado: Dictionary) -> void:
 	# El resultado parcial no tiene success=true hasta finalizar el programa.
-	if objective_completed or objective_id != "senales_inciertas":
+	if objective_completed:
 		return
 	if resultado.get("objective_id", "") != objective_id or not resultado.get("errors", []).is_empty():
 		return
-	_evaluar_senales_inciertas(resultado, false)
+	if objective_id == "senales_inciertas":
+		_evaluar_senales_inciertas(resultado, false)
+	elif objective_id == "patrulla_autonoma":
+		_evaluar_patrulla_autonoma(resultado, false)
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:

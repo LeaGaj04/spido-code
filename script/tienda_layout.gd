@@ -48,7 +48,7 @@ static func construir(panel: Control) -> void:
 	_etapa(ruta, "01  /  SECTOR 1×3", "Calibra una ruta con movimientos en secuencia.\nCompleta la calibración para activar WHILE.", originales["ButtonExpansion1"], originales["ButtonWhile"], Color("69dba2"))
 	_etapa(ruta, "02  /  SECTOR 2×3", "Tres casillas nuevas y depósitos aleatorios.\nIncluye IF / ELSE para detectar minerales y tomar decisiones.", originales["ButtonExpansion2"], originales["ButtonIf"], Color("69dba2"))
 	_etapa(ruta, "03  /  CICLO FOR", "Completa Señales inciertas para habilitar este módulo.\nIncluye FOR e IN RANGE para automatizar ciclos de recolección.", originales["ButtonExpansion3"], originales["ButtonFor"], Color("69dba2"))
-	_etapa(ruta, "04  /  PARÁMETROS Y VARIABLES", "Continúa las misiones del Sector 3×3 para reutilizar valores en tus programas.", null, originales["ButtonVariables"], Color("84bfe8"))
+	_etapa(ruta, "04  /  SECTOR 3×3 Y VARIABLES", "Expande el terreno a 3×3 y activa el uso de variables y parámetros para Spid.", originales["ButtonVariables"], null, Color("84bfe8"))
 	_texto(ruta, "MEJORA OPCIONAL  /  Independiente de la ruta", 16, Color("ecc576"))
 	_etapa(ruta, "MINERÍA RÁPIDA", "Reduce el tiempo de extracción a 1 segundo.", originales["ButtonMineria"], null, Color("ecc576"))
 

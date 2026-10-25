@@ -61,12 +61,18 @@ func _ready():
 		interfaz.aplicar_progreso(progreso)
 
 func _on_veta_lineal_solicitada(_indice: int) -> void:
-	generar_circuito_for_2x3()
+	if MissionService != null and MissionService.objective_id == "calibracion_variables":
+		generar_deposito_mision_8()
+	else:
+		generar_circuito_for_2x3()
 
 func _on_mineral_minado(celda: Vector3i) -> void:
 	ultima_celda_minada = celda
 	if MissionService != null and MissionService.objective_id in ["ciclo_recoleccion", "patrulla_autonoma"]:
 		call_deferred("_verificar_regeneracion_circuito_2x3")
+		return
+	if MissionService != null and MissionService.objective_id == "calibracion_variables":
+		call_deferred("_verificar_regeneracion_mision_8")
 		return
 	spawn_mineral_aleatorio()
 
@@ -85,7 +91,7 @@ func _verificar_regeneracion_circuito_2x3() -> void:
 func aplicar_progreso_mapa(map_tier: int) -> void:
 	var tier_seguro := maxi(0, map_tier)
 	# Durante la fase de bucle for y misiones del sector 2x3, el mapa se mantiene en sector 2x3 (tier 2)
-	if MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "patrulla_autonoma", "senales_inciertas", "comprar_casillas"]:
+	if not mapa_3x3_desbloqueado and MissionService != null and MissionService.objective_id in ["comprar_mapa_3x3", "ciclo_recoleccion", "patrulla_autonoma", "senales_inciertas", "comprar_casillas", "comprar_sector_3x3"]:
 		tier_seguro = mini(tier_seguro, 2)
 
 	radio_mapa_desbloqueado = tier_seguro
@@ -107,25 +113,13 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 
 	grid_map.clear()
 
-	# Sector 3x3: tres columnas y tres filas.
+	# Sector 3x3: tres columnas centradas en X (-1 a 1) y tres filas (-2 a 0) con base en (0, 0)
 	if mapa_3x3_desbloqueado:
-		for x in range(
-			CASILLA_INICIAL.x - 1,
-			CASILLA_INICIAL.x + 2
-		):
-			for z in range(
-				CASILLA_INICIAL.z - 1,
-				CASILLA_INICIAL.z + 2
-			):
-				var tipo_casilla := (
-					1 if (x + z) % 2 == 0 else 2
-				)
-
-				grid_map.set_cell_item(
-					Vector3i(x, 0, z),
-					tipo_casilla
-				)
-
+		for x in range(-1, 2):
+			for z in range(-2, 1):
+				var casilla := CASILLA_INICIAL + Vector3i(x, 0, z)
+				var tipo_casilla := 1 if (x + z) % 2 == 0 else 2
+				grid_map.set_cell_item(casilla, tipo_casilla)
 		return
 
 	if casillas_extra_desbloqueadas:
@@ -195,6 +189,26 @@ const CIRCUITO_FOR_2X3: Array[Vector3i] = [
 	Vector3i(1, 0, 0)   # Este
 ]
 
+const DEPOSITO_MISION_8 := Vector3i(0, 0, -2) # 2 pasos al norte de la base
+
+func generar_deposito_mision_8() -> void:
+	if radio_mapa_desbloqueado < 3:
+		aplicar_progreso_mapa(3)
+	for mineral in get_tree().get_nodes_in_group("minerales"):
+		var objeto := mineral.get_parent() as Node
+		if objeto and not objeto.is_queued_for_deletion():
+			objeto.queue_free()
+	instanciar_mineral_en_casilla(DEPOSITO_MISION_8)
+
+func _verificar_regeneracion_mision_8() -> void:
+	var activos: int = 0
+	for mineral in get_tree().get_nodes_in_group("minerales"):
+		var obj := mineral.get_parent() as Node
+		if obj and not obj.is_queued_for_deletion():
+			activos += 1
+	if activos == 0:
+		instanciar_mineral_en_casilla(DEPOSITO_MISION_8)
+
 func generar_circuito_for_2x3() -> void:
 	for mineral in get_tree().get_nodes_in_group("minerales"):
 		var objeto := mineral.get_parent() as Node
@@ -211,6 +225,10 @@ func generar_minerales_iniciales():
 	
 	if MissionService != null and MissionService.objective_id in ["ciclo_recoleccion", "patrulla_autonoma"]:
 		generar_circuito_for_2x3()
+		return
+
+	if MissionService != null and MissionService.objective_id == "calibracion_variables":
+		generar_deposito_mision_8()
 		return
 
 	for i in range(max_minerales):
