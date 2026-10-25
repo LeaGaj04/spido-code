@@ -12,8 +12,9 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **2** | **Bucle `while`** | Corredor 1x3 (1 mineral) | `while`, comparación numérica (`<`, `<=`, `>`, `>=`, `==`) | `trabajo_continuo` (`while True`)<br>`cuota_suministro` (`while < 10`) | **100%** |
 | **3** | **Condicionales `if / else`** | Sector 2x3 (10 minerales) | `if`, `else`, sensor `spid.hay_mineral()` | `senales_inciertas` (Patrulla y Plan B)<br>`comprar_mapa_3x3` | **100%** |
 | **4** | **Bucle `for`** | Sector 2x3 (6 casillas) | `for`, `in range(N)` | `ciclo_recoleccion` | **100%** |
-| **5** | **Parámetros y Variables** | Sector 3x3 (20 minerales) | Argumentos numéricos `spid.norte(2)`, variables `pasos = 2` | `comprar_mapa_3x3`<br>`camino_largo`<br>`variables` | **Planificado (60%)** |
-| **6** | **Listas y Colecciones** | Sector 3x3 / Terreno abierto | Listas `rutas = ["norte", "este"]`, indexación | *Por definir* | **Pendiente** |
+| **5** | **Parámetros y Variables** | Sector 3x3 (10 minerales) | Argumentos numéricos `spid.norte(2)`, variables `vueltas = 2`, `pasos = 2` | `comprar_sector_3x3`<br>`calibracion_variables` | **100%** |
+| **5.5** | **Telemetría Dinámica** | Sector 3x3 | `spid.tamano_mundo()`, expresiones aritméticas `limite - 1` | `comprar_telemetria`<br>`telemetria_dinamica` | **100%** |
+| **6** | **Listas y Colecciones** | Sector 4x3 (15 minerales) | Listas `ruta = ["norte", "este"]`, `spid.mover(dir)`, iteración `for d in lista:` | `comprar_sector_4x3`<br>`patrulla_lista` | **100%** |
 | **7** | **Funciones (`def`)** | Sector ampliado | `def patrullar():`, `return` | *Por definir* | **Pendiente** |
 | **8** | **Módulos e `import`** | Módulos de Rover | `import`, modularización de rutinas | *Por definir* | **Pendiente** |
 | **9** | **Algoritmos / Endgame** | Todo el mapa | Algoritmos de ordenamiento, optimización de batería y pureza | *Por definir* | **Pendiente** |

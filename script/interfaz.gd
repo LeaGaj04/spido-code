@@ -57,6 +57,8 @@ var minerales_spid : int = 0
 @onready var boton_for: Button = $PanelTienda/LienzoArbol/ButtonFor
 @onready var boton_if: Button = $PanelTienda/LienzoArbol/ButtonIf
 @onready var boton_variables: Button = $PanelTienda/LienzoArbol/ButtonVariables
+@onready var boton_telemetria: Button = $PanelTienda/LienzoArbol/ButtonTelemetria
+@onready var boton_sector_4x3: Button = $PanelTienda/LienzoArbol/ButtonSector4x3
 @onready var boton_expansion: Button = $PanelTienda/LienzoArbol/ButtonExpansion1
 @onready var boton_expansion_2: Button = $PanelTienda/LienzoArbol/ButtonExpansion2
 @onready var boton_expansion_3: Button = $PanelTienda/LienzoArbol/ButtonExpansion3
@@ -82,7 +84,9 @@ const PRECIOS = {
 	"casillas_extra": 10,
 	"mapa_3x3": 10,
 	"sector_3x3": 10,
+	"sector_4x3": 15,
 	"if": 10,
+	"telemetria": 10,
 	"mineria_rapida": 15
 }
 
@@ -125,6 +129,10 @@ func _ready() -> void:
 		panel_archivo.cerrado.connect(_on_archivo_cerrado)
 	if boton_variables != null and not boton_variables.pressed.is_connected(_on_button_variables_pressed):
 		boton_variables.pressed.connect(_on_button_variables_pressed)
+	if boton_telemetria != null and not boton_telemetria.pressed.is_connected(_on_button_telemetria_pressed):
+		boton_telemetria.pressed.connect(_on_button_telemetria_pressed)
+	if boton_sector_4x3 != null and not boton_sector_4x3.pressed.is_connected(_on_button_sector_4x3_pressed):
+		boton_sector_4x3.pressed.connect(_on_button_sector_4x3_pressed)
 	_marcar_interfaz_inicializada()
 
 
@@ -154,6 +162,7 @@ func _on_code_completion_requested() -> void:
 		["\u200cspid.sur()", "sur()", "Mover al sur", Color(0.18, 0.86, 1, 1)],
 		["\u200cspid.este()", "este()", "Mover al este", Color(0.18, 0.86, 1, 1)],
 		["\u200cspid.oeste()", "oeste()", "Mover al oeste", Color(0.18, 0.86, 1, 1)],
+		["\u200cspid.mover()", "mover()", "Mover en dirección dinámica", Color(0.18, 0.86, 1, 1)],
 		["\u200dspid.hay_mineral()", "hay_mineral()", "Consultar sensor de mineral", Color(1, 0.35, 0.85, 1)],
 		["\u200dspid.tiene_espacio()", "tiene_espacio()", "Consultar capacidad de Spid", Color(1, 0.35, 0.85, 1)],
 		["\u200dspid.minerales_en_nave()", "minerales_en_nave()", "Consultar minerales en la nave", Color(1, 0.35, 0.85, 1)],
@@ -424,6 +433,9 @@ func ejecutar_movimiento_spid(
 	if comando == "oeste":
 		return await mi_spid.oeste(pasos)
 
+	if comando == "mover":
+		return await mi_spid.mover("norte", pasos)
+
 	if comando == "minar":
 		if minerales_spid >= CAPACIDAD_SPID:
 			return _crear_error_comando(
@@ -606,6 +618,48 @@ func actualizar_mejoras_visual() -> void:
 			boton_variables.text = "[ SECTOR 3X3 ]\nTRAS ROVER AUTÓNOMO"
 		else:
 			boton_variables.text = "[ SECTOR 3X3 ]\n10 MINERALES"
+
+	var telemetria_on: bool = (
+		GestorSintaxis.esta_desbloqueada("tamano_mundo")
+		or "comprar_telemetria" in MissionService.get_completed_missions()
+		or "telemetria_dinamica" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "telemetria_dinamica"
+	)
+	var variables_completada: bool = (
+		"calibracion_variables" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "calibracion_variables" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_telemetria"
+		or telemetria_on
+	)
+	if boton_telemetria != null:
+		boton_telemetria.disabled = not (variables_completada and not telemetria_on)
+		if telemetria_on:
+			boton_telemetria.text = "[ TELEMETRÍA ]\nDESBLOQUEADO"
+		elif not variables_completada:
+			boton_telemetria.text = "[ TELEMETRÍA ]\nTRAS VARIABLES"
+		else:
+			boton_telemetria.text = "[ TELEMETRÍA ]\n10 MINERALES"
+
+	var sector_4x3_on: bool = (
+		GestorSintaxis.esta_desbloqueada("listas")
+		or "comprar_sector_4x3" in MissionService.get_completed_missions()
+		or "patrulla_lista" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "patrulla_lista"
+	)
+	var telemetria_completada: bool = (
+		"telemetria_dinamica" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "telemetria_dinamica" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_4x3"
+		or sector_4x3_on
+	)
+	if boton_sector_4x3 != null:
+		boton_sector_4x3.disabled = not (telemetria_completada and not sector_4x3_on)
+		if sector_4x3_on:
+			boton_sector_4x3.text = "[ SECTOR 4X3 ]\nDESBLOQUEADO"
+		elif not telemetria_completada:
+			boton_sector_4x3.text = "[ SECTOR 4X3 ]\nTRAS TELEMETRÍA"
+		else:
+			boton_sector_4x3.text = "[ SECTOR 4X3 ]\n15 MINERALES"
 
 	if boton_expansion != null:
 		boton_expansion.disabled = exp1_on
@@ -932,6 +986,90 @@ func _on_button_variables_pressed() -> void:
 	)
 
 
+func _on_button_telemetria_pressed() -> void:
+	var telemetria_comprada: bool = (
+		GestorSintaxis.esta_desbloqueada("tamano_mundo")
+		or "comprar_telemetria" in MissionService.get_completed_missions()
+		or "telemetria_dinamica" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "telemetria_dinamica"
+	)
+	var variables_completada: bool = (
+		"calibracion_variables" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "calibracion_variables" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_telemetria"
+	)
+
+	if telemetria_comprada or not variables_completada:
+		return
+
+	if CodeExecutor.ejecutando:
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
+		return
+
+	var costo: int = PRECIOS.get("telemetria", 10)
+	if minerales_nave < costo:
+		transmision_ada.mostrar_mensaje(
+			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
+			"error",
+			4.0
+		)
+		return
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_telemetria()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Sensor de Telemetría Dinámica instalado! Ahora puedes consultar 'spid.tamano_mundo()'.",
+		"completado",
+		8.0
+	)
+
+
+func _on_button_sector_4x3_pressed() -> void:
+	var mundo := get_parent()
+	var sector_4x3_comprado: bool = (
+		GestorSintaxis.esta_desbloqueada("listas")
+		or "comprar_sector_4x3" in MissionService.get_completed_missions()
+		or "patrulla_lista" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "patrulla_lista"
+	)
+	var telemetria_completada: bool = (
+		"telemetria_dinamica" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "telemetria_dinamica" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_4x3"
+	)
+
+	if mundo == null or sector_4x3_comprado or not telemetria_completada:
+		return
+
+	if CodeExecutor.ejecutando:
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
+		return
+
+	var costo: int = PRECIOS.get("sector_4x3", 15)
+	if minerales_nave < costo:
+		transmision_ada.mostrar_mensaje(
+			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
+			"error",
+			4.0
+		)
+		return
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_sector_4x3()
+	mundo.expandir_mapa_4x3()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Sector 4x3 adquirido y Listas desbloqueadas!\nEl terreno se expande a 4 de ancho × 3 de largo. Ahora puedes programar con listas [...] y spid.mover().",
+		"completado",
+		8.0
+	)
+
+
 func _on_button_mineria_pressed() -> void:
 	if mineria_rapida_desbloqueada:
 		return
@@ -1035,7 +1173,9 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 			"exploracion_3x3",
 			"ciclo_recoleccion",
 			"patrulla_autonoma",
-			"calibracion_variables"
+			"calibracion_variables",
+			"telemetria_dinamica",
+			"patrulla_lista"
 		]
 	):
 		await get_tree().create_timer(3.0).timeout
@@ -1130,10 +1270,39 @@ func _on_mision_completada(mision_id: String) -> void:
 			var msg_vars := (
 				"¡Calibración de variables completada!\n" +
 				"Has parametrizado con éxito la distancia y el bucle usando variables.\n" +
-				"Spid ahora procesa valores reutilizables en memoria.\n" +
-				"¡Fase 5 completada con éxito!"
+				"Próximo objetivo: reúne 10 minerales y adquiere [ TELEMETRÍA DINÁMICA ] en el Centro de Mejoras."
 			)
 			transmision_ada.mostrar_mensaje(msg_vars, "completado", 15.0)
+		"comprar_telemetria":
+			transmision_ada.mostrar_mensaje(
+				"¡Sensor de Telemetría Dinámica instalado en el Spid!\n" +
+				"Ahora puedes invocar 'spid.tamano_mundo()' para leer las dimensiones del cuadrante en tiempo real.\n" +
+				"Nueva misión: TELEMETRÍA DINÁMICA.",
+				"completado",
+				15.0
+			)
+		"telemetria_dinamica":
+			var msg_telemetria := (
+				"¡Telemetría dinámica verificada con éxito!\n" +
+				"Spid calculó las dimensiones del entorno usando 'spid.tamano_mundo()' y parametrizó sus movimientos.\n" +
+				"Próximo objetivo: reúne 15 minerales y adquiere [ SECTOR 4X3 ] en Mejoras para desbloquear el módulo de Listas."
+			)
+			transmision_ada.mostrar_mensaje(msg_telemetria, "completado", 15.0)
+		"comprar_sector_4x3":
+			transmision_ada.mostrar_mensaje(
+				"¡Sector 4x3 y Listas desbloqueados!\n" +
+				"El terreno se expande a 4 de ancho × 3 de largo. Ya puedes definir listas y recorrerlas con spid.mover().\n" +
+				"Nueva misión: PATRULLA CON LISTAS.",
+				"completado",
+				15.0
+			)
+		"patrulla_lista":
+			var msg_lista := (
+				"¡Patrulla con listas ejecutada con éxito!\n" +
+				"Has recorrido el sector 4x3 utilizando una lista de rutas y spid.mover().\n" +
+				"¡Fase 6 completada con éxito!"
+			)
+			transmision_ada.mostrar_mensaje(msg_lista, "completado", 15.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
 				"¡Módulo Condicional IF instalado!\n" +
@@ -1316,6 +1485,14 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Rover autónomo completado. Reúne 10 minerales y adquiere [ SECTOR 3X3 ] en Mejoras para ampliar el terreno a 3x3 y programar con variables."
 		"calibracion_variables":
 			return "Sector 3x3 activo. Declara variables ('vueltas = 2', 'pasos = 2') y úsalas en el bucle 'for' y 'spid.norte(pasos)'."
+		"comprar_telemetria":
+			return "Reúne 10 minerales en la nave y adquiere [ TELEMETRÍA DINÁMICA ] en el Centro de Mejoras para censar el sector."
+		"telemetria_dinamica":
+			return "Consulta 'limite = spid.tamano_mundo()' y usa 'spid.norte(limite - 1)' en bucle continuo hasta entregar 3 minerales."
+		"comprar_sector_4x3":
+			return "Reúne 15 minerales y adquiere [ SECTOR 4X3 ] en Mejoras para expandir a 4 de ancho y programar con listas."
+		"patrulla_lista":
+			return "Sector 4x3 activo: define tu circuito en una lista 'ruta = [...]', recórrela con 'for d in ruta: spid.mover(d)' y entrega 3 minerales."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

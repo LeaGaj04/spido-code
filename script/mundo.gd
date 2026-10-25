@@ -16,6 +16,7 @@ var radio_mapa_desbloqueado: int = 0
 var max_minerales: int = 1
 var corredor_1x3_desbloqueado: bool = false
 var mapa_3x3_desbloqueado: bool = false
+var mapa_4x3_desbloqueado: bool = false
 var casillas_extra_desbloqueadas: bool = false
 var ultima_celda_minada: Vector3i = Vector3i(9999, 9999, 9999)
 
@@ -61,7 +62,7 @@ func _ready():
 		interfaz.aplicar_progreso(progreso)
 
 func _on_veta_lineal_solicitada(_indice: int) -> void:
-	if MissionService != null and MissionService.objective_id == "calibracion_variables":
+	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica"]:
 		generar_deposito_mision_8()
 	else:
 		generar_circuito_for_2x3()
@@ -71,7 +72,7 @@ func _on_mineral_minado(celda: Vector3i) -> void:
 	if MissionService != null and MissionService.objective_id in ["ciclo_recoleccion", "patrulla_autonoma"]:
 		call_deferred("_verificar_regeneracion_circuito_2x3")
 		return
-	if MissionService != null and MissionService.objective_id == "calibracion_variables":
+	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica"]:
 		call_deferred("_verificar_regeneracion_mision_8")
 		return
 	spawn_mineral_aleatorio()
@@ -100,11 +101,14 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 		radio_mapa_desbloqueado >= 1
 	)
 
+	mapa_4x3_desbloqueado = (
+		radio_mapa_desbloqueado >= 4
+	)
 	mapa_3x3_desbloqueado = (
 		radio_mapa_desbloqueado >= 3
 	)
 	casillas_extra_desbloqueadas = radio_mapa_desbloqueado >= 2
-	if mapa_3x3_desbloqueado:
+	if mapa_4x3_desbloqueado or mapa_3x3_desbloqueado:
 		max_minerales = 3
 	elif casillas_extra_desbloqueadas:
 		max_minerales = 2
@@ -112,6 +116,15 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 		max_minerales = 1
 
 	grid_map.clear()
+
+	# Sector 4x3: cuatro columnas (-1 a 2) y tres filas (-2 a 0) con base en (0, 0)
+	if mapa_4x3_desbloqueado:
+		for x in range(-1, 3):
+			for z in range(-2, 1):
+				var casilla := CASILLA_INICIAL + Vector3i(x, 0, z)
+				var tipo_casilla := 1 if (x + z) % 2 == 0 else 2
+				grid_map.set_cell_item(casilla, tipo_casilla)
+		return
 
 	# Sector 3x3: tres columnas centradas en X (-1 a 1) y tres filas (-2 a 0) con base en (0, 0)
 	if mapa_3x3_desbloqueado:
@@ -227,7 +240,7 @@ func generar_minerales_iniciales():
 		generar_circuito_for_2x3()
 		return
 
-	if MissionService != null and MissionService.objective_id == "calibracion_variables":
+	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica"]:
 		generar_deposito_mision_8()
 		return
 
@@ -366,6 +379,20 @@ func expandir_mapa_3x3() -> bool:
 
 	print(
 		"Sector adquirido: terreno expandido a 3x3."
+	)
+
+	return true
+
+
+func expandir_mapa_4x3() -> bool:
+	if mapa_4x3_desbloqueado or not mapa_3x3_desbloqueado:
+		return false
+
+	aplicar_progreso_mapa(4)
+	reubicar_mineral_para_corredor()
+
+	print(
+		"Sector adquirido: terreno expandido a 4x3."
 	)
 
 	return true

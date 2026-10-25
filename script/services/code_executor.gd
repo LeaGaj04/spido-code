@@ -29,6 +29,152 @@ func _es_identificador_valido(nombre: String) -> bool:
 		return false
 	return regex.search(nombre) != null and nombre not in PALABRAS_RESERVADAS
 
+
+func _es_lista_valida(expr: String) -> bool:
+	var limpia := expr.strip_edges()
+	return limpia.begins_with("[") and limpia.ends_with("]")
+
+
+func _parsear_elementos_lista(expr: String) -> Array:
+	var limpia := expr.strip_edges()
+	if not (limpia.begins_with("[") and limpia.ends_with("]")):
+		return []
+	var contenido := limpia.substr(1, limpia.length() - 2).strip_edges()
+	if contenido.is_empty():
+		return []
+	var items := contenido.split(",")
+	var res: Array = []
+	for item in items:
+		var it := item.strip_edges()
+		if (it.begins_with('"') and it.ends_with('"')) or (it.begins_with("'") and it.ends_with("'")):
+			res.append(it.substr(1, it.length() - 2))
+		elif it.is_valid_int():
+			res.append(int(it))
+		else:
+			res.append(it)
+	return res
+
+
+func _es_expresion_valida(expr: String) -> bool:
+	var limpia := expr.strip_edges()
+	if limpia.is_empty():
+		return false
+	if limpia.is_valid_int():
+		return true
+	if _es_identificador_valido(limpia):
+		return true
+	var limpia_lower := limpia.to_lower().replace(" ", "")
+	if limpia_lower in [
+		"spid.tamano_mundo()", "tamano_mundo()",
+		"spid.minerales_en_nave()", "minerales_en_nave()",
+		"spid.minerales_en_rover()", "minerales_en_rover()"
+	]:
+		return true
+	for op in ["+", "-", "*", "//"]:
+		if op in limpia and not limpia.begins_with("-"):
+			var partes := limpia.split(op, false, 1)
+			if partes.size() == 2:
+				return _es_expresion_valida(partes[0]) and _es_expresion_valida(partes[1])
+	return false
+
+
+func _evaluar_expresion(expr: String, variables_env: Dictionary, resultado: Dictionary) -> Dictionary:
+	var limpia := expr.strip_edges()
+	if limpia.is_empty():
+		return {"ok": false, "message": "Expresión vacía."}
+
+	# 1. Operador +
+	if "+" in limpia:
+		var partes := limpia.split("+", false, 1)
+		var izq := _evaluar_expresion(partes[0], variables_env, resultado)
+		if not izq.get("ok", false):
+			return izq
+		var der := _evaluar_expresion(partes[1], variables_env, resultado)
+		if not der.get("ok", false):
+			return der
+		return {"ok": true, "val": int(izq["val"]) + int(der["val"])}
+
+	# 2. Operador - (no confundir con negativos como -1 al inicio)
+	if "-" in limpia and not limpia.begins_with("-"):
+		var partes := limpia.split("-", false, 1)
+		var izq := _evaluar_expresion(partes[0], variables_env, resultado)
+		if not izq.get("ok", false):
+			return izq
+		var der := _evaluar_expresion(partes[1], variables_env, resultado)
+		if not der.get("ok", false):
+			return der
+		return {"ok": true, "val": int(izq["val"]) - int(der["val"])}
+
+	# 3. Operador *
+	if "*" in limpia:
+		var partes := limpia.split("*", false, 1)
+		var izq := _evaluar_expresion(partes[0], variables_env, resultado)
+		if not izq.get("ok", false):
+			return izq
+		var der := _evaluar_expresion(partes[1], variables_env, resultado)
+		if not der.get("ok", false):
+			return der
+		return {"ok": true, "val": int(izq["val"]) * int(der["val"])}
+
+	# 4. Operador //
+	if "//" in limpia:
+		var partes := limpia.split("//", false, 1)
+		var izq := _evaluar_expresion(partes[0], variables_env, resultado)
+		if not izq.get("ok", false):
+			return izq
+		var der := _evaluar_expresion(partes[1], variables_env, resultado)
+		if not der.get("ok", false):
+			return der
+		var divisor: int = int(der["val"])
+		if divisor == 0:
+			return {"ok": false, "message": "División por cero no permitida."}
+		return {"ok": true, "val": int(izq["val"]) / divisor}
+
+	# 5. Literal entero
+	if limpia.is_valid_int():
+		return {"ok": true, "val": int(limpia)}
+
+	# 6. Variable del entorno
+	if variables_env.has(limpia):
+		if resultado.has("variables_used") and limpia not in resultado["variables_used"]:
+			resultado["variables_used"].append(limpia)
+		return {"ok": true, "val": int(variables_env[limpia])}
+
+	# 7. Métodos de telemetría de Spid
+	var limpia_lower := limpia.to_lower().replace(" ", "")
+	if limpia_lower in ["spid.tamano_mundo()", "tamano_mundo()"]:
+		var val := 3
+		var root := Engine.get_main_loop() as SceneTree
+		if root != null and root.current_scene != null:
+			var spid = root.current_scene.find_child("Spid", true, false)
+			if spid != null and spid.has_method("tamano_mundo"):
+				val = spid.tamano_mundo()
+		if resultado.has("variables_used") and "spid.tamano_mundo()" not in resultado["variables_used"]:
+			resultado["variables_used"].append("spid.tamano_mundo()")
+		return {"ok": true, "val": val}
+
+	if limpia_lower in ["spid.minerales_en_nave()", "minerales_en_nave()"]:
+		var val := 0
+		var root := Engine.get_main_loop() as SceneTree
+		if root != null and root.current_scene != null:
+			var interfaz = root.current_scene.get_node_or_null("CanvasLayer")
+			if interfaz != null and "minerales_nave" in interfaz:
+				val = int(interfaz.minerales_nave)
+			elif MissionService != null and MissionService.has_method("_obtener_minerales_nave"):
+				val = MissionService._obtener_minerales_nave()
+		return {"ok": true, "val": val}
+
+	if limpia_lower in ["spid.minerales_en_rover()", "minerales_en_rover()"]:
+		var val := 0
+		var root := Engine.get_main_loop() as SceneTree
+		if root != null and root.current_scene != null:
+			var spid = root.current_scene.find_child("Spid", true, false)
+			if spid != null and spid.has_method("minerales_en_rover"):
+				val = spid.minerales_en_rover()
+		return {"ok": true, "val": val}
+
+	return {"ok": false, "message": "La variable o identificador '" + limpia + "' no ha sido definida."}
+
 func detener_ejecucion() -> void:
 	if ejecutando:
 		detener_solicitado = true
@@ -133,20 +279,14 @@ func ejecutar_codigo(
 
 			var var_name: String = instruccion["var_name"]
 			var var_expr: String = instruccion["var_expr"]
-			var val: int = 0
+			var res_expr := _evaluar_expresion(var_expr, variables_env, resultado)
 
-			if var_expr.is_valid_int():
-				val = int(var_expr)
-			elif variables_env.has(var_expr):
-				val = int(variables_env[var_expr])
-				if var_expr not in resultado["variables_used"]:
-					resultado["variables_used"].append(var_expr)
-			else:
+			if not res_expr.get("ok", false):
 				var err_asig := {
 					"type": "ejecucion",
 					"line": num_linea,
 					"content": cont_linea,
-					"message": "La variable '" + var_expr + "' no ha sido definida."
+					"message": res_expr.get("message", "Error al evaluar la variable '" + var_expr + "'.")
 				}
 				resultado["error_type"] = err_asig["type"]
 				resultado["error_message"] = err_asig["message"]
@@ -155,10 +295,24 @@ func ejecutar_codigo(
 				_finalizar(resultado)
 				return resultado
 
+			var val: int = int(res_expr["val"])
 			variables_env[var_name] = val
 			if var_name not in resultado["variables_defined"]:
 				resultado["variables_defined"].append(var_name)
 
+			linea_finalizada.emit(num_linea, cont_linea)
+			continue
+
+		if tipo == "asignacion_lista":
+			var num_linea: int = instruccion["numero"]
+			var cont_linea: String = instruccion["contenido"]
+			linea_iniciada.emit(num_linea, cont_linea)
+			await _esperar_paso_si_aplica(num_linea, cont_linea)
+			var var_name: String = instruccion["var_name"]
+			var var_elems: Array = instruccion.get("var_elements", [])
+			variables_env[var_name] = var_elems
+			if var_name not in resultado["variables_defined"]:
+				resultado["variables_defined"].append(var_name)
 			linea_finalizada.emit(num_linea, cont_linea)
 			continue
 
@@ -270,11 +424,33 @@ func ejecutar_codigo(
 						var num_for: int = sub_ins["numero"]
 						var cont_for: String = sub_ins["contenido"]
 						var repeticiones_for: int = int(sub_ins.get("repeticiones", 1))
+						var range_var_sub: String = str(sub_ins.get("range_var", ""))
+						if not range_var_sub.is_empty():
+							var res_range_sub := _evaluar_expresion(range_var_sub, variables_env, resultado)
+							if res_range_sub.get("ok", false):
+								repeticiones_for = int(res_range_sub["val"])
 						var cuerpo_for_sub: Array = sub_ins.get("cuerpo", [])
 						resultado["loop_count"] = maxi(int(resultado.get("loop_count", 0)), 1)
+
+						var elementos_iteracion: Array = []
+						var loop_v: String = sub_ins.get("loop_var", "")
+						if sub_ins.get("tipo_for") == "lista":
+							if sub_ins.has("list_var") and not str(sub_ins["list_var"]).is_empty():
+								var l_var: String = str(sub_ins["list_var"])
+								if variables_env.has(l_var) and variables_env[l_var] is Array:
+									elementos_iteracion = variables_env[l_var]
+								if resultado.has("variables_used") and l_var not in resultado["variables_used"]:
+									resultado["variables_used"].append(l_var)
+							else:
+								elementos_iteracion = sub_ins.get("list_literal", [])
+							repeticiones_for = elementos_iteracion.size()
+
 						for it_for in range(repeticiones_for):
 							if detener_solicitado:
 								break
+							if sub_ins.get("tipo_for") == "lista" and it_for < elementos_iteracion.size():
+								if not loop_v.is_empty():
+									variables_env[loop_v] = elementos_iteracion[it_for]
 							resultado["loop_iterations"] = maxi(int(resultado.get("loop_iterations", 0)), it_for + 1)
 							linea_iniciada.emit(num_for, cont_for)
 							await _esperar_paso_si_aplica(num_for, cont_for)
@@ -423,6 +599,9 @@ func _ejecutar_instruccion_simple(
 	linea_iniciada.emit(numero_linea, contenido)
 	await _esperar_paso_si_aplica(numero_linea, contenido)
 
+	if instruccion.has("loop_var") and instruccion.has("loop_val"):
+		variables_env[instruccion["loop_var"]] = instruccion["loop_val"]
+
 	if detener_solicitado:
 		linea_finalizada.emit(numero_linea, contenido)
 		return {
@@ -432,16 +611,15 @@ func _ejecutar_instruccion_simple(
 		}
 
 	if not step_var.is_empty():
-		if variables_env.has(step_var):
-			pasos = int(variables_env[step_var])
-			if step_var not in resultado["variables_used"]:
-				resultado["variables_used"].append(step_var)
+		var res_eval := _evaluar_expresion(step_var, variables_env, resultado)
+		if res_eval.get("ok", false):
+			pasos = int(res_eval["val"])
 			if pasos <= 0:
 				var error_var := {
 					"type": "ejecucion",
 					"line": numero_linea,
 					"content": contenido,
-					"message": "La variable '" + step_var + "' tiene un valor que debe ser mayor a cero."
+					"message": "La expresión o variable '" + step_var + "' tiene un valor que debe ser mayor a cero."
 				}
 				resultado["error_type"] = error_var["type"]
 				resultado["error_message"] = error_var["message"]
@@ -454,7 +632,7 @@ func _ejecutar_instruccion_simple(
 				"type": "sintaxis",
 				"line": numero_linea,
 				"content": contenido,
-				"message": "La variable '" + step_var + "' no ha sido definida antes de su uso."
+				"message": res_eval.get("message", "La variable '" + step_var + "' no ha sido definida antes de su uso.")
 			}
 			resultado["error_type"] = error_undef["type"]
 			resultado["error_message"] = error_undef["message"]
@@ -466,6 +644,55 @@ func _ejecutar_instruccion_simple(
 	if comando.is_empty():
 		linea_finalizada.emit(numero_linea, contenido)
 		return {"ok": true}
+
+	if comando == "mover":
+		var dir_objetivo: String = str(instruccion.get("dir_literal", ""))
+		var dir_v: String = str(instruccion.get("dir_var", ""))
+		if dir_objetivo.is_empty() and not dir_v.is_empty():
+			if variables_env.has(dir_v):
+				dir_objetivo = str(variables_env[dir_v]).to_lower().replace('"', '').replace("'", "")
+				if resultado.has("variables_used") and dir_v not in resultado["variables_used"]:
+					resultado["variables_used"].append(dir_v)
+			else:
+				var err_dir := {
+					"type": "ejecucion",
+					"line": numero_linea,
+					"content": contenido,
+					"message": "La variable de dirección '" + dir_v + "' no ha sido definida."
+				}
+				resultado["error_type"] = err_dir["type"]
+				resultado["error_message"] = err_dir["message"]
+				resultado["errors"].append(err_dir)
+				error_detectado.emit(err_dir)
+				linea_finalizada.emit(numero_linea, contenido)
+				return {"ok": false}
+
+		if dir_objetivo not in ["norte", "sur", "este", "oeste"]:
+			var err_dir_val := {
+				"type": "ejecucion",
+				"line": numero_linea,
+				"content": contenido,
+				"message": "Dirección inválida en spid.mover(): '" + dir_objetivo + "'. Debe ser 'norte', 'sur', 'este' u 'oeste'."
+			}
+			resultado["error_type"] = err_dir_val["type"]
+			resultado["error_message"] = err_dir_val["message"]
+			resultado["errors"].append(err_dir_val)
+			error_detectado.emit(err_dir_val)
+			linea_finalizada.emit(numero_linea, contenido)
+			return {"ok": false}
+
+		var res_mov: Dictionary = await ejecutar_comando.call(dir_objetivo, pasos)
+		resultado["commands_used"].append("mover")
+		resultado["commands_used"].append(dir_objetivo)
+		resultado["commands_data"].append({"command": "mover", "direction": dir_objetivo, "steps": pasos})
+		resultado["command_count"] += 1
+		resultado["movement_count"] += int(res_mov.get("steps_completed", 0))
+		var recolectados_m: int = int(res_mov.get("minerals_collected", 0))
+		var transferidos_m: int = int(res_mov.get("minerals_transferred", 0))
+		resultado["minerals_collected"] += recolectados_m
+		resultado["minerals_transferred"] += transferidos_m
+		linea_finalizada.emit(numero_linea, contenido)
+		return res_mov
 
 	var resultado_comando: Dictionary = await ejecutar_comando.call(
 		comando,
@@ -544,11 +771,21 @@ func _analizar_asignacion(contenido: String, numero_linea: int) -> Dictionary:
 			"'" + nombre_var + "' no es un nombre de variable válido."
 		)
 
-	if not (expr_val.is_valid_int() or _es_identificador_valido(expr_val)):
+	if _es_lista_valida(expr_val):
+		var elementos := _parsear_elementos_lista(expr_val)
+		return {
+			"ok": true,
+			"tipo": "asignacion_lista",
+			"var_name": nombre_var,
+			"var_elements": elementos,
+			"var_expr": expr_val
+		}
+
+	if not _es_expresion_valida(expr_val):
 		return _error_de_linea(
 			numero_linea,
 			contenido,
-			"El valor asignado a '" + nombre_var + "' debe ser un número entero o una variable previa."
+			"El valor asignado a '" + nombre_var + "' debe ser un número entero, una lista, una variable o una expresión válida."
 		)
 
 	return {
@@ -602,7 +839,8 @@ func analizar_linea(contenido: String, numero_linea: int) -> Dictionary:
 		"este",
 		"oeste",
 		"minar",
-		"transferir"
+		"transferir",
+		"mover"
 	]
 
 	if comando not in comandos_validos:
@@ -617,6 +855,41 @@ func analizar_linea(contenido: String, numero_linea: int) -> Dictionary:
 		posicion_parentesis_derecho - posicion_parentesis_izquierdo - 1
 	).strip_edges()
 
+	if comando == "mover":
+		if argumento.is_empty():
+			return _error_de_linea(
+				numero_linea,
+				contenido,
+				"spid.mover() requiere especificar la dirección (ej: spid.mover('norte') o spid.mover(direccion))."
+			)
+		var partes_mover := argumento.split(",", false, 1)
+		var dir_arg := partes_mover[0].strip_edges()
+		var pasos_mover := 1
+		if partes_mover.size() > 1:
+			var p_arg := partes_mover[1].strip_edges()
+			if p_arg.is_valid_int():
+				pasos_mover = int(p_arg)
+		var dir_literal := ""
+		var dir_var := ""
+		if (dir_arg.begins_with('"') and dir_arg.ends_with('"')) or (dir_arg.begins_with("'") and dir_arg.ends_with("'")):
+			dir_literal = dir_arg.substr(1, dir_arg.length() - 2).to_lower()
+		elif _es_identificador_valido(dir_arg):
+			dir_var = dir_arg
+		else:
+			return _error_de_linea(
+				numero_linea,
+				contenido,
+				"El parámetro de dirección en spid.mover() debe ser un texto entre comillas o una variable válida."
+			)
+		return {
+			"ok": true,
+			"command": "mover",
+			"steps": pasos_mover,
+			"step_var": "",
+			"dir_literal": dir_literal,
+			"dir_var": dir_var
+		}
+
 	var pasos := 1
 	var step_var := ""
 
@@ -629,13 +902,13 @@ func analizar_linea(contenido: String, numero_linea: int) -> Dictionary:
 					contenido,
 					"La cantidad de pasos debe ser mayor que cero."
 				)
-		elif _es_identificador_valido(argumento):
+		elif _es_identificador_valido(argumento) or _es_expresion_valida(argumento):
 			step_var = argumento
 		else:
 			return _error_de_linea(
 				numero_linea,
 				contenido,
-				"El parámetro debe ser un número entero o una variable válida."
+				"El parámetro debe ser un número entero, una variable o una expresión válida (ej. 'limite - 1')."
 			)
 
 	if comando in ["minar", "transferir"] and not argumento.is_empty():
@@ -687,16 +960,32 @@ func compilar_programa(codigo: String) -> Dictionary:
 				return res_asig
 			var vname: String = res_asig["var_name"]
 			var vexpr: String = res_asig["var_expr"]
-			if vexpr.is_valid_int():
-				variables_compile_env[vname] = int(vexpr)
-			elif variables_compile_env.has(vexpr):
-				variables_compile_env[vname] = variables_compile_env[vexpr]
+			var res_compile_expr := _evaluar_expresion(vexpr, variables_compile_env, {})
+			if res_compile_expr.get("ok", false):
+				variables_compile_env[vname] = res_compile_expr["val"]
 			instrucciones.append({
 				"tipo": "asignacion",
 				"numero": numero_linea,
 				"contenido": contenido,
 				"var_name": vname,
 				"var_expr": vexpr,
+				"loop_iteration": 0
+			})
+			indice += 1
+			continue
+
+		if res_asig.get("tipo", "") == "asignacion_lista":
+			if not res_asig["ok"]:
+				return res_asig
+			var vname_l: String = res_asig["var_name"]
+			var velements: Array = res_asig["var_elements"]
+			variables_compile_env[vname_l] = velements
+			instrucciones.append({
+				"tipo": "asignacion_lista",
+				"numero": numero_linea,
+				"contenido": contenido,
+				"var_name": vname_l,
+				"var_elements": velements,
 				"loop_iteration": 0
 			})
 			indice += 1
@@ -858,9 +1147,19 @@ func compilar_programa(codigo: String) -> Dictionary:
 			var range_var: String = str(resultado_for.get("range_var", ""))
 			var repeticiones: int = int(resultado_for.get("repeticiones", 0))
 
-			if not range_var.is_empty():
-				if variables_compile_env.has(range_var):
-					repeticiones = int(variables_compile_env[range_var])
+			if resultado_for.get("tipo_for") == "lista":
+				if resultado_for.has("list_var"):
+					var l_var: String = resultado_for["list_var"]
+					if not variables_compile_env.has(l_var):
+						return _error_de_linea(
+							numero_linea,
+							contenido,
+							"La lista '" + l_var + "' no ha sido definida antes de su uso."
+						)
+			elif not range_var.is_empty():
+				var res_range := _evaluar_expresion(range_var, variables_compile_env, {})
+				if res_range.get("ok", false):
+					repeticiones = int(res_range["val"])
 				else:
 					return _error_de_linea(
 						numero_linea,
@@ -973,11 +1272,30 @@ func compilar_programa(codigo: String) -> Dictionary:
 					"El bucle necesita al menos una instrucción con sangría."
 				)
 
-			for iteracion in range(repeticiones):
-				for instruccion in cuerpo_for:
-					var copia: Dictionary = instruccion.duplicate(true)
-					copia["loop_iteration"] = iteracion + 1
-					instrucciones.append(copia)
+			if resultado_for.get("tipo_for") == "lista":
+				var loop_v: String = resultado_for.get("loop_var", "")
+				var lista_elem: Array = []
+				if resultado_for.has("list_var"):
+					var lv: String = resultado_for["list_var"]
+					if variables_compile_env.has(lv) and variables_compile_env[lv] is Array:
+						lista_elem = variables_compile_env[lv]
+				else:
+					lista_elem = resultado_for.get("list_literal", [])
+
+				for it_idx in range(lista_elem.size()):
+					var item_val = lista_elem[it_idx]
+					for instruccion in cuerpo_for:
+						var copia: Dictionary = instruccion.duplicate(true)
+						copia["loop_iteration"] = it_idx + 1
+						copia["loop_var"] = loop_v
+						copia["loop_val"] = item_val
+						instrucciones.append(copia)
+			else:
+				for iteracion in range(repeticiones):
+					for instruccion in cuerpo_for:
+						var copia: Dictionary = instruccion.duplicate(true)
+						copia["loop_iteration"] = iteracion + 1
+						instrucciones.append(copia)
 
 			continue
 
@@ -1146,6 +1464,32 @@ func compilar_programa(codigo: String) -> Dictionary:
 					if not res_for_anidado["ok"]:
 						return res_for_anidado
 
+					var range_var_anidado: String = str(res_for_anidado.get("range_var", ""))
+					var repeticiones_anidado: int = int(res_for_anidado.get("repeticiones", 1))
+
+					if res_for_anidado.get("tipo_for") == "lista":
+						if res_for_anidado.has("list_var"):
+							var lv_anidado: String = res_for_anidado["list_var"]
+							if not variables_compile_env.has(lv_anidado):
+								return _error_de_linea(
+									num_linea_for,
+									contenido_cuerpo,
+									"La lista '" + lv_anidado + "' no ha sido definida antes de su uso."
+								)
+					elif not range_var_anidado.is_empty():
+						var res_range := _evaluar_expresion(range_var_anidado, variables_compile_env, {})
+						if res_range.get("ok", false):
+							repeticiones_anidado = int(res_range["val"])
+						else:
+							return _error_de_linea(
+								num_linea_for,
+								contenido_cuerpo,
+								"La variable '" + range_var_anidado + "' no ha sido definida antes de su uso en range()."
+							)
+						var validacion := _validar_repeticiones_for(repeticiones_anidado, contenido_cuerpo, num_linea_for)
+						if not validacion["ok"]:
+							return validacion
+
 					var sangria_for_anidado := sangria_cuerpo
 					var cuerpo_for_anidado: Array = []
 					indice += 1
@@ -1236,10 +1580,14 @@ func compilar_programa(codigo: String) -> Dictionary:
 
 					var ins_for_anidado: Dictionary = {
 						"tipo": "for",
+						"tipo_for": res_for_anidado.get("tipo_for", "range"),
+						"loop_var": res_for_anidado.get("loop_var", ""),
+						"list_var": res_for_anidado.get("list_var", ""),
+						"list_literal": res_for_anidado.get("list_literal", []),
 						"numero": num_linea_for,
 						"contenido": contenido_cuerpo,
-						"repeticiones": int(res_for_anidado.get("repeticiones", 1)),
-						"range_var": str(res_for_anidado.get("range_var", "")),
+						"repeticiones": repeticiones_anidado,
+						"range_var": range_var_anidado,
 						"cuerpo": cuerpo_for_anidado
 					}
 					cuerpo_while.append(ins_for_anidado)
@@ -1306,51 +1654,94 @@ func _analizar_for(
 	contenido: String,
 	numero_linea: int
 ) -> Dictionary:
-	var expresion := RegEx.new()
-	var patron := (
-		"^(?i)for\\s+([A-Za-z_][A-Za-z0-9_]*)"
-		+ "\\s+in\\s+range\\((.+)\\):$"
-	)
+	var expresion_range := RegEx.new()
+	var patron_range := "^(?i)for\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+in\\s+range\\((.+)\\):$"
 
-	if expresion.compile(patron) != OK:
+	if expresion_range.compile(patron_range) != OK:
 		return _error_de_linea(
 			numero_linea,
 			contenido,
 			"No se pudo preparar el analizador del bucle."
 		)
 
-	var coincidencia := expresion.search(contenido)
+	var coincidencia_range := expresion_range.search(contenido)
 
-	if coincidencia == null:
-		return _error_de_linea(
-			numero_linea,
-			contenido,
-			"Usa el formato: for ciclo in range(10):"
-		)
+	if coincidencia_range != null:
+		var arg_range := coincidencia_range.get_string(2).strip_edges()
+		var repeticiones := 0
+		var range_var := ""
 
-	var arg_range := coincidencia.get_string(2).strip_edges()
-	var repeticiones := 0
-	var range_var := ""
+		if arg_range.is_valid_int():
+			repeticiones = int(arg_range)
+		elif _es_identificador_valido(arg_range) or _es_expresion_valida(arg_range):
+			range_var = arg_range
+		else:
+			return _error_de_linea(
+				numero_linea,
+				contenido,
+				"range() debe contener un número entero o una variable válida."
+			)
 
-	if arg_range.is_valid_int():
-		repeticiones = int(arg_range)
-	elif _es_identificador_valido(arg_range):
-		range_var = arg_range
-	else:
-		return _error_de_linea(
-			numero_linea,
-			contenido,
-			"range() debe contener un número entero o una variable válida."
-		)
+		if not range_var.is_empty():
+			return {
+				"ok": true,
+				"tipo_for": "range",
+				"loop_var": coincidencia_range.get_string(1),
+				"repeticiones": 1,
+				"range_var": range_var
+			}
 
-	if not range_var.is_empty():
-		return {
-			"ok": true,
-			"repeticiones": 1,
-			"range_var": range_var
-		}
+		var res_val := _validar_repeticiones_for(repeticiones, contenido, numero_linea)
+		if res_val["ok"]:
+			res_val["tipo_for"] = "range"
+			res_val["loop_var"] = coincidencia_range.get_string(1)
+		return res_val
 
-	return _validar_repeticiones_for(repeticiones, contenido, numero_linea)
+	# Comprobar iteración sobre listas: for <var> in <lista_o_identificador>:
+	var expresion_lista := RegEx.new()
+	var patron_lista := "^(?i)for\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+in\\s+(.+):$"
+	if expresion_lista.compile(patron_lista) == OK:
+		var coincidencia_lista := expresion_lista.search(contenido)
+		if coincidencia_lista != null:
+			var loop_var := coincidencia_lista.get_string(1).strip_edges()
+			var iterable := coincidencia_lista.get_string(2).strip_edges()
+
+			if not _es_identificador_valido(loop_var):
+				return _error_de_linea(
+					numero_linea,
+					contenido,
+					"'" + loop_var + "' no es un nombre de variable válido para el bucle for."
+				)
+
+			if _es_lista_valida(iterable):
+				var elems := _parsear_elementos_lista(iterable)
+				return {
+					"ok": true,
+					"tipo_for": "lista",
+					"loop_var": loop_var,
+					"list_literal": elems,
+					"repeticiones": elems.size()
+				}
+			elif _es_identificador_valido(iterable):
+				return {
+					"ok": true,
+					"tipo_for": "lista",
+					"loop_var": loop_var,
+					"list_var": iterable,
+					"repeticiones": 1
+				}
+			else:
+				return _error_de_linea(
+					numero_linea,
+					contenido,
+					"El bucle for debe iterar sobre range(...) o una lista válida (ej. for x in ruta:)."
+				)
+
+	return _error_de_linea(
+		numero_linea,
+		contenido,
+		"Usa el formato: for ciclo in range(10): o for elemento in lista:"
+	)
 
 
 func _validar_repeticiones_for(repeticiones: int, contenido: String, numero_linea: int) -> Dictionary:

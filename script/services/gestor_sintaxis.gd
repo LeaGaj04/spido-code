@@ -10,9 +10,11 @@ var sintaxis_desbloqueada: Dictionary = {
 	"if": false,
 	"else": false,
 	"in range": false,
+	"tamano_mundo": false,
+	"listas": false,
 }
 
-const CLAVES_CONOCIDAS := ["for", "while", "if", "else", "in range"]
+const CLAVES_CONOCIDAS := ["for", "while", "if", "else", "in range", "tamano_mundo", "listas"]
 
 
 # Restaura únicamente las mejoras de sintaxis que conoce el juego. Las claves
@@ -29,6 +31,12 @@ func validar_codigo(codigo: String) -> bool:
 
 	for palabra_clave in sintaxis_desbloqueada:
 		if sintaxis_desbloqueada[palabra_clave]:
+			continue
+
+		if palabra_clave == "listas":
+			if "[" in codigo and "]" in codigo:
+				print(ERROR_SINTAXIS_BLOQUEADA)
+				return false
 			continue
 
 		if _contiene_palabra_clave(codigo_normalizado, palabra_clave):

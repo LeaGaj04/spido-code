@@ -710,6 +710,42 @@ disabled = true
 text = "[ VARIABLES ]
 PRÓXIMA FASE"
 
+[node name="ButtonTelemetria" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=75203910]
+layout_mode = 0
+offset_left = 700.0
+offset_top = 610.0
+offset_right = 960.0
+offset_bottom = 675.0
+tooltip_text = "Sensor de Telemetría Dinámica
+Capacidad de consultar en tiempo real las dimensiones del sector con spid.tamano_mundo()."
+theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
+theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
+disabled = true
+text = "[ TELEMETRÍA ]
+PRÓXIMA FASE"
+
+[node name="ButtonSector4x3" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=75203911]
+layout_mode = 0
+offset_left = 700.0
+offset_top = 685.0
+offset_right = 960.0
+offset_bottom = 750.0
+tooltip_text = "Sector 4x3 y Listas
+Expande el terreno a 4 de ancho por 3 de largo y desbloquea el uso de listas en Python."
+theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
+theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
+disabled = true
+text = "[ SECTOR 4X3 ]
+PRÓXIMA FASE"
+
 [node name="ButtonExpansion1" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1665977669]
 layout_mode = 0
 offset_left = 350.0
@@ -949,6 +985,8 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonWhile" to="CanvasLayer" method="_on_button_while_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonFor" to="CanvasLayer" method="_on_button_for_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonVariables" to="CanvasLayer" method="_on_button_variables_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonTelemetria" to="CanvasLayer" method="_on_button_telemetria_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector4x3" to="CanvasLayer" method="_on_button_sector_4x3_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonIf" to="CanvasLayer" method="_on_button_if_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion1" to="CanvasLayer" method="_on_button_expansion_1_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion2" to="CanvasLayer" method="_on_button_expansion_2_pressed"]
