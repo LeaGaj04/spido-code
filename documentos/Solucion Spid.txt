@@ -1,0 +1,339 @@
+================================================================================
+                    SPIDOCODE — GUIA MAESTRA DE SOLUCIONES
+             Progresion Curricular de Misiones y Sintaxis (1 a 15)
+================================================================================
+
+--------------------------------------------------------------------------------
+FASE 1: SECUENCIA LINEAL (LISTO)
+--------------------------------------------------------------------------------
+
+Mision 1: Tutorial Basico (Aprender a minar y transferir)
+Terreno: Base 1x1
+
+spid.minar()
+spid.transferir()
+
+
+Mision 2: Direcciones Ortogonales (Secuencia norte / sur)
+Terreno: Corredor 1x3
+
+spid.norte()
+spid.minar()
+spid.sur()
+spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 2: BUCLE WHILE (LISTO)
+--------------------------------------------------------------------------------
+
+Mision 3: Automatizacion Continua (while True)
+Terreno: Corredor 1x3
+
+while True:
+    spid.norte()
+    spid.minar()
+    spid.sur()
+    spid.transferir()
+
+
+Mision 4: Detencion por Cuota (while con condicion numerica)
+Terreno: Corredor 1x3
+
+while spid.minerales_en_nave() < 10:
+    spid.norte()
+    spid.minar()
+    spid.sur()
+    spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 3: CONDICIONALES IF / ELSE (LISTO)
+--------------------------------------------------------------------------------
+
+Mision 5: Patrulla con Sensor de Mineral (Sector 2x3, 6 casillas)
+Terreno: Sector 2x3
+
+while spid.minerales_en_nave() < 20:
+    spid.norte()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.este()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.sur()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.sur()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.oeste()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.norte()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 4: BUCLE FOR IN RANGE (LISTO)
+--------------------------------------------------------------------------------
+
+Mision 6: Circuito Acotado (for in range en Sector 2x3)
+Terreno: Sector 2x3
+
+for i in range(2):
+    spid.norte()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.este()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.sur()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.sur()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.oeste()
+    if spid.hay_mineral():
+        spid.minar()
+
+    spid.norte()
+    if spid.hay_mineral():
+        spid.minar()
+
+spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 4.5: INTEGRACION CONTROL DE FLUJO (EL ROVER AUTONOMO) (LISTO)
+--------------------------------------------------------------------------------
+
+Mision 7: Operacion Desatendida (while True + for + if hay_mineral)
+Terreno: Sector 2x3
+
+while True:
+    for i in range(2):
+        spid.norte()
+        if spid.hay_mineral():
+            spid.minar()
+
+        spid.este()
+        if spid.hay_mineral():
+            spid.minar()
+
+        spid.sur()
+        if spid.hay_mineral():
+            spid.minar()
+
+        spid.sur()
+        if spid.hay_mineral():
+            spid.minar()
+
+        spid.oeste()
+        if spid.hay_mineral():
+            spid.minar()
+
+        spid.norte()
+        if spid.hay_mineral():
+            spid.minar()
+
+    spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 5: PARAMETROS Y VARIABLES (LISTO)
+--------------------------------------------------------------------------------
+
+Mision 8: Calibracion con Variables (Parametros de distancia)
+Terreno: Sector 3x3
+
+vueltas = 2
+pasos = 2
+
+for i in range(vueltas):
+    spid.norte(pasos)
+    if spid.hay_mineral():
+        spid.minar()
+    spid.sur(pasos)
+
+spid.transferir()
+
+
+Mision 9 (Fase 5.5): Telemetria Dinamica de Sensores (tamano_mundo)
+Terreno: Sector 3x3
+
+limite = spid.tamano_mundo()
+vueltas = 3
+
+while True:
+    for i in range(vueltas):
+        spid.norte(limite - 1)
+        if spid.hay_mineral():
+            spid.minar()
+        spid.sur(limite - 1)
+
+    spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 6: LISTAS Y COLECCIONES
+--------------------------------------------------------------------------------
+
+Mision 10: Plan de Vuelo en Lista (Iteracion for direccion in ruta)
+Terreno: Sector 3x3
+
+ruta = ["norte", "este", "sur", "sur", "oeste", "norte"]
+
+for direccion in ruta:
+    spid.mover(direccion)
+    if spid.hay_mineral():
+        spid.minar()
+
+spid.transferir()
+
+
+Mision 11 (Fase 6.5): Control de Tolva Llena (Interrupcion por capacidad)
+Terreno: Sector 3x3
+
+ruta = ["norte", "este", "sur", "sur", "oeste", "norte"]
+
+while True:
+    for direccion in ruta:
+        spid.mover(direccion)
+        if spid.hay_mineral():
+            spid.minar()
+
+        if not spid.tiene_espacio():
+            while not spid.en_base():
+                spid.sur()
+            spid.transferir()
+
+
+--------------------------------------------------------------------------------
+FASE 7: FUNCIONES PROPIAS (DEF)
+--------------------------------------------------------------------------------
+
+Mision 12: Subrutinas Propias (Empaquetar censar_y_minar con def)
+Terreno: Sector 3x3
+
+def censar_y_minar():
+    if spid.hay_mineral():
+        spid.minar()
+
+ruta = ["norte", "este", "sur", "sur", "oeste", "norte"]
+
+for direccion in ruta:
+    spid.mover(direccion)
+    censar_y_minar()
+
+spid.transferir()
+
+
+Mision 13 (Fase 7.5): Separacion Modular (Rutina principal limpia)
+Terreno: Sector 3x3
+
+def censar_y_minar():
+    if spid.hay_mineral():
+        spid.minar()
+    if not spid.tiene_espacio():
+        descargar_en_base()
+
+def descargar_en_base():
+    while not spid.en_base():
+        spid.sur()
+    spid.transferir()
+
+ruta = ["norte", "este", "sur", "sur", "oeste", "norte"]
+
+while True:
+    for direccion in ruta:
+        spid.mover(direccion)
+        censar_y_minar()
+
+
+--------------------------------------------------------------------------------
+FASE 8: ALGORITMO MAESTRO (BARRIDO TOTAL ZIGZAG)
+--------------------------------------------------------------------------------
+
+Mision 14: Barrido de Cuadrante por Columnas (Subir y bajar)
+Terreno: Sector 3x3
+
+alto = 2
+
+while True:
+    # Sube por la columna oeste censando
+    for fila in range(alto):
+        spid.norte()
+        if spid.hay_mineral():
+            spid.minar()
+
+    # Pasa a la siguiente columna al este
+    spid.este()
+    if spid.hay_mineral():
+        spid.minar()
+
+    # Baja por la columna este censando
+    for fila in range(alto):
+        spid.sur()
+        if spid.hay_mineral():
+            spid.minar()
+
+    spid.oeste()
+    spid.transferir()
+
+
+Mision 15 (Fase 8.5): PROTOCOLO MAESTRO SPIDO (El Bot Definitivo)
+Terreno: Sector Abierto / Mapa Completo
+
+def censar_y_minar():
+    if spid.hay_mineral():
+        spid.minar()
+    # Si la tolva esta llena, se va solo a la nave, se vacia y continua
+    if not spid.tiene_espacio():
+        descargar_en_base()
+
+def descargar_en_base():
+    while not spid.en_base():
+        spid.sur()
+    spid.transferir()
+
+def barrer_todo_el_mapa():
+    ancho = spid.tamano_mundo()
+    alto = spid.tamano_mundo() - 1
+
+    # Recorre de izquierda a derecha (columna por columna)
+    for col in range(ancho):
+        # 1. Sube por la columna censando cada casilla
+        for fila in range(alto):
+            spid.norte()
+            censar_y_minar()
+
+        # 2. Salta al lado (este) si no es la ultima columna
+        if col < ancho - 1:
+            spid.este()
+            censar_y_minar()
+
+        # 3. Baja por la siguiente columna censando cada casilla
+        for fila in range(alto):
+            spid.sur()
+            censar_y_minar()
+
+    # Al terminar el mapa completo, entrega todo en la nave
+    descargar_en_base()
+
+# Bucle infinito del Rover 100% Autonomo
+while True:
+    barrer_todo_el_mapa()
