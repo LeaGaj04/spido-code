@@ -61,6 +61,7 @@ var minerales_spid : int = 0
 @onready var boton_sector_4x3: Button = $PanelTienda/LienzoArbol/ButtonSector4x3
 @onready var boton_sector_4x4: Button = $PanelTienda/LienzoArbol/ButtonSector4x4
 @onready var boton_sector_5x4: Button = $PanelTienda/LienzoArbol/ButtonSector5x4
+@onready var boton_sector_5x5: Button = $PanelTienda/LienzoArbol/ButtonSector5x5
 @onready var boton_expansion: Button = $PanelTienda/LienzoArbol/ButtonExpansion1
 @onready var boton_expansion_2: Button = $PanelTienda/LienzoArbol/ButtonExpansion2
 @onready var boton_expansion_3: Button = $PanelTienda/LienzoArbol/ButtonExpansion3
@@ -89,6 +90,7 @@ const PRECIOS = {
 	"sector_4x3": 15,
 	"sector_4x4": 20,
 	"sector_5x4": 25,
+	"sector_5x5": 30,
 	"if": 10,
 	"telemetria": 10,
 	"mineria_rapida": 15
@@ -141,6 +143,8 @@ func _ready() -> void:
 		boton_sector_4x4.pressed.connect(_on_button_sector_4x4_pressed)
 	if boton_sector_5x4 != null and not boton_sector_5x4.pressed.is_connected(_on_button_sector_5x4_pressed):
 		boton_sector_5x4.pressed.connect(_on_button_sector_5x4_pressed)
+	if boton_sector_5x5 != null and not boton_sector_5x5.pressed.is_connected(_on_button_sector_5x5_pressed):
+		boton_sector_5x5.pressed.connect(_on_button_sector_5x5_pressed)
 	_marcar_interfaz_inicializada()
 
 
@@ -711,6 +715,26 @@ func actualizar_mejoras_visual() -> void:
 		else:
 			boton_sector_5x4.text = "[ SECTOR 5X4 ]\n25 MINERALES"
 
+	var sector_5x5_on: bool = (
+		"comprar_sector_5x5" in MissionService.get_completed_missions()
+		or "barrido_columnas" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "barrido_columnas"
+	)
+	var parametros_completados: bool = (
+		"funciones_parametrizadas" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "funciones_parametrizadas" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_5x5"
+		or sector_5x5_on
+	)
+	if boton_sector_5x5 != null:
+		boton_sector_5x5.disabled = not (parametros_completados and not sector_5x5_on)
+		if sector_5x5_on:
+			boton_sector_5x5.text = "[ SECTOR 5X5 ]\nDESBLOQUEADO"
+		elif not parametros_completados:
+			boton_sector_5x5.text = "[ SECTOR 5X5 ]\nTRAS PARÁMETROS"
+		else:
+			boton_sector_5x5.text = "[ SECTOR 5X5 ]\n30 MINERALES"
+
 	if boton_expansion != null:
 		boton_expansion.disabled = exp1_on
 		boton_expansion.text = "[ CORREDOR 1X3 ]\nDESBLOQUEADO" if exp1_on else "[ CORREDOR 1X3 ]\n1 MINERAL"
@@ -1206,6 +1230,48 @@ func _on_button_sector_5x4_pressed() -> void:
 	)
 
 
+func _on_button_sector_5x5_pressed() -> void:
+	var mundo := get_parent()
+	var sector_5x5_comprado: bool = (
+		"comprar_sector_5x5" in MissionService.get_completed_missions()
+		or "barrido_columnas" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "barrido_columnas"
+	)
+	var parametros_completados: bool = (
+		"funciones_parametrizadas" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "funciones_parametrizadas" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_5x5"
+	)
+
+	if mundo == null or sector_5x5_comprado or not parametros_completados:
+		return
+
+	if CodeExecutor.ejecutando:
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
+		return
+
+	var costo: int = PRECIOS.get("sector_5x5", 30)
+	if minerales_nave < costo:
+		transmision_ada.mostrar_mensaje(
+			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
+			"error",
+			4.0
+		)
+		return
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_sector_5x5()
+	mundo.expandir_mapa_5x5()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Sector 5x5 adquirido!\nEl terreno se expande a cuadrante completo de 5x5 (25 casillas). Ya puedes implementar el barrido sistemático bidimensional por columnas.",
+		"completado",
+		8.0
+	)
+
+
 func _on_button_mineria_pressed() -> void:
 	if mineria_rapida_desbloqueada:
 		return
@@ -1314,7 +1380,8 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 			"patrulla_lista",
 			"barrido_listas_autonomo",
 			"rutina_funciones",
-			"funciones_parametrizadas"
+			"funciones_parametrizadas",
+			"barrido_columnas"
 		]
 	):
 		await get_tree().create_timer(3.0).timeout
@@ -1476,9 +1543,24 @@ func _on_mision_completada(mision_id: String) -> void:
 			var msg_param := (
 				"¡Misión con funciones parametrizadas completada con éxito!\n" +
 				"Has creado funciones reutilizables que aceptan argumentos dinámicos y coordinado a Spid en el Sector 5x4.\n" +
-				"¡Fase 7.5 completada con éxito!"
+				"Próximo objetivo: reúne 30 minerales y adquiere [ SECTOR 5X5 ] en Mejoras para expandir a cuadrante completo y aprender barrido por columnas."
 			)
 			transmision_ada.mostrar_mensaje(msg_param, "completado", 15.0)
+		"comprar_sector_5x5":
+			transmision_ada.mostrar_mensaje(
+				"¡Sector 5x5 desbloqueado!\n" +
+				"El terreno se expande a 5 de ancho × 5 de largo (25 casillas). Es momento de abandonar la patrulla perimetral e implementar un barrido sistemático bidimensional.\n" +
+				"Nueva misión: BARRIDO POR COLUMNAS.",
+				"completado",
+				15.0
+			)
+		"barrido_columnas":
+			var msg_barrido_col := (
+				"¡Barrido por columnas completado con éxito!\n" +
+				"Has cubierto sistemáticamente el interior del cuadrante 5x5 subiendo y bajando columnas con funciones modulares.\n" +
+				"¡Fase 8 completada con éxito!"
+			)
+			transmision_ada.mostrar_mensaje(msg_barrido_col, "completado", 15.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
 				"¡Módulo Condicional IF instalado!\n" +
@@ -1679,6 +1761,10 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Reúne 25 minerales y adquiere [ SECTOR 5X4 ] en Mejoras para expandir a 5 de ancho y programar funciones con parámetros."
 		"funciones_parametrizadas":
 			return "Sector 5x4 activo: define una función con parámetros 'def nombre(param):', invócala en tu bucle y transfiere 5 minerales a la nave."
+		"comprar_sector_5x5":
+			return "Reúne 30 minerales y adquiere [ SECTOR 5X5 ] en Mejoras para expandir a cuadrante completo de 5x5 y programar barrido por columnas."
+		"barrido_columnas":
+			return "Sector 5x5 activo: modulariza tu código y ejecuta un barrido sistemático por columnas subiendo y bajando para entregar 6 minerales a la nave."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

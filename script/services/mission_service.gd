@@ -36,6 +36,8 @@ enum EstadoMision {
 	RUTINA_FUNCIONES,
 	COMPRAR_SECTOR_5X4,
 	FUNCIONES_PARAMETRIZADAS,
+	COMPRAR_SECTOR_5X5,
+	BARRIDO_COLUMNAS,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -160,6 +162,14 @@ func preparar_mision_expansion() -> void:
 
 	if objective_id == "comprar_sector_5x4":
 		iniciar_funciones_parametrizadas()
+		return
+
+	if objective_id == "funciones_parametrizadas":
+		iniciar_mision_comprar_sector_5x5()
+		return
+
+	if objective_id == "comprar_sector_5x5":
+		iniciar_barrido_columnas()
 		return
 
 	if objective_id == "exploracion_3x3":
@@ -513,10 +523,30 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "funciones_parametrizadas" and objective_completed)
 		or (objective_id == "funciones_parametrizadas" and "funciones_parametrizadas" in completed_missions)
 	):
-		estado_actual = EstadoMision.COMPLETADA
+		iniciar_mision_comprar_sector_5x5()
 		return
 	if objective_id == "funciones_parametrizadas":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.FUNCIONES_PARAMETRIZADAS
+		return
+
+	if (
+		(objective_id == "comprar_sector_5x5" and objective_completed)
+		or (objective_id == "comprar_sector_5x5" and "comprar_sector_5x5" in completed_missions)
+	):
+		iniciar_barrido_columnas()
+		return
+	if objective_id == "comprar_sector_5x5":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_SECTOR_5X5
+		return
+
+	if (
+		(objective_id == "barrido_columnas" and objective_completed)
+		or (objective_id == "barrido_columnas" and "barrido_columnas" in completed_missions)
+	):
+		estado_actual = EstadoMision.COMPLETADA
+		return
+	if objective_id == "barrido_columnas":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.BARRIDO_COLUMNAS
 		return
 
 	if (
@@ -753,6 +783,31 @@ func get_objetivo_actual() -> String:
 			"        mover_y_recolectar(d)\n" +
 			"    spid.transferir()\n\n" +
 			"Tu desafío: define una función con parámetros, invócala pasándole argumentos y transfiere al menos 5 minerales a la nave."
+		)
+
+	if objective_id == "comprar_sector_5x5":
+		return (
+			"EXPANSIÓN SECTOR 5X5 (CUADRANTE COMPLETO)\n" +
+			"¡Funciones con parámetros dominadas! Reúne 30 minerales en la nave nodriza y adquiere " +
+			"[ SECTOR 5X5 ] en el Centro de Mejoras para expandir a 5 de largo y desbloquear el barrido sistemático bidimensional."
+		)
+
+	if objective_id == "barrido_columnas":
+		return (
+			"BARRIDO POR COLUMNAS (SECTOR 5X5)\n" +
+			"Es momento de abandonar la patrulla perimetral e implementar un barrido sistemático:\n" +
+			"Spid sube por una columna censando con su función modular, cruza al este/oeste y baja por la contigua.\n\n" +
+			"def censar_y_avanzar(direccion, pasos):\n" +
+			"    for i in range(pasos):\n" +
+			"        spid.mover(direccion)\n" +
+			"        if spid.hay_mineral():\n" +
+			"            spid.minar()\n\n" +
+			"while True:\n" +
+			"    censar_y_avanzar(\"norte\", 4)\n" +
+			"    spid.mover(\"este\")\n" +
+			"    censar_y_avanzar(\"sur\", 4)\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: implementa un barrido bidimensional por columnas, cubre al menos dos columnas completas y transfiere 6 minerales a la nave."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -1016,6 +1071,24 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "funciones_parametrizadas":
 		_evaluar_funciones_parametrizadas(resultado)
+		return
+
+	if objective_id == "comprar_sector_5x5":
+		var minerales_nave: int = _obtener_minerales_nave()
+		if minerales_nave >= 30:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes los 30 minerales necesarios! Ve al menú MEJORAS y adquiere [ SECTOR 5X5 ] para continuar."
+			)
+		else:
+			objetivo_actualizado.emit(
+				objective_id,
+				"Tienes %d de 30 minerales en la nave. Sigue recolectando y luego adquiere [ SECTOR 5X5 ] en MEJORAS." % minerales_nave
+			)
+		return
+
+	if objective_id == "barrido_columnas":
+		_evaluar_barrido_columnas(resultado)
 		return
 
 	if objective_id != "ruta_calibracion":
@@ -1754,6 +1827,103 @@ func _evaluar_funciones_parametrizadas(resultado: Dictionary, informar_pendiente
 	mision_completada.emit(objective_id)
 	print("¡Misión funciones_parametrizadas completada con éxito!")
 	CodeExecutor.call_deferred("detener_ejecucion")
+	iniciar_mision_comprar_sector_5x5()
+
+
+func iniciar_mision_comprar_sector_5x5() -> void:
+	objective_id = "comprar_sector_5x5"
+	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
+	objective_completed = "comprar_sector_5x5" in completed_missions or map_tier >= 7
+	if objective_completed:
+		iniciar_barrido_columnas()
+		return
+	estado_actual = EstadoMision.COMPRAR_SECTOR_5X5
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: comprar_sector_5x5 (Fase 8)")
+
+
+func registrar_compra_sector_5x5() -> void:
+	if "comprar_sector_5x5" not in completed_missions:
+		completed_missions.append("comprar_sector_5x5")
+	desbloquear_conocimiento("barrido_bidimensional")
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+	mision_completada.emit("comprar_sector_5x5")
+	iniciar_barrido_columnas()
+
+
+func iniciar_barrido_columnas() -> void:
+	objective_id = "barrido_columnas"
+	objective_completed = "barrido_columnas" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.BARRIDO_COLUMNAS
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: barrido_columnas (Fase 8)")
+
+
+func _evaluar_barrido_columnas(resultado: Dictionary, informar_pendientes: bool = true) -> void:
+	var functions_defined: Array = resultado.get("functions_defined", [])
+	var commands_data: Array = resultado.get("commands_data", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var code: String = str(resultado.get("code", "")).to_lower()
+
+	# 1. Requiere modularizar el barrido con al menos una función propia
+	if functions_defined.is_empty() and not ("def " in code):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Debes estructurar el barrido usando al menos una función modular (ej: 'def censar_y_avanzar(direccion, pasos):')."
+		)
+		return
+
+	# 2. Requiere barrido por columnas (desplazamiento vertical en ambos sentidos y cambio de columna)
+	var pasos_norte := 0
+	var pasos_sur := 0
+	var pasos_horizontales := 0
+
+	for item in commands_data:
+		var cmd: String = item.get("command", "")
+		var direction: String = item.get("direction", "")
+		var steps: int = int(item.get("steps", 1))
+		if cmd == "norte" or direction == "norte":
+			pasos_norte += steps
+		elif cmd == "sur" or direction == "sur":
+			pasos_sur += steps
+		elif cmd in ["este", "oeste"] or direction in ["este", "oeste"]:
+			pasos_horizontales += steps
+
+	if pasos_norte < 4 or pasos_sur < 4 or pasos_horizontales < 1:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para ejecutar un barrido por columnas debes subir por una columna (Norte), cruzar al menos una columna (Este/Oeste) y bajar por la contigua (Sur)."
+		)
+		return
+
+	# 3. Requiere recolectar y transferir al menos 6 minerales
+	if recolectados < 6 or transferidos < 6:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Barrido en curso: recolecta y transfiere al menos 6 minerales en el Sector 5x5 (" + str(recolectados) + "/6 minados, " + str(transferidos) + "/6 transferidos)."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("barrido_bidimensional")
+	mision_completada.emit(objective_id)
+	print("¡Misión barrido_columnas completada con éxito!")
+	CodeExecutor.call_deferred("detener_ejecucion")
 
 	
 func desbloquear_modulo_for() -> void:
@@ -2037,6 +2207,8 @@ func evaluar_progreso_programa(resultado: Dictionary) -> void:
 		_evaluar_rutina_funciones(resultado, false)
 	elif objective_id == "funciones_parametrizadas":
 		_evaluar_funciones_parametrizadas(resultado, false)
+	elif objective_id == "barrido_columnas":
+		_evaluar_barrido_columnas(resultado, false)
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:

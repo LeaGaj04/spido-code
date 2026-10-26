@@ -19,6 +19,7 @@ var mapa_3x3_desbloqueado: bool = false
 var mapa_4x3_desbloqueado: bool = false
 var mapa_4x4_desbloqueado: bool = false
 var mapa_5x4_desbloqueado: bool = false
+var mapa_5x5_desbloqueado: bool = false
 var casillas_extra_desbloqueadas: bool = false
 var ultima_celda_minada: Vector3i = Vector3i(9999, 9999, 9999)
 
@@ -103,6 +104,9 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 		radio_mapa_desbloqueado >= 1
 	)
 
+	mapa_5x5_desbloqueado = (
+		radio_mapa_desbloqueado >= 7
+	)
 	mapa_5x4_desbloqueado = (
 		radio_mapa_desbloqueado >= 6
 	)
@@ -116,7 +120,9 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 		radio_mapa_desbloqueado >= 3
 	)
 	casillas_extra_desbloqueadas = radio_mapa_desbloqueado >= 2
-	if mapa_5x4_desbloqueado:
+	if mapa_5x5_desbloqueado:
+		max_minerales = 6
+	elif mapa_5x4_desbloqueado:
 		max_minerales = 5
 	elif mapa_4x4_desbloqueado:
 		max_minerales = 4
@@ -128,6 +134,15 @@ func aplicar_progreso_mapa(map_tier: int) -> void:
 		max_minerales = 1
 
 	grid_map.clear()
+
+	# Sector 5x5: cinco columnas (-2 a 2) y cinco filas (-4 a 0) con base en (0, 0)
+	if mapa_5x5_desbloqueado:
+		for x in range(-2, 3):
+			for z in range(-4, 1):
+				var casilla := CASILLA_INICIAL + Vector3i(x, 0, z)
+				var tipo_casilla := 1 if (x + z) % 2 == 0 else 2
+				grid_map.set_cell_item(casilla, tipo_casilla)
+		return
 
 	# Sector 5x4: cinco columnas (-2 a 2) y cuatro filas (-3 a 0) con base en (0, 0)
 	if mapa_5x4_desbloqueado:
@@ -451,6 +466,20 @@ func expandir_mapa_5x4() -> bool:
 
 	print(
 		"Sector adquirido: terreno expandido a 5x4."
+	)
+
+	return true
+
+
+func expandir_mapa_5x5() -> bool:
+	if mapa_5x5_desbloqueado or not mapa_5x4_desbloqueado:
+		return false
+
+	aplicar_progreso_mapa(7)
+	reubicar_mineral_para_corredor()
+
+	print(
+		"Sector adquirido: terreno expandido a 5x5."
 	)
 
 	return true

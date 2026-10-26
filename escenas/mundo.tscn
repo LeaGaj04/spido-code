@@ -776,6 +776,22 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
 disabled = true
 
+[node name="ButtonSector5x5" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=75203914]
+layout_mode = 0
+offset_left = 700.0
+offset_top = 910.0
+offset_right = 960.0
+offset_bottom = 975.0
+tooltip_text = "Sector 5x5 y Barrido por Columnas
+Expande el terreno a 5 de ancho por 5 de largo y desbloquea el protocolo de barrido sistemático bidimensional."
+theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
+theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_tienda_disabled")
+disabled = true
+
 [node name="ButtonExpansion1" type="Button" parent="CanvasLayer/PanelTienda/LienzoArbol" unique_id=1665977669]
 layout_mode = 0
 offset_left = 350.0
@@ -1019,6 +1035,7 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector4x3" to="CanvasLayer" method="_on_button_sector_4x3_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector4x4" to="CanvasLayer" method="_on_button_sector_4x4_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector5x4" to="CanvasLayer" method="_on_button_sector_5x4_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector5x5" to="CanvasLayer" method="_on_button_sector_5x5_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonIf" to="CanvasLayer" method="_on_button_if_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion1" to="CanvasLayer" method="_on_button_expansion_1_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion2" to="CanvasLayer" method="_on_button_expansion_2_pressed"]

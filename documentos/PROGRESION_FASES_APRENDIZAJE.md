@@ -19,8 +19,8 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **6.5** | **Barrido Autónomo con Listas** | Sector 4x3 (Consolidación) | Integración total: `while True:` + listas `[...]` + `spid.mover(d)` + sensores `if` | `barrido_listas_autonomo` | **100%** |
 | **7** | **Funciones (`def`)** | Sector 4x4 (20 minerales) | Definición e invocación de funciones `def nombre():`, modularización de rutinas | `comprar_sector_4x4`<br>`rutina_funciones` | **100%** |
 | **7.5** | **Funciones con Parámetros** | Sector 5x4 (25 minerales) | `def nombre(param):`, invocación `nombre(arg)`, argumentos en rutinas | `comprar_sector_5x4`<br>`funciones_parametrizadas` | **100%** |
-| **8** | **Módulos e `import`** | Módulos de Rover | `import`, modularización de rutinas | *Por definir* | **Pendiente** |
-| **9** | **Algoritmos / Endgame** | Todo el mapa | Algoritmos de ordenamiento, optimización de batería y pureza | *Por definir* | **Pendiente** |
+| **8** | **Barrido por Columnas** | Sector 5x5 (30 minerales) | Algoritmo de barrido bidimensional sistemático por columnas | `comprar_sector_5x5`<br>`barrido_columnas` | **100%** |
+| **8.5** | **Protocolo Maestro Spido** | Sector 5x5 (Consolidación) | Barrido en zigzag con auto-descarga cuando tolva está llena (`spid.tiene_espacio()`) | `protocolo_maestro` | **Pendiente** |
 
 ---
 
@@ -141,6 +141,15 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 * **Misiones:**
   1. `comprar_sector_5x4`: Expansión física a 5 de ancho y desbloqueo de `def nombre(param):`.
   2. `funciones_parametrizadas`: Creación de funciones configurables (ej. `def mover_y_recolectar(direccion):`) invocadas con argumentos dentro de un bucle perimetral para recolectar y transferir 5 minerales.
+
+---
+
+### Fase 8: Sector 5x5 y Barrido por Columnas (100% Completada)
+* **Objetivo:** Abandono definitivo de la patrulla perimetral e implementación de un barrido bidimensional sistemático por columnas para limpiar el interior del mapa.
+* **Terreno:** Sector 5x5 (25 casillas cuadradas completas, $X \in [-2, 2], Z \in [-4, 0]$, base en $(0,0,0)$, Coste: 30 minerales).
+* **Misiones:**
+  1. `comprar_sector_5x5`: Expansión física a cuadrante completo de 5 de largo y desbloqueo del protocolo de barrido bidimensional.
+  2. `barrido_columnas`: Modularización del movimiento en columnas (ej. `censar_y_avanzar(direccion, pasos)`), cubriendo al menos dos columnas completas (subiendo y bajando) y transfiriendo al menos 6 minerales a la nave.
 
 ---
 
