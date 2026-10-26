@@ -94,6 +94,8 @@ const PRECIOS = {
 
 func _ready() -> void:
 	preload("res://script/tienda_layout.gd").construir(panel_tienda)
+	var panel_dev_test = preload("res://script/panel_test.gd").new()
+	add_child(panel_dev_test)
 	barra_codigo.gui_input.connect(_on_barra_codigo_gui_input)
 	caja_codigo.code_completion_enabled = true
 	caja_codigo.code_completion_prefixes = PackedStringArray(["."])
