@@ -1547,6 +1547,7 @@ func iniciar_mision_comprar_sector_4x3() -> void:
 		return
 	estado_actual = EstadoMision.COMPRAR_SECTOR_4X3
 	mision_iniciada.emit(objective_id)
+	veta_lineal_solicitada.emit(0)
 	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
 	print("Misión iniciada: comprar_sector_4x3")
 
