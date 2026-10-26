@@ -65,7 +65,7 @@ func _ready():
 		interfaz.aplicar_progreso(progreso)
 
 func _on_veta_lineal_solicitada(_indice: int) -> void:
-	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica"]:
+	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica", "comprar_sector_4x3"]:
 		generar_deposito_mision_8()
 	else:
 		generar_circuito_for_2x3()
@@ -75,7 +75,7 @@ func _on_mineral_minado(celda: Vector3i) -> void:
 	if MissionService != null and MissionService.objective_id in ["ciclo_recoleccion", "patrulla_autonoma"]:
 		call_deferred("_verificar_regeneracion_circuito_2x3")
 		return
-	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica"]:
+	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica", "comprar_sector_4x3"]:
 		call_deferred("_verificar_regeneracion_mision_8")
 		return
 	spawn_mineral_aleatorio()
@@ -285,7 +285,7 @@ func generar_minerales_iniciales():
 		generar_circuito_for_2x3()
 		return
 
-	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica"]:
+	if MissionService != null and MissionService.objective_id in ["calibracion_variables", "comprar_telemetria", "telemetria_dinamica", "comprar_sector_4x3"]:
 		generar_deposito_mision_8()
 		return
 
