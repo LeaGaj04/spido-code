@@ -202,7 +202,9 @@ func tamano_mundo() -> int:
 		nodo = get_tree().current_scene
 	if nodo != null and nodo.has_method("get_map_tier"):
 		var tier: int = nodo.get_map_tier()
-		if tier >= 4:
+		if tier >= 6:
+			return 5
+		elif tier >= 4:
 			return 4
 		elif tier >= 3:
 			return 3
