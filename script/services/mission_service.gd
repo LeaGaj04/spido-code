@@ -31,6 +31,7 @@ enum EstadoMision {
 	TELEMETRIA_DINAMICA,
 	COMPRAR_SECTOR_4X3,
 	PATRULLA_LISTA,
+	BARRIDO_LISTAS_AUTONOMO,
 	COMPRAR_SECTOR_4X4,
 	RUTINA_FUNCIONES,
 }
@@ -140,6 +141,10 @@ func preparar_mision_expansion() -> void:
 		return
 
 	if objective_id == "patrulla_lista":
+		iniciar_barrido_listas_autonomo()
+		return
+
+	if objective_id == "barrido_listas_autonomo":
 		iniciar_mision_comprar_sector_4x4()
 		return
 
@@ -446,10 +451,20 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "patrulla_lista" and objective_completed)
 		or (objective_id == "patrulla_lista" and "patrulla_lista" in completed_missions)
 	):
-		iniciar_mision_comprar_sector_4x4()
+		iniciar_barrido_listas_autonomo()
 		return
 	if objective_id == "patrulla_lista":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_LISTA
+		return
+
+	if (
+		(objective_id == "barrido_listas_autonomo" and objective_completed)
+		or (objective_id == "barrido_listas_autonomo" and "barrido_listas_autonomo" in completed_missions)
+	):
+		iniciar_mision_comprar_sector_4x4()
+		return
+	if objective_id == "barrido_listas_autonomo":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.BARRIDO_LISTAS_AUTONOMO
 		return
 
 	if (
@@ -647,6 +662,20 @@ func get_objetivo_actual() -> String:
 			"            spid.minar()\n" +
 			"    spid.transferir()\n\n" +
 			"Tu desafío: define tu circuito en una lista y patrulla hasta transferir al menos 3 minerales a la nave."
+		)
+
+	if objective_id == "barrido_listas_autonomo":
+		return (
+			"EL BARRIDO AUTÓNOMO CON LISTAS (SECTOR 4X3)\n" +
+			"Consolida tu aprendizaje: combina listas, bucles y sensores para patrullar y limpiar el sector 4x3 de forma 100% autónoma:\n\n" +
+			"ruta = [\"norte\", \"norte\", \"este\", \"sur\", \"este\", \"norte\", \"este\", \"sur\", \"sur\", \"oeste\", \"oeste\", \"oeste\"]\n\n" +
+			"while True:\n" +
+			"    for d in ruta:\n" +
+			"        spid.mover(d)\n" +
+			"        if spid.hay_mineral():\n" +
+			"            spid.minar()\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: automatiza el ciclo continuo con tu lista y transfiere al menos 3 minerales a la nave nodriza sin intervención manual."
 		)
 
 	if objective_id == "comprar_sector_4x4":
@@ -893,6 +922,10 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "patrulla_lista":
 		_evaluar_patrulla_lista(resultado)
+		return
+
+	if objective_id == "barrido_listas_autonomo":
+		_evaluar_barrido_listas_autonomo(resultado)
 		return
 
 	if objective_id == "comprar_sector_4x4":
@@ -1385,6 +1418,85 @@ func _evaluar_patrulla_lista(resultado: Dictionary, informar_pendientes: bool = 
 	mision_completada.emit(objective_id)
 	print("¡Misión patrulla_lista completada con éxito!")
 	CodeExecutor.call_deferred("detener_ejecucion")
+	iniciar_barrido_listas_autonomo()
+
+
+func iniciar_barrido_listas_autonomo() -> void:
+	objective_id = "barrido_listas_autonomo"
+	objective_completed = "barrido_listas_autonomo" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.BARRIDO_LISTAS_AUTONOMO
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: barrido_listas_autonomo (Fase 6.5)")
+
+
+func _evaluar_barrido_listas_autonomo(resultado: Dictionary, informar_pendientes: bool = true) -> void:
+	var comandos_usados: Array = resultado.get("commands_used", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var codigo: String = str(resultado.get("code", "")).to_lower().replace(" ", "")
+	var if_evaluations: int = int(resultado.get("if_evaluations", 0))
+
+	# 1. Requiere ciclo while True:
+	if not codigo.contains("whiletrue:") and not codigo.contains("while(true):"):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Para un barrido autónomo continuo, debes enlazar tu rutina dentro de un 'while True:'."
+		)
+		return
+
+	# 2. Requiere uso de listas [...] y bucle for
+	if not ("[" in codigo and "]" in codigo) or not ("for" in codigo):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Define tu ruta en una lista 'ruta = [...]' y recórrela usando 'for direccion in ruta:'."
+		)
+		return
+
+	# 3. Requiere comando mover
+	if "mover" not in comandos_usados and not codigo.contains("spid.mover"):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Utiliza 'spid.mover(direccion)' dentro de tu bucle para recorrer los pasos de la lista."
+		)
+		return
+
+	# 4. Requiere sensor condicional if spid.hay_mineral():
+	if not codigo.contains("if") or if_evaluations == 0:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Evalúa cada casilla con 'if spid.hay_mineral():' antes de minar para evitar paradas innecesarias."
+		)
+		return
+
+	# 5. Requiere recolectar y transferir al menos 3 minerales
+	if recolectados < 3 or transferidos < 3:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"El barrido autónomo está operando, pero debes recolectar y transferir al menos 3 minerales para completar la fase."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("lista")
+	mision_completada.emit(objective_id)
+	print("¡Misión barrido_listas_autonomo completada con éxito!")
+	CodeExecutor.call_deferred("detener_ejecucion")
 	iniciar_mision_comprar_sector_4x4()
 
 
@@ -1751,6 +1863,8 @@ func evaluar_progreso_programa(resultado: Dictionary) -> void:
 		_evaluar_telemetria_dinamica(resultado, false)
 	elif objective_id == "patrulla_lista":
 		_evaluar_patrulla_lista(resultado, false)
+	elif objective_id == "barrido_listas_autonomo":
+		_evaluar_barrido_listas_autonomo(resultado, false)
 	elif objective_id == "rutina_funciones":
 		_evaluar_rutina_funciones(resultado, false)
 

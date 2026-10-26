@@ -672,8 +672,8 @@ func actualizar_mejoras_visual() -> void:
 		or MissionService.objective_id == "rutina_funciones"
 	)
 	var listas_completadas: bool = (
-		"patrulla_lista" in MissionService.get_completed_missions()
-		or (MissionService.objective_id == "patrulla_lista" and MissionService.objective_completed)
+		"barrido_listas_autonomo" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "barrido_listas_autonomo" and MissionService.objective_completed)
 		or MissionService.objective_id == "comprar_sector_4x4"
 		or sector_4x4_on
 	)
@@ -1104,8 +1104,8 @@ func _on_button_sector_4x4_pressed() -> void:
 		or MissionService.objective_id == "rutina_funciones"
 	)
 	var listas_completadas: bool = (
-		"patrulla_lista" in MissionService.get_completed_missions()
-		or (MissionService.objective_id == "patrulla_lista" and MissionService.objective_completed)
+		"barrido_listas_autonomo" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "barrido_listas_autonomo" and MissionService.objective_completed)
 		or MissionService.objective_id == "comprar_sector_4x4"
 	)
 
@@ -1244,6 +1244,7 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 			"calibracion_variables",
 			"telemetria_dinamica",
 			"patrulla_lista",
+			"barrido_listas_autonomo",
 			"rutina_funciones"
 		]
 	):
@@ -1369,9 +1370,16 @@ func _on_mision_completada(mision_id: String) -> void:
 			var msg_lista := (
 				"¡Patrulla con listas ejecutada con éxito!\n" +
 				"Has recorrido el sector 4x3 utilizando una lista de rutas y spid.mover().\n" +
-				"Próximo objetivo: reúne 20 minerales y adquiere [ SECTOR 4X4 ] en Mejoras para desbloquear el módulo de Funciones (def)."
+				"Nueva misión: EL BARRIDO AUTÓNOMO CON LISTAS."
 			)
 			transmision_ada.mostrar_mensaje(msg_lista, "completado", 15.0)
+		"barrido_listas_autonomo":
+			var msg_barrido := (
+				"¡Barrido autónomo completado con éxito!\n" +
+				"Has integrado listas, bucles continuos y sensores para limpiar el Sector 4x3 de forma 100% desatendida.\n" +
+				"Próximo objetivo: reúne 20 minerales y adquiere [ SECTOR 4X4 ] en Mejoras para desbloquear el módulo de Funciones (def)."
+			)
+			transmision_ada.mostrar_mensaje(msg_barrido, "completado", 15.0)
 		"comprar_sector_4x4":
 			transmision_ada.mostrar_mensaje(
 				"¡Sector 4x4 y Funciones desbloqueados!\n" +
@@ -1577,6 +1585,8 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Reúne 15 minerales y adquiere [ SECTOR 4X3 ] en Mejoras para expandir a 4 de ancho y programar con listas."
 		"patrulla_lista":
 			return "Sector 4x3 activo: define tu circuito en una lista 'ruta = [...]', recórrela con 'for d in ruta: spid.mover(d)' y entrega 3 minerales."
+		"barrido_listas_autonomo":
+			return "Sector 4x3: integra 'while True:', tu lista de ruta, 'spid.mover()' y sensores para transferir 3 minerales de forma continua."
 		"comprar_sector_4x4":
 			return "Reúne 20 minerales y adquiere [ SECTOR 4X4 ] en Mejoras para expandir a 4 de largo y programar con funciones (def)."
 		"rutina_funciones":

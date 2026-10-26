@@ -12,9 +12,11 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **2** | **Bucle `while`** | Corredor 1x3 (1 mineral) | `while`, comparación numérica (`<`, `<=`, `>`, `>=`, `==`) | `trabajo_continuo` (`while True`)<br>`cuota_suministro` (`while < 10`) | **100%** |
 | **3** | **Condicionales `if / else`** | Sector 2x3 (10 minerales) | `if`, `else`, sensor `spid.hay_mineral()` | `senales_inciertas` (Patrulla y Plan B)<br>`comprar_mapa_3x3` | **100%** |
 | **4** | **Bucle `for`** | Sector 2x3 (6 casillas) | `for`, `in range(N)` | `ciclo_recoleccion` | **100%** |
+| **4.5** | **El Rover Autónomo** | Sector 2x3 (Consolidación) | Integración total de control: `while True:` + `for in range` + `if` | `patrulla_autonoma` | **100%** |
 | **5** | **Parámetros y Variables** | Sector 3x3 (10 minerales) | Argumentos numéricos `spid.norte(2)`, variables `vueltas = 2`, `pasos = 2` | `comprar_sector_3x3`<br>`calibracion_variables` | **100%** |
 | **5.5** | **Telemetría Dinámica** | Sector 3x3 | `spid.tamano_mundo()`, expresiones aritméticas `limite - 1` | `comprar_telemetria`<br>`telemetria_dinamica` | **100%** |
 | **6** | **Listas y Colecciones** | Sector 4x3 (15 minerales) | Listas `ruta = ["norte", "este"]`, `spid.mover(dir)`, iteración `for d in lista:` | `comprar_sector_4x3`<br>`patrulla_lista` | **100%** |
+| **6.5** | **Barrido Autónomo con Listas** | Sector 4x3 (Consolidación) | Integración total: `while True:` + listas `[...]` + `spid.mover(d)` + sensores `if` | `barrido_listas_autonomo` | **100%** |
 | **7** | **Funciones (`def`)** | Sector 4x4 (20 minerales) | Definición e invocación de funciones `def nombre():`, modularización de rutinas | `comprar_sector_4x4`<br>`rutina_funciones` | **100%** |
 | **8** | **Módulos e `import`** | Módulos de Rover | `import`, modularización de rutinas | *Por definir* | **Pendiente** |
 | **9** | **Algoritmos / Endgame** | Todo el mapa | Algoritmos de ordenamiento, optimización de batería y pureza | *Por definir* | **Pendiente** |
