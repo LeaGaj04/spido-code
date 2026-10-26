@@ -62,6 +62,7 @@ var minerales_spid : int = 0
 @onready var boton_sector_4x4: Button = $PanelTienda/LienzoArbol/ButtonSector4x4
 @onready var boton_sector_5x4: Button = $PanelTienda/LienzoArbol/ButtonSector5x4
 @onready var boton_sector_5x5: Button = $PanelTienda/LienzoArbol/ButtonSector5x5
+@onready var boton_protocolo_maestro: Button = $PanelTienda/LienzoArbol/ButtonProtocoloMaestro
 @onready var boton_expansion: Button = $PanelTienda/LienzoArbol/ButtonExpansion1
 @onready var boton_expansion_2: Button = $PanelTienda/LienzoArbol/ButtonExpansion2
 @onready var boton_expansion_3: Button = $PanelTienda/LienzoArbol/ButtonExpansion3
@@ -91,6 +92,7 @@ const PRECIOS = {
 	"sector_4x4": 20,
 	"sector_5x4": 25,
 	"sector_5x5": 30,
+	"protocolo_maestro": 35,
 	"if": 10,
 	"telemetria": 10,
 	"mineria_rapida": 15
@@ -145,6 +147,8 @@ func _ready() -> void:
 		boton_sector_5x4.pressed.connect(_on_button_sector_5x4_pressed)
 	if boton_sector_5x5 != null and not boton_sector_5x5.pressed.is_connected(_on_button_sector_5x5_pressed):
 		boton_sector_5x5.pressed.connect(_on_button_sector_5x5_pressed)
+	if boton_protocolo_maestro != null and not boton_protocolo_maestro.pressed.is_connected(_on_button_protocolo_maestro_pressed):
+		boton_protocolo_maestro.pressed.connect(_on_button_protocolo_maestro_pressed)
 	_marcar_interfaz_inicializada()
 
 
@@ -735,6 +739,27 @@ func actualizar_mejoras_visual() -> void:
 		else:
 			boton_sector_5x5.text = "[ SECTOR 5X5 ]\n30 MINERALES"
 
+	var protocolo_on: bool = (
+		GestorSintaxis.esta_desbloqueada("tiene_espacio")
+		or "comprar_protocolo_maestro" in MissionService.get_completed_missions()
+		or "protocolo_maestro" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "protocolo_maestro"
+	)
+	var barrido_completado: bool = (
+		"barrido_columnas" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "barrido_columnas" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_protocolo_maestro"
+		or protocolo_on
+	)
+	if boton_protocolo_maestro != null:
+		boton_protocolo_maestro.disabled = not (barrido_completado and not protocolo_on)
+		if protocolo_on:
+			boton_protocolo_maestro.text = "[ PROTOCOLO MAESTRO ]\nDESBLOQUEADO"
+		elif not barrido_completado:
+			boton_protocolo_maestro.text = "[ PROTOCOLO MAESTRO ]\nTRAS BARRIDO"
+		else:
+			boton_protocolo_maestro.text = "[ PROTOCOLO MAESTRO ]\n35 MINERALES"
+
 	if boton_expansion != null:
 		boton_expansion.disabled = exp1_on
 		boton_expansion.text = "[ CORREDOR 1X3 ]\nDESBLOQUEADO" if exp1_on else "[ CORREDOR 1X3 ]\n1 MINERAL"
@@ -1272,6 +1297,47 @@ func _on_button_sector_5x5_pressed() -> void:
 	)
 
 
+func _on_button_protocolo_maestro_pressed() -> void:
+	var protocolo_comprado: bool = (
+		GestorSintaxis.esta_desbloqueada("tiene_espacio")
+		or "comprar_protocolo_maestro" in MissionService.get_completed_missions()
+		or "protocolo_maestro" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "protocolo_maestro"
+	)
+	var barrido_completado: bool = (
+		"barrido_columnas" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "barrido_columnas" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_protocolo_maestro"
+	)
+
+	if protocolo_comprado or not barrido_completado:
+		return
+
+	if CodeExecutor.ejecutando:
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
+		return
+
+	var costo: int = PRECIOS.get("protocolo_maestro", 35)
+	if minerales_nave < costo:
+		transmision_ada.mostrar_mensaje(
+			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
+			"error",
+			4.0
+		)
+		return
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_protocolo_maestro()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Protocolo Maestro desbloqueado!\nSensor de tolva 'spid.tiene_espacio()' en línea. Despliega la automatización total de cuadrante 5x5.",
+		"completado",
+		8.0
+	)
+
+
 func _on_button_mineria_pressed() -> void:
 	if mineria_rapida_desbloqueada:
 		return
@@ -1381,7 +1447,8 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 			"barrido_listas_autonomo",
 			"rutina_funciones",
 			"funciones_parametrizadas",
-			"barrido_columnas"
+			"barrido_columnas",
+			"protocolo_maestro"
 		]
 	):
 		await get_tree().create_timer(3.0).timeout
@@ -1558,9 +1625,24 @@ func _on_mision_completada(mision_id: String) -> void:
 			var msg_barrido_col := (
 				"¡Barrido por columnas completado con éxito!\n" +
 				"Has cubierto sistemáticamente el interior del cuadrante 5x5 subiendo y bajando columnas con funciones modulares.\n" +
-				"¡Fase 8 completada con éxito!"
+				"Próximo objetivo: reúne 35 minerales y adquiere [ PROTOCOLO MAESTRO ] en Mejoras para desbloquear el sensor de tolva y la gran misión final de SpidoCode."
 			)
 			transmision_ada.mostrar_mensaje(msg_barrido_col, "completado", 15.0)
+		"comprar_protocolo_maestro":
+			transmision_ada.mostrar_mensaje(
+				"¡Protocolo Maestro y Sensor de Tolva adquiridos!\n" +
+				"Spid ahora cuenta con 'spid.tiene_espacio()' para monitorear su carga en tiempo real.\n" +
+				"Misión final: PROTOCOLO MAESTRO SPIDO.",
+				"completado",
+				15.0
+			)
+		"protocolo_maestro":
+			var msg_final := (
+				"¡FELICITACIONES, INGENIERO! ¡PROTOCOLO MAESTRO CUMPLIDO!\n" +
+				"Has dominado la programación en Python desde comandos secuenciales elementales hasta el desarrollo de un Rover de Exploración Minera 100% autónomo.\n" +
+				"¡Has completado oficialmente todo el currículo didáctico de SpidoCode!"
+			)
+			transmision_ada.mostrar_mensaje(msg_final, "completado", 25.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
 				"¡Módulo Condicional IF instalado!\n" +
@@ -1765,6 +1847,10 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Reúne 30 minerales y adquiere [ SECTOR 5X5 ] en Mejoras para expandir a cuadrante completo de 5x5 y programar barrido por columnas."
 		"barrido_columnas":
 			return "Sector 5x5 activo: modulariza tu código y ejecuta un barrido sistemático por columnas subiendo y bajando para entregar 6 minerales a la nave."
+		"comprar_protocolo_maestro":
+			return "Reúne 35 minerales y adquiere [ PROTOCOLO MAESTRO ] en Mejoras para habilitar el sensor de tolva y la misión final."
+		"protocolo_maestro":
+			return "Misión Final: despliega el Protocolo Maestro en Sector 5x5 con barrido continuo y entrega 8 minerales a la nave."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

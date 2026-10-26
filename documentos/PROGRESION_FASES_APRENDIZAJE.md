@@ -20,7 +20,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **7** | **Funciones (`def`)** | Sector 4x4 (20 minerales) | Definición e invocación de funciones `def nombre():`, modularización de rutinas | `comprar_sector_4x4`<br>`rutina_funciones` | **100%** |
 | **7.5** | **Funciones con Parámetros** | Sector 5x4 (25 minerales) | `def nombre(param):`, invocación `nombre(arg)`, argumentos en rutinas | `comprar_sector_5x4`<br>`funciones_parametrizadas` | **100%** |
 | **8** | **Barrido por Columnas** | Sector 5x5 (30 minerales) | Algoritmo de barrido bidimensional sistemático por columnas | `comprar_sector_5x5`<br>`barrido_columnas` | **100%** |
-| **8.5** | **Protocolo Maestro Spido** | Sector 5x5 (Consolidación) | Barrido en zigzag con auto-descarga cuando tolva está llena (`spid.tiene_espacio()`) | `protocolo_maestro` | **Pendiente** |
+| **8.5** | **Protocolo Maestro Spido** | Sector 5x5 (Consolidación) | Barrido en zigzag con auto-descarga cuando tolva está llena (`spid.tiene_espacio()`) | `comprar_protocolo_maestro`<br>`protocolo_maestro` | **100%** |
 
 ---
 
@@ -150,6 +150,15 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 * **Misiones:**
   1. `comprar_sector_5x5`: Expansión física a cuadrante completo de 5 de largo y desbloqueo del protocolo de barrido bidimensional.
   2. `barrido_columnas`: Modularización del movimiento en columnas (ej. `censar_y_avanzar(direccion, pasos)`), cubriendo al menos dos columnas completas (subiendo y bajando) y transfiriendo al menos 6 minerales a la nave.
+
+---
+
+### Fase 8.5: Protocolo Maestro Spido (100% Completada - Endgame)
+* **Objetivo:** Meta definitiva del currículo didáctico de *SpidoCode*: construcción del Rover Autónomo de Exploración Minera mediante barrido sistemático bidimensional en zigzag por todo el cuadrante con descarga autónoma.
+* **Terreno:** Sector 5x5 (25 casillas cuadradas completas).
+* **Misiones:**
+  1. `comprar_protocolo_maestro`: Adquisición de la mejora final en Tienda (Coste: 35 minerales) para habilitar el sensor de tolva `spid.tiene_espacio()`.
+  2. `protocolo_maestro`: Despliegue de automatización continua 100% desatendida combinando bucles `while True:`, `for in range`, funciones parametrizadas `def`, sensores `if spid.hay_mineral():` y control de carga con transferencia acumulativa (mínimo 8 minerales transferidos a la nave).
 
 ---
 

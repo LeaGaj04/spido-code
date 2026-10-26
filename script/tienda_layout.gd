@@ -54,6 +54,7 @@ static func construir(panel: Control) -> void:
 	_etapa(ruta, "07  /  SECTOR 4×4 Y FUNCIONES", "Expande el terreno a 4 de ancho × 4 de largo.\nDesbloquea la definición de funciones propias (def) para modularizar tu código.", originales.get("ButtonSector4x4"), null, Color("38b2ac"))
 	_etapa(ruta, "07.5 / SECTOR 5×4 Y PARÁMETROS", "Expande el terreno a 5 de ancho × 4 de largo.\nDesbloquea el paso de parámetros en funciones personalizadas def nombre(param):.", originales.get("ButtonSector5x4"), null, Color("f6ad55"))
 	_etapa(ruta, "08  /  SECTOR 5×5 Y BARRIDO", "Expande el terreno a 5 de ancho × 5 de largo.\nDesbloquea el protocolo de barrido bidimensional sistemático por columnas.", originales.get("ButtonSector5x5"), null, Color("ed8936"))
+	_etapa(ruta, "08.5 / PROTOCOLO MAESTRO SPIDO", "Desbloquea el sensor de tolva tiene_espacio() y el protocolo definitivo de barrido continuo con descarga autónoma.", originales.get("ButtonProtocoloMaestro"), null, Color("f56565"))
 	_texto(ruta, "MEJORA OPCIONAL  /  Independiente de la ruta", 16, Color("ecc576"))
 	_etapa(ruta, "MINERÍA RÁPIDA", "Reduce el tiempo de extracción a 1 segundo.", originales["ButtonMineria"], null, Color("ecc576"))
 

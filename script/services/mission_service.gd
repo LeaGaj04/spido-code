@@ -38,6 +38,8 @@ enum EstadoMision {
 	FUNCIONES_PARAMETRIZADAS,
 	COMPRAR_SECTOR_5X5,
 	BARRIDO_COLUMNAS,
+	COMPRAR_PROTOCOLO_MAESTRO,
+	PROTOCOLO_MAESTRO,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -170,6 +172,14 @@ func preparar_mision_expansion() -> void:
 
 	if objective_id == "comprar_sector_5x5":
 		iniciar_barrido_columnas()
+		return
+
+	if objective_id == "barrido_columnas":
+		iniciar_mision_comprar_protocolo_maestro()
+		return
+
+	if objective_id == "comprar_protocolo_maestro":
+		iniciar_protocolo_maestro()
 		return
 
 	if objective_id == "exploracion_3x3":
@@ -543,10 +553,31 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "barrido_columnas" and objective_completed)
 		or (objective_id == "barrido_columnas" and "barrido_columnas" in completed_missions)
 	):
-		estado_actual = EstadoMision.COMPLETADA
+		iniciar_mision_comprar_protocolo_maestro()
 		return
 	if objective_id == "barrido_columnas":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.BARRIDO_COLUMNAS
+		return
+
+	if (
+		(objective_id == "comprar_protocolo_maestro" and objective_completed)
+		or (objective_id == "comprar_protocolo_maestro" and "comprar_protocolo_maestro" in completed_missions)
+		or GestorSintaxis.esta_desbloqueada("tiene_espacio")
+	):
+		iniciar_protocolo_maestro()
+		return
+	if objective_id == "comprar_protocolo_maestro":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_PROTOCOLO_MAESTRO
+		return
+
+	if (
+		(objective_id == "protocolo_maestro" and objective_completed)
+		or (objective_id == "protocolo_maestro" and "protocolo_maestro" in completed_missions)
+	):
+		estado_actual = EstadoMision.COMPLETADA
+		return
+	if objective_id == "protocolo_maestro":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PROTOCOLO_MAESTRO
 		return
 
 	if (
@@ -808,6 +839,32 @@ func get_objetivo_actual() -> String:
 			"    censar_y_avanzar(\"sur\", 4)\n" +
 			"    spid.transferir()\n\n" +
 			"Tu desafío: implementa un barrido bidimensional por columnas, cubre al menos dos columnas completas y transfiere 6 minerales a la nave."
+		)
+
+	if objective_id == "comprar_protocolo_maestro":
+		return (
+			"EL PROTOCOLO MAESTRO SPIDO (ENDGAME)\n" +
+			"¡Barrido por columnas dominado! Reúne 35 minerales en la nave nodriza y adquiere " +
+			"[ PROTOCOLO MAESTRO ] en el Centro de Mejoras para desbloquear el sensor de tolva 'spid.tiene_espacio()' y la misión final."
+		)
+
+	if objective_id == "protocolo_maestro":
+		return (
+			"PROTOCOLO MAESTRO SPIDO (BARRIDO TOTAL CON DESCARGA AUTÓNOMA)\n" +
+			"El desafío final del Ingeniero: automatización 100% desatendida del cuadrante 5x5.\n" +
+			"Spid barre en zigzag con funciones modulares parametrizadas, censa minerales y transfiere carga de manera continua.\n\n" +
+			"def censar_y_avanzar(direccion, pasos):\n" +
+			"    for i in range(pasos):\n" +
+			"        spid.mover(direccion)\n" +
+			"        if spid.hay_mineral():\n" +
+			"            spid.minar()\n\n" +
+			"while True:\n" +
+			"    censar_y_avanzar(\"norte\", 4)\n" +
+			"    spid.mover(\"este\")\n" +
+			"    censar_y_avanzar(\"sur\", 4)\n" +
+			"    spid.mover(\"este\")\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío final: despliega el Protocolo Maestro, extrae y transfiere al menos 8 minerales en el Sector 5x5."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -1089,6 +1146,24 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "barrido_columnas":
 		_evaluar_barrido_columnas(resultado)
+		return
+
+	if objective_id == "comprar_protocolo_maestro":
+		var minerales_nave: int = _obtener_minerales_nave()
+		if minerales_nave >= 35:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes los 35 minerales necesarios! Ve al menú MEJORAS y adquiere [ PROTOCOLO MAESTRO ] para desbloquear la misión final."
+			)
+		else:
+			objetivo_actualizado.emit(
+				objective_id,
+				"Tienes %d de 35 minerales en la nave. Sigue recolectando y luego adquiere [ PROTOCOLO MAESTRO ] en MEJORAS." % minerales_nave
+			)
+		return
+
+	if objective_id == "protocolo_maestro":
+		_evaluar_protocolo_maestro(resultado)
 		return
 
 	if objective_id != "ruta_calibracion":
@@ -1924,6 +1999,88 @@ func _evaluar_barrido_columnas(resultado: Dictionary, informar_pendientes: bool 
 	mision_completada.emit(objective_id)
 	print("¡Misión barrido_columnas completada con éxito!")
 	CodeExecutor.call_deferred("detener_ejecucion")
+	iniciar_mision_comprar_protocolo_maestro()
+
+
+func iniciar_mision_comprar_protocolo_maestro() -> void:
+	objective_id = "comprar_protocolo_maestro"
+	objective_completed = "comprar_protocolo_maestro" in completed_missions or GestorSintaxis.esta_desbloqueada("tiene_espacio")
+	if objective_completed:
+		iniciar_protocolo_maestro()
+		return
+	estado_actual = EstadoMision.COMPRAR_PROTOCOLO_MAESTRO
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: comprar_protocolo_maestro (Fase 8.5)")
+
+
+func registrar_compra_protocolo_maestro() -> void:
+	if "comprar_protocolo_maestro" not in completed_missions:
+		completed_missions.append("comprar_protocolo_maestro")
+	GestorSintaxis.desbloquear_sintaxis("tiene_espacio")
+	desbloquear_conocimiento("protocolo_maestro")
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+	mision_completada.emit("comprar_protocolo_maestro")
+	iniciar_protocolo_maestro()
+
+
+func iniciar_protocolo_maestro() -> void:
+	objective_id = "protocolo_maestro"
+	objective_completed = "protocolo_maestro" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PROTOCOLO_MAESTRO
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: protocolo_maestro (Fase 8.5 - Endgame)")
+
+
+func _evaluar_protocolo_maestro(resultado: Dictionary, informar_pendientes: bool = true) -> void:
+	var functions_defined: Array = resultado.get("functions_defined", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var loop_count: int = int(resultado.get("loop_count", 0))
+	var code: String = str(resultado.get("code", "")).to_lower()
+
+	# 1. Requiere bucle infinito continuo
+	if loop_count < 1 and not ("while " in code):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"El Protocolo Maestro debe ejecutarse en automatización continua usando un bucle 'while True:'."
+		)
+		return
+
+	# 2. Requiere modularización mediante funciones propias
+	if functions_defined.is_empty() and not ("def " in code):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Debes encapsular tus rutinas de censado, movimiento o descarga en funciones propias con 'def'."
+		)
+		return
+
+	# 3. Requiere extraer y transferir al menos 8 minerales en el sector completo
+	if recolectados < 8 or transferidos < 8:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Protocolo Maestro activo: recolecta y transfiere al menos 8 minerales en el Sector 5x5 (" + str(recolectados) + "/8 minados, " + str(transferidos) + "/8 transferidos)."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("protocolo_maestro")
+	mision_completada.emit(objective_id)
+	print("¡PROTOCOLO MAESTRO SPIDO COMPLETADO CON ÉXITO! ¡HAS CONCLUIDO SPIDOCODE!")
+	CodeExecutor.call_deferred("detener_ejecucion")
 
 	
 func desbloquear_modulo_for() -> void:
@@ -2209,6 +2366,8 @@ func evaluar_progreso_programa(resultado: Dictionary) -> void:
 		_evaluar_funciones_parametrizadas(resultado, false)
 	elif objective_id == "barrido_columnas":
 		_evaluar_barrido_columnas(resultado, false)
+	elif objective_id == "protocolo_maestro":
+		_evaluar_protocolo_maestro(resultado, false)
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:
