@@ -51,6 +51,7 @@ static func construir(panel: Control) -> void:
 	_etapa(ruta, "04  /  SECTOR 3×3 Y VARIABLES", "Expande el terreno a 3×3 y activa el uso de variables y parámetros para Spid.", originales["ButtonVariables"], null, Color("84bfe8"))
 	_etapa(ruta, "05  /  TELEMETRÍA DINÁMICA", "Incorpora sensores de lectura ambiental en Spid.\nPermite consultar las dimensiones del sector con spid.tamano_mundo().", originales.get("ButtonTelemetria"), null, Color("d084e8"))
 	_etapa(ruta, "06  /  SECTOR 4×3 Y LISTAS", "Expande el terreno a 4 de ancho × 3 de largo.\nDesbloquea listas [...] y navegación dinámica con spid.mover().", originales.get("ButtonSector4x3"), null, Color("48bb78"))
+	_etapa(ruta, "07  /  SECTOR 4×4 Y FUNCIONES", "Expande el terreno a 4 de ancho × 4 de largo.\nDesbloquea la definición de funciones propias (def) para modularizar tu código.", originales.get("ButtonSector4x4"), null, Color("38b2ac"))
 	_texto(ruta, "MEJORA OPCIONAL  /  Independiente de la ruta", 16, Color("ecc576"))
 	_etapa(ruta, "MINERÍA RÁPIDA", "Reduce el tiempo de extracción a 1 segundo.", originales["ButtonMineria"], null, Color("ecc576"))
 

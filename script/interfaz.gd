@@ -59,6 +59,7 @@ var minerales_spid : int = 0
 @onready var boton_variables: Button = $PanelTienda/LienzoArbol/ButtonVariables
 @onready var boton_telemetria: Button = $PanelTienda/LienzoArbol/ButtonTelemetria
 @onready var boton_sector_4x3: Button = $PanelTienda/LienzoArbol/ButtonSector4x3
+@onready var boton_sector_4x4: Button = $PanelTienda/LienzoArbol/ButtonSector4x4
 @onready var boton_expansion: Button = $PanelTienda/LienzoArbol/ButtonExpansion1
 @onready var boton_expansion_2: Button = $PanelTienda/LienzoArbol/ButtonExpansion2
 @onready var boton_expansion_3: Button = $PanelTienda/LienzoArbol/ButtonExpansion3
@@ -85,6 +86,7 @@ const PRECIOS = {
 	"mapa_3x3": 10,
 	"sector_3x3": 10,
 	"sector_4x3": 15,
+	"sector_4x4": 20,
 	"if": 10,
 	"telemetria": 10,
 	"mineria_rapida": 15
@@ -133,6 +135,8 @@ func _ready() -> void:
 		boton_telemetria.pressed.connect(_on_button_telemetria_pressed)
 	if boton_sector_4x3 != null and not boton_sector_4x3.pressed.is_connected(_on_button_sector_4x3_pressed):
 		boton_sector_4x3.pressed.connect(_on_button_sector_4x3_pressed)
+	if boton_sector_4x4 != null and not boton_sector_4x4.pressed.is_connected(_on_button_sector_4x4_pressed):
+		boton_sector_4x4.pressed.connect(_on_button_sector_4x4_pressed)
 	_marcar_interfaz_inicializada()
 
 
@@ -661,6 +665,27 @@ func actualizar_mejoras_visual() -> void:
 		else:
 			boton_sector_4x3.text = "[ SECTOR 4X3 ]\n15 MINERALES"
 
+	var sector_4x4_on: bool = (
+		GestorSintaxis.esta_desbloqueada("def")
+		or "comprar_sector_4x4" in MissionService.get_completed_missions()
+		or "rutina_funciones" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "rutina_funciones"
+	)
+	var listas_completadas: bool = (
+		"patrulla_lista" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "patrulla_lista" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_4x4"
+		or sector_4x4_on
+	)
+	if boton_sector_4x4 != null:
+		boton_sector_4x4.disabled = not (listas_completadas and not sector_4x4_on)
+		if sector_4x4_on:
+			boton_sector_4x4.text = "[ SECTOR 4X4 ]\nDESBLOQUEADO"
+		elif not listas_completadas:
+			boton_sector_4x4.text = "[ SECTOR 4X4 ]\nTRAS LISTAS"
+		else:
+			boton_sector_4x4.text = "[ SECTOR 4X4 ]\n20 MINERALES"
+
 	if boton_expansion != null:
 		boton_expansion.disabled = exp1_on
 		boton_expansion.text = "[ CORREDOR 1X3 ]\nDESBLOQUEADO" if exp1_on else "[ CORREDOR 1X3 ]\n1 MINERAL"
@@ -1070,6 +1095,49 @@ func _on_button_sector_4x3_pressed() -> void:
 	)
 
 
+func _on_button_sector_4x4_pressed() -> void:
+	var mundo := get_parent()
+	var sector_4x4_comprado: bool = (
+		GestorSintaxis.esta_desbloqueada("def")
+		or "comprar_sector_4x4" in MissionService.get_completed_missions()
+		or "rutina_funciones" in MissionService.get_completed_missions()
+		or MissionService.objective_id == "rutina_funciones"
+	)
+	var listas_completadas: bool = (
+		"patrulla_lista" in MissionService.get_completed_missions()
+		or (MissionService.objective_id == "patrulla_lista" and MissionService.objective_completed)
+		or MissionService.objective_id == "comprar_sector_4x4"
+	)
+
+	if mundo == null or sector_4x4_comprado or not listas_completadas:
+		return
+
+	if CodeExecutor.ejecutando:
+		transmision_ada.mostrar_mensaje("Espera a que termine el programa antes de instalar mejoras.", "error")
+		return
+
+	var costo: int = PRECIOS.get("sector_4x4", 20)
+	if minerales_nave < costo:
+		transmision_ada.mostrar_mensaje(
+			"Minerales insuficientes en la nave. Requiere %d minerales (tienes %d)." % [costo, minerales_nave],
+			"error",
+			4.0
+		)
+		return
+
+	minerales_nave -= costo
+	actualizar_contadores()
+	MissionService.registrar_compra_sector_4x4()
+	mundo.expandir_mapa_4x4()
+	actualizar_mejoras_visual()
+	_solicitar_guardado_progreso()
+	transmision_ada.mostrar_mensaje(
+		"¡Sector 4x4 adquirido y Funciones desbloqueadas!\nEl terreno se expande a 4 de ancho × 4 de largo. Ahora puedes definir funciones propias con 'def nombre():' para modularizar tus rutinas.",
+		"completado",
+		8.0
+	)
+
+
 func _on_button_mineria_pressed() -> void:
 	if mineria_rapida_desbloqueada:
 		return
@@ -1175,7 +1243,8 @@ func _on_ejecucion_finalizada(resultado: Dictionary) -> void:
 			"patrulla_autonoma",
 			"calibracion_variables",
 			"telemetria_dinamica",
-			"patrulla_lista"
+			"patrulla_lista",
+			"rutina_funciones"
 		]
 	):
 		await get_tree().create_timer(3.0).timeout
@@ -1300,9 +1369,24 @@ func _on_mision_completada(mision_id: String) -> void:
 			var msg_lista := (
 				"¡Patrulla con listas ejecutada con éxito!\n" +
 				"Has recorrido el sector 4x3 utilizando una lista de rutas y spid.mover().\n" +
-				"¡Fase 6 completada con éxito!"
+				"Próximo objetivo: reúne 20 minerales y adquiere [ SECTOR 4X4 ] en Mejoras para desbloquear el módulo de Funciones (def)."
 			)
 			transmision_ada.mostrar_mensaje(msg_lista, "completado", 15.0)
+		"comprar_sector_4x4":
+			transmision_ada.mostrar_mensaje(
+				"¡Sector 4x4 y Funciones desbloqueados!\n" +
+				"El terreno se expande a 4 de ancho × 4 de largo. Ya puedes definir tus propias funciones con 'def nombre():' para modularizar tu código.\n" +
+				"Nueva misión: RUTINAS MODULARES CON FUNCIONES.",
+				"completado",
+				15.0
+			)
+		"rutina_funciones":
+			var msg_func := (
+				"¡Rutina modular con funciones completada con éxito!\n" +
+				"Has estructurado tu código definiendo e invocando funciones propias en Python.\n" +
+				"¡Fase 7 completada con éxito!"
+			)
+			transmision_ada.mostrar_mensaje(msg_func, "completado", 15.0)
 		"comprar_if":
 			transmision_ada.mostrar_mensaje(
 				"¡Módulo Condicional IF instalado!\n" +
@@ -1493,6 +1577,10 @@ func _get_objetivo_panel(mision_id: String) -> String:
 			return "Reúne 15 minerales y adquiere [ SECTOR 4X3 ] en Mejoras para expandir a 4 de ancho y programar con listas."
 		"patrulla_lista":
 			return "Sector 4x3 activo: define tu circuito en una lista 'ruta = [...]', recórrela con 'for d in ruta: spid.mover(d)' y entrega 3 minerales."
+		"comprar_sector_4x4":
+			return "Reúne 20 minerales y adquiere [ SECTOR 4X4 ] en Mejoras para expandir a 4 de largo y programar con funciones (def)."
+		"rutina_funciones":
+			return "Sector 4x4 activo: define una rutina modular con 'def nombre():', invócala en tu bucle y entrega 4 minerales a la nave."
 		"exploracion_3x3":
 			return "Terreno 3x3 activo. Combina bucles de recorrido con sensores para localizar, minar y entregar 3 minerales."
 		"camino_largo":

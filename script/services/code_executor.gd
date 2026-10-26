@@ -19,7 +19,7 @@ var _objective_completed_at_start: bool = false
 
 const PALABRAS_RESERVADAS := [
 	"spid", "for", "while", "if", "else", "in", "range",
-	"not", "and", "or", "true", "false", "True", "False"
+	"not", "and", "or", "true", "false", "True", "False", "def"
 ]
 const MAX_FOR_ITER := 50
 
@@ -207,6 +207,7 @@ func ejecutar_codigo(
 	_tiempo_inicio_msec = Time.get_ticks_msec()
 	var resultado := _crear_resultado(codigo)
 	var variables_env: Dictionary = {}
+	var funciones_env: Dictionary = {}
 
 	if ejecutando:
 		resultado["error_type"] = "ejecucion"
@@ -267,6 +268,32 @@ func ejecutar_codigo(
 
 	for instruccion in instrucciones:
 		var tipo: String = instruccion.get("tipo", "comando")
+
+		if tipo == "def":
+			var fn_name: String = instruccion.get("func_name", "")
+			funciones_env[fn_name] = instruccion.get("cuerpo", [])
+			if fn_name not in resultado["functions_defined"]:
+				resultado["functions_defined"].append(fn_name)
+			var num_linea: int = int(instruccion.get("numero", 0))
+			var cont_linea: String = str(instruccion.get("contenido", ""))
+			linea_iniciada.emit(num_linea, cont_linea)
+			await _esperar_paso_si_aplica(num_linea, cont_linea)
+			linea_finalizada.emit(num_linea, cont_linea)
+			continue
+
+		if tipo == "llamada_funcion":
+			var res_fn := await _ejecutar_llamada_funcion(
+				instruccion,
+				funciones_env,
+				ejecutar_comando,
+				evaluar_condicion,
+				resultado,
+				variables_env
+			)
+			if not res_fn.get("ok", false):
+				_finalizar(resultado)
+				return resultado
+			continue
 
 		if tipo == "asignacion":
 			var num_linea: int = instruccion["numero"]
@@ -490,6 +517,18 @@ func ejecutar_codigo(
 												_finalizar(resultado)
 												return resultado
 									linea_finalizada.emit(num_if, cont_if)
+								elif cmd_for.get("tipo", "") == "llamada_funcion":
+									var res_fn := await _ejecutar_llamada_funcion(
+										cmd_for,
+										funciones_env,
+										ejecutar_comando,
+										evaluar_condicion,
+										resultado,
+										variables_env
+									)
+									if not res_fn.get("ok", false):
+										_finalizar(resultado)
+										return resultado
 								else:
 									cmd_for["loop_iteration"] = iteracion
 									var res_cmd := await _ejecutar_instruccion_simple(
@@ -553,6 +592,21 @@ func ejecutar_codigo(
 									return resultado
 						linea_finalizada.emit(num_if, cont_if)
 						continue
+
+					if sub_tipo == "llamada_funcion":
+						var res_fn := await _ejecutar_llamada_funcion(
+							sub_ins,
+							funciones_env,
+							ejecutar_comando,
+							evaluar_condicion,
+							resultado,
+							variables_env
+						)
+						if not res_fn.get("ok", false):
+							_finalizar(resultado)
+							return resultado
+						continue
+
 					sub_ins["loop_iteration"] = iteracion
 					var res_while_cmd: Dictionary = await _ejecutar_instruccion_simple(
 						sub_ins,
@@ -939,6 +993,151 @@ func _crear_instruccion_comando(numero_linea: int, contenido: String, analisis: 
 		"dir_var": analisis.get("dir_var", "")
 	}
 
+func _analizar_def(contenido: String, numero_linea: int) -> Dictionary:
+	var regex := RegEx.new()
+	if regex.compile("^(?i)def\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(\\s*\\)\\s*:$") != OK:
+		return _error_de_linea(numero_linea, contenido, "Error en el analizador de funciones.")
+	var coincidencia := regex.search(contenido)
+	if coincidencia == null:
+		return _error_de_linea(numero_linea, contenido, "Sintaxis de función incorrecta. Usa: def nombre():")
+	var func_name := coincidencia.get_string(1).strip_edges()
+	if not _es_identificador_valido(func_name):
+		return _error_de_linea(numero_linea, contenido, "'" + func_name + "' no es un nombre de función válido.")
+	return {
+		"ok": true,
+		"func_name": func_name
+	}
+
+func _analizar_llamada_funcion(contenido: String, funciones_conocidas: Dictionary, numero_linea: int) -> Dictionary:
+	var regex := RegEx.new()
+	if regex.compile("^(?i)([A-Za-z_][A-Za-z0-9_]*)\\s*\\(\\s*\\)$") != OK:
+		return {"es_llamada": false}
+	var coincidencia := regex.search(contenido.strip_edges())
+	if coincidencia == null:
+		return {"es_llamada": false}
+	var fn_name := coincidencia.get_string(1).strip_edges()
+	if fn_name.begins_with("spid.") or fn_name == "spid":
+		return {"es_llamada": false}
+	if funciones_conocidas.has(fn_name):
+		return {
+			"es_llamada": true,
+			"ok": true,
+			"tipo": "llamada_funcion",
+			"func_name": fn_name,
+			"numero": numero_linea,
+			"contenido": contenido
+		}
+	return {
+		"es_llamada": true,
+		"ok": false,
+		"type": "sintaxis",
+		"line": numero_linea,
+		"content": contenido,
+		"message": "La función '" + fn_name + "()' no ha sido definida antes de su uso."
+	}
+
+func _ejecutar_llamada_funcion(
+	instruccion: Dictionary,
+	funciones_env: Dictionary,
+	ejecutar_comando: Callable,
+	evaluar_condicion: Callable,
+	resultado: Dictionary,
+	variables_env: Dictionary,
+	profundidad: int = 0
+) -> Dictionary:
+	if profundidad > 10:
+		var err_rec := {
+			"type": "ejecucion",
+			"line": int(instruccion.get("numero", 0)),
+			"content": str(instruccion.get("contenido", "")),
+			"message": "Límite de recursión alcanzado al invocar funciones."
+		}
+		resultado["error_type"] = err_rec["type"]
+		resultado["error_message"] = err_rec["message"]
+		resultado["errors"].append(err_rec)
+		error_detectado.emit(err_rec)
+		return {"ok": false}
+
+	var fn_name: String = instruccion.get("func_name", "")
+	var num_linea: int = int(instruccion.get("numero", 0))
+	var cont_linea: String = str(instruccion.get("contenido", ""))
+
+	linea_iniciada.emit(num_linea, cont_linea)
+	await _esperar_paso_si_aplica(num_linea, cont_linea)
+
+	if not resultado.has("functions_called"):
+		resultado["functions_called"] = []
+	if fn_name not in resultado["functions_called"]:
+		resultado["functions_called"].append(fn_name)
+
+	if not funciones_env.has(fn_name):
+		var err := {
+			"type": "ejecucion",
+			"line": num_linea,
+			"content": cont_linea,
+			"message": "La función '" + fn_name + "' no está definida."
+		}
+		resultado["error_type"] = err["type"]
+		resultado["error_message"] = err["message"]
+		resultado["errors"].append(err)
+		error_detectado.emit(err)
+		linea_finalizada.emit(num_linea, cont_linea)
+		return {"ok": false}
+
+	var cuerpo: Array = funciones_env[fn_name]
+	for sub_ins in cuerpo:
+		if detener_solicitado:
+			break
+		var stype: String = sub_ins.get("tipo", "comando")
+		if stype == "llamada_funcion":
+			var res_fn := await _ejecutar_llamada_funcion(
+				sub_ins, funciones_env, ejecutar_comando, evaluar_condicion, resultado, variables_env, profundidad + 1
+			)
+			if not res_fn.get("ok", false):
+				linea_finalizada.emit(num_linea, cont_linea)
+				return {"ok": false}
+		elif stype == "if":
+			var num_if: int = sub_ins["numero"]
+			var cont_if: String = sub_ins["contenido"]
+			linea_iniciada.emit(num_if, cont_if)
+			await _esperar_paso_si_aplica(num_if, cont_if)
+			if detener_solicitado:
+				linea_finalizada.emit(num_if, cont_if)
+				break
+			var cumple: bool = false
+			if evaluar_condicion.is_valid():
+				cumple = await evaluar_condicion.call(sub_ins["condition"])
+			if sub_ins.get("inverted", false):
+				cumple = not cumple
+			resultado["if_evaluations"] = resultado.get("if_evaluations", 0) + 1
+			if cumple:
+				resultado["if_branch_taken"] = true
+				for cmd_if in sub_ins.get("cuerpo", []):
+					if detener_solicitado:
+						break
+					var res_sub := await _ejecutar_instruccion_simple(cmd_if, ejecutar_comando, resultado, variables_env)
+					if not res_sub.get("ok", false):
+						linea_finalizada.emit(num_if, cont_if)
+						return {"ok": false}
+			elif sub_ins.has("cuerpo_else"):
+				resultado["else_branch_taken"] = true
+				for cmd_else in sub_ins.get("cuerpo_else", []):
+					if detener_solicitado:
+						break
+					var res_sub := await _ejecutar_instruccion_simple(cmd_else, ejecutar_comando, resultado, variables_env)
+					if not res_sub.get("ok", false):
+						linea_finalizada.emit(num_if, cont_if)
+						return {"ok": false}
+			linea_finalizada.emit(num_if, cont_if)
+		elif stype == "comando":
+			var res_cmd := await _ejecutar_instruccion_simple(sub_ins, ejecutar_comando, resultado, variables_env)
+			if not res_cmd.get("ok", false):
+				linea_finalizada.emit(num_linea, cont_linea)
+				return {"ok": false}
+
+	linea_finalizada.emit(num_linea, cont_linea)
+	return {"ok": true}
+
 func _contar_espacios_sangria(linea: String) -> int:
 	var espacios := 0
 	for i in range(linea.length()):
@@ -956,6 +1155,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 	var lineas := codigo.split("\n")
 	var indice := 0
 	var variables_compile_env: Dictionary = {}
+	var funciones_compile_env: Dictionary = {}
 
 	while indice < lineas.size():
 		var linea_original: String = lineas[indice]
@@ -967,6 +1167,127 @@ func compilar_programa(codigo: String) -> Dictionary:
 			continue
 
 		var contenido_lower := contenido.to_lower()
+
+		if contenido_lower.begins_with("def "):
+			var resultado_def: Dictionary = _analizar_def(contenido, numero_linea)
+			if not resultado_def["ok"]:
+				return resultado_def
+
+			var func_name: String = resultado_def["func_name"]
+			if func_name in PALABRAS_RESERVADAS:
+				return _error_de_linea(
+					numero_linea,
+					contenido,
+					"No puedes usar '" + func_name + "' como nombre de función porque es una palabra reservada."
+				)
+
+			var sangria_def := _contar_espacios_sangria(linea_original)
+			var cuerpo_func: Array = []
+			var sangria_cuerpo_func := -1
+			indice += 1
+
+			while indice < lineas.size():
+				var linea_cuerpo: String = lineas[indice]
+				if linea_cuerpo.strip_edges().is_empty() or linea_cuerpo.strip_edges().begins_with("#"):
+					indice += 1
+					continue
+
+				var sangria_cuerpo := _contar_espacios_sangria(linea_cuerpo)
+				if sangria_cuerpo <= sangria_def:
+					break
+
+				if sangria_cuerpo_func == -1:
+					sangria_cuerpo_func = sangria_cuerpo
+				elif sangria_cuerpo < sangria_cuerpo_func:
+					break
+
+				var cont_cuerpo := linea_cuerpo.strip_edges()
+				var cont_cuerpo_lower := cont_cuerpo.to_lower()
+
+				if cont_cuerpo_lower.begins_with("if "):
+					var num_linea_if := indice + 1
+					var res_if_anidado := _analizar_if(cont_cuerpo, num_linea_if)
+					if not res_if_anidado["ok"]:
+						return res_if_anidado
+
+					var sangria_if := sangria_cuerpo
+					var cuerpo_if_anidado: Array = []
+					indice += 1
+
+					while indice < lineas.size():
+						var linea_sub := lineas[indice]
+						if linea_sub.strip_edges().is_empty() or linea_sub.strip_edges().begins_with("#"):
+							indice += 1
+							continue
+						var sangria_sub := _contar_espacios_sangria(linea_sub)
+						if sangria_sub <= sangria_if:
+							break
+
+						var cont_sub := linea_sub.strip_edges()
+						var llamada_sub := _analizar_llamada_funcion(cont_sub, funciones_compile_env, indice + 1)
+						if llamada_sub.get("es_llamada", false):
+							if not llamada_sub["ok"]:
+								return llamada_sub
+							cuerpo_if_anidado.append(llamada_sub)
+							indice += 1
+							continue
+
+						var analisis_sub := analizar_linea(cont_sub, indice + 1)
+						if not analisis_sub["ok"]:
+							return analisis_sub
+
+						cuerpo_if_anidado.append(_crear_instruccion_comando(indice + 1, cont_sub, analisis_sub))
+						indice += 1
+
+					if cuerpo_if_anidado.is_empty():
+						return _error_de_linea(
+							num_linea_if,
+							cont_cuerpo,
+							"El condicional if necesita al menos una instrucción con sangría."
+						)
+
+					cuerpo_func.append({
+						"tipo": "if",
+						"numero": num_linea_if,
+						"contenido": cont_cuerpo,
+						"condition": res_if_anidado["condition"],
+						"inverted": res_if_anidado["inverted"],
+						"cuerpo": cuerpo_if_anidado
+					})
+					continue
+
+				var llamada_fn := _analizar_llamada_funcion(cont_cuerpo, funciones_compile_env, indice + 1)
+				if llamada_fn.get("es_llamada", false):
+					if not llamada_fn["ok"]:
+						return llamada_fn
+					cuerpo_func.append(llamada_fn)
+					indice += 1
+					continue
+
+				var analisis_cmd := analizar_linea(cont_cuerpo, indice + 1)
+				if not analisis_cmd["ok"]:
+					return analisis_cmd
+
+				cuerpo_func.append(_crear_instruccion_comando(indice + 1, cont_cuerpo, analisis_cmd))
+				indice += 1
+
+			if cuerpo_func.is_empty():
+				return _error_de_linea(
+					numero_linea,
+					contenido,
+					"La función 'def " + func_name + "()' necesita al menos una instrucción con sangría."
+				)
+
+			funciones_compile_env[func_name] = cuerpo_func
+			instrucciones.append({
+				"tipo": "def",
+				"numero": numero_linea,
+				"contenido": contenido,
+				"func_name": func_name,
+				"cuerpo": cuerpo_func,
+				"loop_iteration": 0
+			})
+			continue
 
 		var res_asig := _analizar_asignacion(contenido, numero_linea)
 		if res_asig.get("tipo", "") == "asignacion":
@@ -1237,6 +1558,14 @@ func compilar_programa(codigo: String) -> Dictionary:
 						"inverted": res_if_anidado["inverted"],
 						"cuerpo": cuerpo_if_anidado
 					})
+					continue
+
+				var llamada_for := _analizar_llamada_funcion(contenido_cuerpo, funciones_compile_env, indice + 1)
+				if llamada_for.get("es_llamada", false):
+					if not llamada_for["ok"]:
+						return llamada_for
+					cuerpo_for.append(llamada_for)
+					indice += 1
 					continue
 
 				var analisis_for: Dictionary = analizar_linea(
@@ -1521,6 +1850,14 @@ func compilar_programa(codigo: String) -> Dictionary:
 							})
 							continue
 
+						var llamada_cmd_for := _analizar_llamada_funcion(cont_sub_for, funciones_compile_env, indice + 1)
+						if llamada_cmd_for.get("es_llamada", false):
+							if not llamada_cmd_for["ok"]:
+								return llamada_cmd_for
+							cuerpo_for_anidado.append(llamada_cmd_for)
+							indice += 1
+							continue
+
 						var analisis_cmd_for := analizar_linea(cont_sub_for, indice + 1)
 						if not analisis_cmd_for["ok"]:
 							return analisis_cmd_for
@@ -1550,6 +1887,14 @@ func compilar_programa(codigo: String) -> Dictionary:
 					cuerpo_while.append(ins_for_anidado)
 					continue
 
+				var llamada_while := _analizar_llamada_funcion(contenido_cuerpo, funciones_compile_env, indice + 1)
+				if llamada_while.get("es_llamada", false):
+					if not llamada_while["ok"]:
+						return llamada_while
+					cuerpo_while.append(llamada_while)
+					indice += 1
+					continue
+
 				var analisis_cmd: Dictionary = analizar_linea(contenido_cuerpo, indice + 1)
 				if not analisis_cmd["ok"]:
 					return analisis_cmd
@@ -1573,6 +1918,14 @@ func compilar_programa(codigo: String) -> Dictionary:
 				"cuerpo": cuerpo_while,
 				"loop_iteration": 0
 			})
+			continue
+
+		var llamada_raiz := _analizar_llamada_funcion(contenido, funciones_compile_env, numero_linea)
+		if llamada_raiz.get("es_llamada", false):
+			if not llamada_raiz["ok"]:
+				return llamada_raiz
+			instrucciones.append(llamada_raiz)
+			indice += 1
 			continue
 
 		var analisis: Dictionary = analizar_linea(
@@ -1750,6 +2103,8 @@ func _crear_resultado(codigo: String) -> Dictionary:
 		"commands_data": [],
 		"variables_defined": [],
 		"variables_used": [],
+		"functions_defined": [],
+		"functions_called": [],
 		"command_count": 0,
 		"movement_count": 0,
 		"loop_count": 0,

@@ -15,7 +15,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **5** | **Parámetros y Variables** | Sector 3x3 (10 minerales) | Argumentos numéricos `spid.norte(2)`, variables `vueltas = 2`, `pasos = 2` | `comprar_sector_3x3`<br>`calibracion_variables` | **100%** |
 | **5.5** | **Telemetría Dinámica** | Sector 3x3 | `spid.tamano_mundo()`, expresiones aritméticas `limite - 1` | `comprar_telemetria`<br>`telemetria_dinamica` | **100%** |
 | **6** | **Listas y Colecciones** | Sector 4x3 (15 minerales) | Listas `ruta = ["norte", "este"]`, `spid.mover(dir)`, iteración `for d in lista:` | `comprar_sector_4x3`<br>`patrulla_lista` | **100%** |
-| **7** | **Funciones (`def`)** | Sector ampliado | `def patrullar():`, `return` | *Por definir* | **Pendiente** |
+| **7** | **Funciones (`def`)** | Sector 4x4 (20 minerales) | Definición e invocación de funciones `def nombre():`, modularización de rutinas | `comprar_sector_4x4`<br>`rutina_funciones` | **100%** |
 | **8** | **Módulos e `import`** | Módulos de Rover | `import`, modularización de rutinas | *Por definir* | **Pendiente** |
 | **9** | **Algoritmos / Endgame** | Todo el mapa | Algoritmos de ordenamiento, optimización de batería y pureza | *Por definir* | **Pendiente** |
 

@@ -31,6 +31,8 @@ enum EstadoMision {
 	TELEMETRIA_DINAMICA,
 	COMPRAR_SECTOR_4X3,
 	PATRULLA_LISTA,
+	COMPRAR_SECTOR_4X4,
+	RUTINA_FUNCIONES,
 }
 
 var objective_id: String = "recolectar_primer_mineral"
@@ -135,6 +137,14 @@ func preparar_mision_expansion() -> void:
 
 	if objective_id == "comprar_sector_4x3":
 		iniciar_patrulla_lista()
+		return
+
+	if objective_id == "patrulla_lista":
+		iniciar_mision_comprar_sector_4x4()
+		return
+
+	if objective_id == "comprar_sector_4x4":
+		iniciar_rutina_funciones()
 		return
 
 	if objective_id == "exploracion_3x3":
@@ -436,10 +446,31 @@ func aplicar_progreso(progress: Dictionary) -> void:
 		(objective_id == "patrulla_lista" and objective_completed)
 		or (objective_id == "patrulla_lista" and "patrulla_lista" in completed_missions)
 	):
-		estado_actual = EstadoMision.COMPLETADA
+		iniciar_mision_comprar_sector_4x4()
 		return
 	if objective_id == "patrulla_lista":
 		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.PATRULLA_LISTA
+		return
+
+	if (
+		(objective_id == "comprar_sector_4x4" and objective_completed)
+		or (objective_id == "comprar_sector_4x4" and "comprar_sector_4x4" in completed_missions)
+		or GestorSintaxis.esta_desbloqueada("def")
+	):
+		iniciar_rutina_funciones()
+		return
+	if objective_id == "comprar_sector_4x4":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.COMPRAR_SECTOR_4X4
+		return
+
+	if (
+		(objective_id == "rutina_funciones" and objective_completed)
+		or (objective_id == "rutina_funciones" and "rutina_funciones" in completed_missions)
+	):
+		estado_actual = EstadoMision.COMPLETADA
+		return
+	if objective_id == "rutina_funciones":
+		estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.RUTINA_FUNCIONES
 		return
 
 	if (
@@ -616,6 +647,29 @@ func get_objetivo_actual() -> String:
 			"            spid.minar()\n" +
 			"    spid.transferir()\n\n" +
 			"Tu desafío: define tu circuito en una lista y patrulla hasta transferir al menos 3 minerales a la nave."
+		)
+
+	if objective_id == "comprar_sector_4x4":
+		return (
+			"EXPANSIÓN SECTOR 4X4 Y FUNCIONES\n" +
+			"¡Patrulla con listas dominada! Reúne 20 minerales en la nave nodriza y adquiere " +
+			"[ SECTOR 4X4 ] en el Centro de Mejoras para expandir a 4 de largo y desbloquear funciones (def)."
+		)
+
+	if objective_id == "rutina_funciones":
+		return (
+			"RUTINAS MODULARES CON FUNCIONES (SECTOR 4X4)\n" +
+			"Las funciones permiten encapsular y reutilizar bloques de código usando 'def nombre():':\n\n" +
+			"def recolectar():\n" +
+			"    if spid.hay_mineral():\n" +
+			"        spid.minar()\n\n" +
+			"ruta = [\"norte\", \"norte\", \"norte\", \"este\", \"sur\", \"sur\", \"sur\", \"este\"]\n\n" +
+			"while True:\n" +
+			"    for d in ruta:\n" +
+			"        spid.mover(d)\n" +
+			"        recolectar()\n" +
+			"    spid.transferir()\n\n" +
+			"Tu desafío: define tu propia función con 'def', invócala en tu programa y transfiere al menos 4 minerales a la nave."
 		)
 
 	if objective_id == "ruta_calibracion":
@@ -839,6 +893,24 @@ func evaluar_programa(resultado: Dictionary) -> void:
 
 	if objective_id == "patrulla_lista":
 		_evaluar_patrulla_lista(resultado)
+		return
+
+	if objective_id == "comprar_sector_4x4":
+		var minerales_nave: int = _obtener_minerales_nave()
+		if minerales_nave >= 20:
+			objetivo_actualizado.emit(
+				objective_id,
+				"¡Ya tienes los 20 minerales necesarios! Ve al menú MEJORAS y adquiere [ SECTOR 4X4 ] para continuar."
+			)
+		else:
+			objetivo_actualizado.emit(
+				objective_id,
+				"Tienes %d de 20 minerales en la nave. Sigue recolectando y luego adquiere [ SECTOR 4X4 ] en MEJORAS." % minerales_nave
+			)
+		return
+
+	if objective_id == "rutina_funciones":
+		_evaluar_rutina_funciones(resultado)
 		return
 
 	if objective_id != "ruta_calibracion":
@@ -1313,6 +1385,95 @@ func _evaluar_patrulla_lista(resultado: Dictionary, informar_pendientes: bool = 
 	mision_completada.emit(objective_id)
 	print("¡Misión patrulla_lista completada con éxito!")
 	CodeExecutor.call_deferred("detener_ejecucion")
+	iniciar_mision_comprar_sector_4x4()
+
+
+func iniciar_mision_comprar_sector_4x4() -> void:
+	objective_id = "comprar_sector_4x4"
+	var map_tier: int = int(ProgressService.get_current_progress().get("map_tier", 0))
+	objective_completed = "comprar_sector_4x4" in completed_missions or map_tier >= 5 or GestorSintaxis.esta_desbloqueada("def")
+	if objective_completed:
+		iniciar_rutina_funciones()
+		return
+	estado_actual = EstadoMision.COMPRAR_SECTOR_4X4
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: comprar_sector_4x4 (Fase 7)")
+
+
+func registrar_compra_sector_4x4() -> void:
+	if "comprar_sector_4x4" not in completed_missions:
+		completed_missions.append("comprar_sector_4x4")
+	GestorSintaxis.desbloquear_sintaxis("def")
+	desbloquear_conocimiento("funciones")
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+	mision_completada.emit("comprar_sector_4x4")
+	iniciar_rutina_funciones()
+
+
+func iniciar_rutina_funciones() -> void:
+	objective_id = "rutina_funciones"
+	objective_completed = "rutina_funciones" in completed_missions
+	estado_actual = EstadoMision.COMPLETADA if objective_completed else EstadoMision.RUTINA_FUNCIONES
+	mision_iniciada.emit(objective_id)
+	objetivo_actualizado.emit(objective_id, get_objetivo_actual())
+	print("Misión iniciada: rutina_funciones (Fase 7)")
+
+
+func _evaluar_rutina_funciones(resultado: Dictionary, informar_pendientes: bool = true) -> void:
+	var functions_defined: Array = resultado.get("functions_defined", [])
+	var functions_called: Array = resultado.get("functions_called", [])
+	var recolectados: int = int(resultado.get("minerals_collected", 0))
+	var transferidos: int = int(resultado.get("minerals_transferred", 0))
+	var code: String = str(resultado.get("code", "")).to_lower()
+
+	# 1. Requiere definir al menos una función con def
+	if functions_defined.is_empty() and not ("def " in code):
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Debes definir al menos una función usando 'def nombre():' para estructurar tu programa."
+		)
+		return
+
+	# 2. Requiere invocar la función
+	if functions_called.is_empty():
+		var invocada := false
+		for fn in functions_defined:
+			if (fn + "()") in code.replace(" ", ""):
+				invocada = true
+				break
+		if not invocada:
+			if not informar_pendientes:
+				return
+			objetivo_actualizado.emit(
+				objective_id,
+				"Has definido una función pero debes invocarla usando 'nombre()' dentro de tu flujo de ejecución."
+			)
+			return
+
+	# 3. Requiere recolectar y transferir al menos 4 minerales
+	if recolectados < 4 or transferidos < 4:
+		if not informar_pendientes:
+			return
+		objetivo_actualizado.emit(
+			objective_id,
+			"Rutina modular en curso: debes recolectar y transferir al menos 4 minerales en el Sector 4x4."
+		)
+		return
+
+	objective_completed = true
+	estado_actual = EstadoMision.COMPLETADA
+
+	if objective_id not in completed_missions:
+		completed_missions.append(objective_id)
+
+	desbloquear_conocimiento("funciones")
+	mision_completada.emit(objective_id)
+	print("¡Misión rutina_funciones completada con éxito!")
+	CodeExecutor.call_deferred("detener_ejecucion")
 
 	
 func desbloquear_modulo_for() -> void:
@@ -1590,6 +1751,8 @@ func evaluar_progreso_programa(resultado: Dictionary) -> void:
 		_evaluar_telemetria_dinamica(resultado, false)
 	elif objective_id == "patrulla_lista":
 		_evaluar_patrulla_lista(resultado, false)
+	elif objective_id == "rutina_funciones":
+		_evaluar_rutina_funciones(resultado, false)
 
 
 func _evaluar_senales_inciertas(resultado: Dictionary, informar_pendientes: bool = true) -> void:
