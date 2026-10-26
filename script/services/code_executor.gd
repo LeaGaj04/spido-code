@@ -317,6 +317,8 @@ func ejecutar_codigo(
 			continue
 
 		if tipo == "if":
+			if instruccion.has("loop_var") and instruccion.has("loop_val"):
+				variables_env[instruccion["loop_var"]] = instruccion["loop_val"]
 			var num_linea: int = instruccion["numero"]
 			var cont_linea: String = instruccion["contenido"]
 			linea_iniciada.emit(num_linea, cont_linea)
@@ -925,6 +927,18 @@ func analizar_linea(contenido: String, numero_linea: int) -> Dictionary:
 		"step_var": step_var
 	}
 
+func _crear_instruccion_comando(numero_linea: int, contenido: String, analisis: Dictionary) -> Dictionary:
+	return {
+		"tipo": "comando",
+		"numero": numero_linea,
+		"contenido": contenido,
+		"command": analisis["command"],
+		"steps": analisis.get("steps", 1),
+		"step_var": analisis.get("step_var", ""),
+		"dir_literal": analisis.get("dir_literal", ""),
+		"dir_var": analisis.get("dir_var", "")
+	}
+
 func _contar_espacios_sangria(linea: String) -> int:
 	var espacios := 0
 	for i in range(linea.length()):
@@ -1021,14 +1035,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 				if not analisis_if["ok"]:
 					return analisis_if
 
-				cuerpo_if.append({
-					"tipo": "comando",
-					"numero": indice + 1,
-					"contenido": contenido_cuerpo,
-					"command": analisis_if["command"],
-					"steps": analisis_if["steps"],
-					"step_var": analisis_if.get("step_var", "")
-				})
+				cuerpo_if.append(_crear_instruccion_comando(indice + 1, contenido_cuerpo, analisis_if))
 				indice += 1
 
 			if cuerpo_if.is_empty():
@@ -1094,14 +1101,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 						if not analisis_else["ok"]:
 							return analisis_else
 
-						cuerpo_else.append({
-							"tipo": "comando",
-							"numero": indice + 1,
-							"contenido": cont_c_else,
-							"command": analisis_else["command"],
-							"steps": analisis_else["steps"],
-							"step_var": analisis_else.get("step_var", "")
-						})
+						cuerpo_else.append(_crear_instruccion_comando(indice + 1, cont_c_else, analisis_else))
 						indice += 1
 
 					if cuerpo_else.is_empty():
@@ -1219,14 +1219,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 						if not analisis_sub["ok"]:
 							return analisis_sub
 
-						cuerpo_if_anidado.append({
-							"tipo": "comando",
-							"numero": indice + 1,
-							"contenido": cont_sub,
-							"command": analisis_sub["command"],
-							"steps": analisis_sub["steps"],
-							"step_var": analisis_sub.get("step_var", "")
-						})
+						cuerpo_if_anidado.append(_crear_instruccion_comando(indice + 1, cont_sub, analisis_sub))
 						indice += 1
 
 					if cuerpo_if_anidado.is_empty():
@@ -1254,15 +1247,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 				if not analisis_for["ok"]:
 					return analisis_for
 
-				cuerpo_for.append({
-					"tipo": "comando",
-					"numero": indice + 1,
-					"contenido": contenido_cuerpo,
-					"command": analisis_for["command"],
-					"steps": analisis_for["steps"],
-					"step_var": analisis_for.get("step_var", "")
-				})
-
+				cuerpo_for.append(_crear_instruccion_comando(indice + 1, contenido_cuerpo, analisis_for))
 				indice += 1
 
 			if cuerpo_for.is_empty():
@@ -1352,14 +1337,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 						if not analisis_sub["ok"]:
 							return analisis_sub
 
-						cuerpo_if_anidado.append({
-							"tipo": "comando",
-							"numero": indice + 1,
-							"contenido": cont_sub,
-							"command": analisis_sub["command"],
-							"steps": analisis_sub["steps"],
-							"step_var": analisis_sub.get("step_var", "")
-						})
+						cuerpo_if_anidado.append(_crear_instruccion_comando(indice + 1, cont_sub, analisis_sub))
 						indice += 1
 
 					if cuerpo_if_anidado.is_empty():
@@ -1425,14 +1403,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 								if not analisis_else_w["ok"]:
 									return analisis_else_w
 
-								cuerpo_else_anidado.append({
-									"tipo": "comando",
-									"numero": indice + 1,
-									"contenido": cont_c_else_w,
-									"command": analisis_else_w["command"],
-									"steps": analisis_else_w["steps"],
-									"step_var": analisis_else_w.get("step_var", "")
-								})
+								cuerpo_else_anidado.append(_crear_instruccion_comando(indice + 1, cont_c_else_w, analisis_else_w))
 								indice += 1
 
 							if cuerpo_else_anidado.is_empty():
@@ -1530,14 +1501,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 								if not analisis_if_sub["ok"]:
 									return analisis_if_sub
 
-								cuerpo_if_for.append({
-									"tipo": "comando",
-									"numero": indice + 1,
-									"contenido": cont_if_sub,
-									"command": analisis_if_sub["command"],
-									"steps": analisis_if_sub["steps"],
-									"step_var": analisis_if_sub.get("step_var", "")
-								})
+								cuerpo_if_for.append(_crear_instruccion_comando(indice + 1, cont_if_sub, analisis_if_sub))
 								indice += 1
 
 							if cuerpo_if_for.is_empty():
@@ -1561,14 +1525,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 						if not analisis_cmd_for["ok"]:
 							return analisis_cmd_for
 
-						cuerpo_for_anidado.append({
-							"tipo": "comando",
-							"numero": indice + 1,
-							"contenido": cont_sub_for,
-							"command": analisis_cmd_for["command"],
-							"steps": analisis_cmd_for["steps"],
-							"step_var": analisis_cmd_for.get("step_var", "")
-						})
+						cuerpo_for_anidado.append(_crear_instruccion_comando(indice + 1, cont_sub_for, analisis_cmd_for))
 						indice += 1
 
 					if cuerpo_for_anidado.is_empty():
@@ -1597,14 +1554,7 @@ func compilar_programa(codigo: String) -> Dictionary:
 				if not analisis_cmd["ok"]:
 					return analisis_cmd
 
-				cuerpo_while.append({
-					"tipo": "comando",
-					"numero": indice + 1,
-					"contenido": contenido_cuerpo,
-					"command": analisis_cmd["command"],
-					"steps": analisis_cmd["steps"],
-					"step_var": analisis_cmd.get("step_var", "")
-				})
+				cuerpo_while.append(_crear_instruccion_comando(indice + 1, contenido_cuerpo, analisis_cmd))
 				indice += 1
 
 			if cuerpo_while.is_empty():
@@ -1633,15 +1583,9 @@ func compilar_programa(codigo: String) -> Dictionary:
 		if not analisis["ok"]:
 			return analisis
 
-		instrucciones.append({
-			"tipo": "comando",
-			"numero": numero_linea,
-			"contenido": contenido,
-			"command": analisis["command"],
-			"steps": analisis["steps"],
-			"step_var": analisis.get("step_var", ""),
-			"loop_iteration": 0
-		})
+		var ins_raiz := _crear_instruccion_comando(numero_linea, contenido, analisis)
+		ins_raiz["loop_iteration"] = 0
+		instrucciones.append(ins_raiz)
 
 		indice += 1
 
