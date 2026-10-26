@@ -2220,16 +2220,28 @@ func _analizar_if(contenido: String, numero_linea: int) -> Dictionary:
 			"condition": "spid.hay_mineral()",
 			"inverted": invertido
 		}
-	if condicion in ["spid.hay_mineral", "hay_mineral"]:
+	if condicion in ["spid.tiene_espacio()", "tiene_espacio()"]:
+		return {
+			"ok": true,
+			"condition": "spid.tiene_espacio()",
+			"inverted": invertido
+		}
+	if condicion in ["spid.en_base()", "en_base()"]:
+		return {
+			"ok": true,
+			"condition": "spid.en_base()",
+			"inverted": invertido
+		}
+	if condicion in ["spid.hay_mineral", "hay_mineral", "spid.tiene_espacio", "tiene_espacio", "spid.en_base", "en_base"]:
 		return _error_de_linea(
 			numero_linea,
 			contenido,
-			"Te faltaron los paréntesis de la función: usa 'if spid.hay_mineral():'"
+			"Te faltaron los paréntesis de la función: usa 'if " + condicion + "():'"
 		)
 	return _error_de_linea(
 		numero_linea,
 		contenido,
-		"Condición no reconocida. Sensor disponible: spid.hay_mineral()"
+		"Condición no reconocida. Sensores disponibles: spid.hay_mineral(), spid.tiene_espacio(), spid.en_base()"
 	)
 
 func _crear_resultado(codigo: String) -> Dictionary:
