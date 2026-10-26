@@ -53,6 +53,7 @@ static func construir(panel: Control) -> void:
 	_etapa(ruta, "06  /  SECTOR 4×3 Y LISTAS", "Expande el terreno a 4 de ancho × 3 de largo.\nDesbloquea listas [...] y navegación dinámica con spid.mover().", originales.get("ButtonSector4x3"), null, Color("48bb78"))
 	_etapa(ruta, "07  /  SECTOR 4×4 Y FUNCIONES", "Expande el terreno a 4 de ancho × 4 de largo.\nDesbloquea la definición de funciones propias (def) para modularizar tu código.", originales.get("ButtonSector4x4"), null, Color("38b2ac"))
 	_etapa(ruta, "07.5 / SECTOR 5×4 Y PARÁMETROS", "Expande el terreno a 5 de ancho × 4 de largo.\nDesbloquea el paso de parámetros en funciones personalizadas def nombre(param):.", originales.get("ButtonSector5x4"), null, Color("f6ad55"))
+	_etapa(ruta, "08  /  SECTOR 5×5 Y BARRIDO", "Expande el terreno a 5 de ancho × 5 de largo.\nDesbloquea el protocolo de barrido bidimensional sistemático por columnas.", originales.get("ButtonSector5x5"), null, Color("ed8936"))
 	_texto(ruta, "MEJORA OPCIONAL  /  Independiente de la ruta", 16, Color("ecc576"))
 	_etapa(ruta, "MINERÍA RÁPIDA", "Reduce el tiempo de extracción a 1 segundo.", originales["ButtonMineria"], null, Color("ecc576"))
 
