@@ -13,9 +13,10 @@ var sintaxis_desbloqueada: Dictionary = {
 	"tamano_mundo": false,
 	"listas": false,
 	"def": false,
+	"parametros_def": false,
 }
 
-const CLAVES_CONOCIDAS := ["for", "while", "if", "else", "in range", "tamano_mundo", "listas", "def"]
+const CLAVES_CONOCIDAS := ["for", "while", "if", "else", "in range", "tamano_mundo", "listas", "def", "parametros_def"]
 
 
 # Restaura únicamente las mejoras de sintaxis que conoce el juego. Las claves
@@ -38,6 +39,14 @@ func validar_codigo(codigo: String) -> bool:
 			if "[" in codigo and "]" in codigo:
 				print(ERROR_SINTAXIS_BLOQUEADA)
 				return false
+			continue
+
+		if palabra_clave == "parametros_def":
+			var regex_param := RegEx.new()
+			if regex_param.compile("(?i)def\\s+[A-Za-z_][A-Za-z0-9_]*\\s*\\([^)]+\\)\\s*:") == OK:
+				if regex_param.search(codigo) != null:
+					print(ERROR_SINTAXIS_BLOQUEADA)
+					return false
 			continue
 
 		if _contiene_palabra_clave(codigo_normalizado, palabra_clave):

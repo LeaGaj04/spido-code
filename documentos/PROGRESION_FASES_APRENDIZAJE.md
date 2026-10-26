@@ -18,6 +18,7 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
 | **6** | **Listas y Colecciones** | Sector 4x3 (15 minerales) | Listas `ruta = ["norte", "este"]`, `spid.mover(dir)`, iteración `for d in lista:` | `comprar_sector_4x3`<br>`patrulla_lista` | **100%** |
 | **6.5** | **Barrido Autónomo con Listas** | Sector 4x3 (Consolidación) | Integración total: `while True:` + listas `[...]` + `spid.mover(d)` + sensores `if` | `barrido_listas_autonomo` | **100%** |
 | **7** | **Funciones (`def`)** | Sector 4x4 (20 minerales) | Definición e invocación de funciones `def nombre():`, modularización de rutinas | `comprar_sector_4x4`<br>`rutina_funciones` | **100%** |
+| **7.5** | **Funciones con Parámetros** | Sector 5x4 (25 minerales) | `def nombre(param):`, invocación `nombre(arg)`, argumentos en rutinas | `comprar_sector_5x4`<br>`funciones_parametrizadas` | **100%** |
 | **8** | **Módulos e `import`** | Módulos de Rover | `import`, modularización de rutinas | *Por definir* | **Pendiente** |
 | **9** | **Algoritmos / Endgame** | Todo el mapa | Algoritmos de ordenamiento, optimización de batería y pureza | *Por definir* | **Pendiente** |
 
@@ -122,6 +123,24 @@ Documento oficial de seguimiento del currículo pedagógico de Python en *Spidoc
   1. `comprar_mapa_3x3`: Expansión al cuadrante de 9 casillas (Coste: 20 minerales).
   2. `camino_largo`: Uso de argumentos numéricos para cruzar el nuevo sector (`spid.norte(2)`).
   3. `variables`: Declaración y uso de variables dinámicas (`pasos = 2`, `spid.norte(pasos)`).
+
+---
+
+### Fase 7: Funciones (`def`) (100% Completada)
+* **Objetivo:** Modularización y reutilización de código mediante funciones propias sin parámetros.
+* **Terreno:** Sector 4x4 (16 casillas, expansión centrada $X \in [-1, 2], Z \in [-3, 0]$, Coste: 20 minerales).
+* **Misiones:**
+  1. `comprar_sector_4x4`: Expansión física a 4 de largo y desbloqueo de `def nombre():`.
+  2. `rutina_funciones`: Definición de función modular y su invocación en bucle para recolectar y transferir 4 minerales.
+
+---
+
+### Fase 7.5: Sector 5x4 y Funciones con Parámetros (100% Completada)
+* **Objetivo:** Generalización y parametrización de rutinas usando argumentos en funciones (`def nombre(param):`).
+* **Terreno:** Sector 5x4 (20 casillas, expansión en ancho $X \in [-2, 2], Z \in [-3, 0]$, base en $(0,0,0)$, Coste: 25 minerales).
+* **Misiones:**
+  1. `comprar_sector_5x4`: Expansión física a 5 de ancho y desbloqueo de `def nombre(param):`.
+  2. `funciones_parametrizadas`: Creación de funciones configurables (ej. `def mover_y_recolectar(direccion):`) invocadas con argumentos dentro de un bucle perimetral para recolectar y transferir 5 minerales.
 
 ---
 

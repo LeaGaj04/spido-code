@@ -83,6 +83,10 @@ func _evaluar_expresion(expr: String, variables_env: Dictionary, resultado: Dict
 	if limpia.is_empty():
 		return {"ok": false, "message": "Expresión vacía."}
 
+	# 0. Literal string
+	if (limpia.begins_with('"') and limpia.ends_with('"')) or (limpia.begins_with("'") and limpia.ends_with("'")):
+		return {"ok": true, "val": limpia.substr(1, limpia.length() - 2)}
+
 	# 1. Operador +
 	if "+" in limpia:
 		var partes := limpia.split("+", false, 1)
@@ -138,7 +142,7 @@ func _evaluar_expresion(expr: String, variables_env: Dictionary, resultado: Dict
 	if variables_env.has(limpia):
 		if resultado.has("variables_used") and limpia not in resultado["variables_used"]:
 			resultado["variables_used"].append(limpia)
-		return {"ok": true, "val": int(variables_env[limpia])}
+		return {"ok": true, "val": variables_env[limpia]}
 
 	# 7. Métodos de telemetría de Spid
 	var limpia_lower := limpia.to_lower().replace(" ", "")
@@ -271,9 +275,19 @@ func ejecutar_codigo(
 
 		if tipo == "def":
 			var fn_name: String = instruccion.get("func_name", "")
-			funciones_env[fn_name] = instruccion.get("cuerpo", [])
+			var fn_params: Array = instruccion.get("params", [])
+			var fn_cuerpo: Array = instruccion.get("cuerpo", [])
+			funciones_env[fn_name] = {
+				"params": fn_params,
+				"cuerpo": fn_cuerpo
+			}
 			if fn_name not in resultado["functions_defined"]:
 				resultado["functions_defined"].append(fn_name)
+			if fn_params.size() > 0:
+				if not resultado.has("functions_defined_with_params"):
+					resultado["functions_defined_with_params"] = []
+				if fn_name not in resultado["functions_defined_with_params"]:
+					resultado["functions_defined_with_params"].append(fn_name)
 			var num_linea: int = int(instruccion.get("numero", 0))
 			var cont_linea: String = str(instruccion.get("contenido", ""))
 			linea_iniciada.emit(num_linea, cont_linea)
@@ -282,6 +296,8 @@ func ejecutar_codigo(
 			continue
 
 		if tipo == "llamada_funcion":
+			if instruccion.has("loop_var") and instruccion.has("loop_val"):
+				variables_env[instruccion["loop_var"]] = instruccion["loop_val"]
 			var res_fn := await _ejecutar_llamada_funcion(
 				instruccion,
 				funciones_env,
@@ -995,45 +1011,117 @@ func _crear_instruccion_comando(numero_linea: int, contenido: String, analisis: 
 
 func _analizar_def(contenido: String, numero_linea: int) -> Dictionary:
 	var regex := RegEx.new()
-	if regex.compile("^(?i)def\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(\\s*\\)\\s*:$") != OK:
+	if regex.compile("^(?i)def\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(([^)]*)\\)\\s*:$") != OK:
 		return _error_de_linea(numero_linea, contenido, "Error en el analizador de funciones.")
 	var coincidencia := regex.search(contenido)
 	if coincidencia == null:
-		return _error_de_linea(numero_linea, contenido, "Sintaxis de función incorrecta. Usa: def nombre():")
+		return _error_de_linea(numero_linea, contenido, "Sintaxis de función incorrecta. Usa: def nombre(parametros):")
 	var func_name := coincidencia.get_string(1).strip_edges()
 	if not _es_identificador_valido(func_name):
 		return _error_de_linea(numero_linea, contenido, "'" + func_name + "' no es un nombre de función válido.")
+	var raw_params := coincidencia.get_string(2).strip_edges()
+	var params: Array = []
+	if not raw_params.is_empty():
+		var partes := raw_params.split(",")
+		for p in partes:
+			var p_name := p.strip_edges()
+			if p_name.is_empty() or not _es_identificador_valido(p_name):
+				return _error_de_linea(numero_linea, contenido, "'" + p_name + "' no es un nombre de parámetro válido.")
+			if p_name in PALABRAS_RESERVADAS:
+				return _error_de_linea(numero_linea, contenido, "No puedes usar la palabra reservada '" + p_name + "' como parámetro.")
+			if p_name in params:
+				return _error_de_linea(numero_linea, contenido, "El parámetro '" + p_name + "' está duplicado.")
+			params.append(p_name)
 	return {
 		"ok": true,
-		"func_name": func_name
+		"func_name": func_name,
+		"params": params
 	}
 
 func _analizar_llamada_funcion(contenido: String, funciones_conocidas: Dictionary, numero_linea: int) -> Dictionary:
 	var regex := RegEx.new()
-	if regex.compile("^(?i)([A-Za-z_][A-Za-z0-9_]*)\\s*\\(\\s*\\)$") != OK:
+	if regex.compile("^(?i)([A-Za-z_][A-Za-z0-9_]*)\\s*\\((.*)\\)$") != OK:
 		return {"es_llamada": false}
 	var coincidencia := regex.search(contenido.strip_edges())
 	if coincidencia == null:
 		return {"es_llamada": false}
 	var fn_name := coincidencia.get_string(1).strip_edges()
-	if fn_name.begins_with("spid.") or fn_name == "spid":
+	if fn_name.begins_with("spid.") or fn_name == "spid" or fn_name in ["range", "len", "print", "while", "for", "if", "def"]:
 		return {"es_llamada": false}
-	if funciones_conocidas.has(fn_name):
+	if not funciones_conocidas.has(fn_name):
 		return {
 			"es_llamada": true,
-			"ok": true,
-			"tipo": "llamada_funcion",
-			"func_name": fn_name,
-			"numero": numero_linea,
-			"contenido": contenido
+			"ok": false,
+			"type": "sintaxis",
+			"line": numero_linea,
+			"content": contenido,
+			"message": "La función '" + fn_name + "()' no ha sido definida antes de su uso."
 		}
+
+	var raw_args := coincidencia.get_string(2).strip_edges()
+	var args: Array = []
+	if not raw_args.is_empty():
+		var current := ""
+		var in_single := false
+		var in_double := false
+		for i in range(raw_args.length()):
+			var c := raw_args[i]
+			if c == "'" and not in_double:
+				in_single = not in_single
+				current += c
+			elif c == '"' and not in_single:
+				in_double = not in_double
+				current += c
+			elif c == ',' and not in_single and not in_double:
+				var arg_clean := current.strip_edges()
+				if arg_clean.is_empty():
+					return {
+						"es_llamada": true,
+						"ok": false,
+						"type": "sintaxis",
+						"line": numero_linea,
+						"content": contenido,
+						"message": "Argumento vacío en la llamada a '" + fn_name + "'."
+					}
+				args.append(arg_clean)
+				current = ""
+			else:
+				current += c
+		var last_arg := current.strip_edges()
+		if last_arg.is_empty():
+			return {
+				"es_llamada": true,
+				"ok": false,
+				"type": "sintaxis",
+				"line": numero_linea,
+				"content": contenido,
+				"message": "Argumento vacío o coma sobrante en la llamada a '" + fn_name + "'."
+			}
+		args.append(last_arg)
+
+	var fn_data = funciones_conocidas[fn_name]
+	var expected_params: Array = []
+	if fn_data is Dictionary:
+		expected_params = fn_data.get("params", [])
+
+	if args.size() != expected_params.size():
+		return {
+			"es_llamada": true,
+			"ok": false,
+			"type": "sintaxis",
+			"line": numero_linea,
+			"content": contenido,
+			"message": "La función '" + fn_name + "' espera " + str(expected_params.size()) + " parámetro(s), pero recibió " + str(args.size()) + "."
+		}
+
 	return {
 		"es_llamada": true,
-		"ok": false,
-		"type": "sintaxis",
-		"line": numero_linea,
-		"content": contenido,
-		"message": "La función '" + fn_name + "()' no ha sido definida antes de su uso."
+		"ok": true,
+		"tipo": "llamada_funcion",
+		"func_name": fn_name,
+		"args": args,
+		"numero": numero_linea,
+		"contenido": contenido
 	}
 
 func _ejecutar_llamada_funcion(
@@ -1061,6 +1149,7 @@ func _ejecutar_llamada_funcion(
 	var fn_name: String = instruccion.get("func_name", "")
 	var num_linea: int = int(instruccion.get("numero", 0))
 	var cont_linea: String = str(instruccion.get("contenido", ""))
+	var args_exprs: Array = instruccion.get("args", [])
 
 	linea_iniciada.emit(num_linea, cont_linea)
 	await _esperar_paso_si_aplica(num_linea, cont_linea)
@@ -1069,6 +1158,12 @@ func _ejecutar_llamada_funcion(
 		resultado["functions_called"] = []
 	if fn_name not in resultado["functions_called"]:
 		resultado["functions_called"].append(fn_name)
+
+	if not args_exprs.is_empty():
+		if not resultado.has("functions_called_with_args"):
+			resultado["functions_called_with_args"] = []
+		if fn_name not in resultado["functions_called_with_args"]:
+			resultado["functions_called_with_args"].append(fn_name)
 
 	if not funciones_env.has(fn_name):
 		var err := {
@@ -1084,7 +1179,39 @@ func _ejecutar_llamada_funcion(
 		linea_finalizada.emit(num_linea, cont_linea)
 		return {"ok": false}
 
-	var cuerpo: Array = funciones_env[fn_name]
+	var fn_data = funciones_env[fn_name]
+	var cuerpo: Array = []
+	var params: Array = []
+	if fn_data is Dictionary:
+		cuerpo = fn_data.get("cuerpo", [])
+		params = fn_data.get("params", [])
+	elif fn_data is Array:
+		cuerpo = fn_data
+
+	var backup_params: Dictionary = {}
+	if not params.is_empty():
+		for i in range(params.size()):
+			var p_name: String = params[i]
+			var arg_expr: String = args_exprs[i]
+			var res_arg := _evaluar_expresion(arg_expr, variables_env, resultado)
+			if not res_arg.get("ok", false):
+				var err_arg := {
+					"type": "ejecucion",
+					"line": num_linea,
+					"content": cont_linea,
+					"message": "Error al evaluar argumento '" + arg_expr + "': " + res_arg.get("message", "Expresión inválida.")
+				}
+				resultado["error_type"] = err_arg["type"]
+				resultado["error_message"] = err_arg["message"]
+				resultado["errors"].append(err_arg)
+				error_detectado.emit(err_arg)
+				linea_finalizada.emit(num_linea, cont_linea)
+				return {"ok": false}
+			if variables_env.has(p_name):
+				backup_params[p_name] = variables_env[p_name]
+			variables_env[p_name] = res_arg["val"]
+
+	var ok_status := true
 	for sub_ins in cuerpo:
 		if detener_solicitado:
 			break
@@ -1094,8 +1221,8 @@ func _ejecutar_llamada_funcion(
 				sub_ins, funciones_env, ejecutar_comando, evaluar_condicion, resultado, variables_env, profundidad + 1
 			)
 			if not res_fn.get("ok", false):
-				linea_finalizada.emit(num_linea, cont_linea)
-				return {"ok": false}
+				ok_status = false
+				break
 		elif stype == "if":
 			var num_if: int = sub_ins["numero"]
 			var cont_if: String = sub_ins["contenido"]
@@ -1117,8 +1244,8 @@ func _ejecutar_llamada_funcion(
 						break
 					var res_sub := await _ejecutar_instruccion_simple(cmd_if, ejecutar_comando, resultado, variables_env)
 					if not res_sub.get("ok", false):
-						linea_finalizada.emit(num_if, cont_if)
-						return {"ok": false}
+						ok_status = false
+						break
 			elif sub_ins.has("cuerpo_else"):
 				resultado["else_branch_taken"] = true
 				for cmd_else in sub_ins.get("cuerpo_else", []):
@@ -1126,17 +1253,25 @@ func _ejecutar_llamada_funcion(
 						break
 					var res_sub := await _ejecutar_instruccion_simple(cmd_else, ejecutar_comando, resultado, variables_env)
 					if not res_sub.get("ok", false):
-						linea_finalizada.emit(num_if, cont_if)
-						return {"ok": false}
+						ok_status = false
+						break
 			linea_finalizada.emit(num_if, cont_if)
+			if not ok_status:
+				break
 		elif stype == "comando":
 			var res_cmd := await _ejecutar_instruccion_simple(sub_ins, ejecutar_comando, resultado, variables_env)
 			if not res_cmd.get("ok", false):
-				linea_finalizada.emit(num_linea, cont_linea)
-				return {"ok": false}
+				ok_status = false
+				break
+
+	for p_name in params:
+		if backup_params.has(p_name):
+			variables_env[p_name] = backup_params[p_name]
+		else:
+			variables_env.erase(p_name)
 
 	linea_finalizada.emit(num_linea, cont_linea)
-	return {"ok": true}
+	return {"ok": ok_status}
 
 func _contar_espacios_sangria(linea: String) -> int:
 	var espacios := 0
@@ -1278,12 +1413,17 @@ func compilar_programa(codigo: String) -> Dictionary:
 					"La función 'def " + func_name + "()' necesita al menos una instrucción con sangría."
 				)
 
-			funciones_compile_env[func_name] = cuerpo_func
+			var def_params: Array = resultado_def.get("params", [])
+			funciones_compile_env[func_name] = {
+				"params": def_params,
+				"cuerpo": cuerpo_func
+			}
 			instrucciones.append({
 				"tipo": "def",
 				"numero": numero_linea,
 				"contenido": contenido,
 				"func_name": func_name,
+				"params": def_params,
 				"cuerpo": cuerpo_func,
 				"loop_iteration": 0
 			})
@@ -2104,7 +2244,9 @@ func _crear_resultado(codigo: String) -> Dictionary:
 		"variables_defined": [],
 		"variables_used": [],
 		"functions_defined": [],
+		"functions_defined_with_params": [],
 		"functions_called": [],
+		"functions_called_with_args": [],
 		"command_count": 0,
 		"movement_count": 0,
 		"loop_count": 0,
