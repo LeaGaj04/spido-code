@@ -10,18 +10,7 @@ var paso_distancia: float = 2.0
 var cola_instrucciones: Array = []
 var esta_moviendose: bool = false
 var tiempo_minado: float = 3.0
-var duracion_paso: float = 0.4
 var animation_player: AnimationPlayer
-
-func alternar_modo_rapido() -> bool:
-	if duracion_paso > 0.1:
-		duracion_paso = 0.06
-		tiempo_minado = 0.3
-		return true
-	else:
-		duracion_paso = 0.4
-		tiempo_minado = 3.0
-		return false
 
 
 func _ready() -> void:
@@ -129,7 +118,7 @@ func _intentar_mover() -> Dictionary:
 			self,
 			"global_position",
 			destino,
-			duracion_paso
+			0.4
 		)
 
 		await tween.finished
