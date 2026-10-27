@@ -10,14 +10,18 @@ content_margin_left = 22.0
 content_margin_top = 18.0
 content_margin_right = 22.0
 content_margin_bottom = 18.0
-bg_color = Color(0.005, 0.055, 0.02, 0.96)
+bg_color = Color(0.270588, 0.301961, 0.352941, 0.98)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.372549, 0.592157, 0.419608, 0.95)
-shadow_color = Color(0.0039, 0.09, 0.011, 0.85)
-shadow_size = 12
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.95)
+shadow_size = 4
 shadow_offset = Vector2(8, 8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_caja_codigo"]
@@ -25,42 +29,46 @@ content_margin_left = 14.0
 content_margin_top = 12.0
 content_margin_right = 14.0
 content_margin_bottom = 12.0
-bg_color = Color(0.0, 0.03, 0.01, 0.85)
+bg_color = Color(0.34902, 0.388235, 0.447059, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.25, 0.5, 0.3, 0.6)
+border_color = Color(0.270588, 0.301961, 0.352941, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_cerrar"]
 content_margin_left = 16.0
 content_margin_top = 8.0
 content_margin_right = 16.0
 content_margin_bottom = 8.0
-bg_color = Color(0, 0.06666667, 0, 0.7607843)
+bg_color = Color(0.34902, 0.388235, 0.447059, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.37254903, 0.5921569, 0.41960785, 0.8509804)
+border_width_bottom = 5
+border_color = Color(0.270588, 0.301961, 0.352941, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
-shadow_offset = Vector2(4, 4)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
+shadow_offset = Vector2(0, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_cerrar_hover"]
 content_margin_left = 16.0
 content_margin_top = 8.0
 content_margin_right = 16.0
 content_margin_bottom = 8.0
-bg_color = Color(0.015, 0.12, 0.025, 0.92)
+bg_color = Color(0.631373, 0.85098, 0.65098, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.48, 0.76, 0.54, 1)
+border_width_bottom = 6
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
@@ -69,8 +77,8 @@ expand_margin_left = 1.0
 expand_margin_top = 1.0
 expand_margin_right = 1.0
 expand_margin_bottom = 1.0
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
-shadow_offset = Vector2(4, 4)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
+shadow_offset = Vector2(0, 6)
 
 [node name="ArchivoADA" type="Control"]
 layout_mode = 3
@@ -113,15 +121,15 @@ layout_mode = 2
 [node name="Titulo" type="Label" parent="Centro/PanelPrincipal/VBox/Cabecera"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.76, 0.94, 0.78, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 24
 text = "◆ CÓDICE / ARCHIVO DE CONOCIMIENTOS A.D.A. ◆"
 
 [node name="BotonCerrar" type="Button" parent="Centro/PanelPrincipal/VBox/Cabecera"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_hover_color = Color(0.9, 1, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_boton_cerrar")
@@ -136,9 +144,9 @@ theme_override_constants/separation = 12
 [node name="BotonComandos" type="Button" parent="Centro/PanelPrincipal/VBox/Pestanas"]
 custom_minimum_size = Vector2(190, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_hover_color = Color(0.9, 1, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_boton_cerrar")
@@ -149,9 +157,9 @@ text = "[ COMANDOS SPID ]"
 [node name="BotonFundamentos" type="Button" parent="Centro/PanelPrincipal/VBox/Pestanas"]
 custom_minimum_size = Vector2(190, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_hover_color = Color(0.9, 1, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_boton_cerrar")
@@ -162,9 +170,9 @@ text = "[ FUNDAMENTOS ]"
 [node name="BotonControl" type="Button" parent="Centro/PanelPrincipal/VBox/Pestanas"]
 custom_minimum_size = Vector2(190, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_hover_color = Color(0.9, 1, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_boton_cerrar")
@@ -175,9 +183,9 @@ text = "[ CONTROL ]"
 [node name="BotonOrganizacion" type="Button" parent="Centro/PanelPrincipal/VBox/Pestanas"]
 custom_minimum_size = Vector2(190, 38)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_hover_color = Color(0.9, 1, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_boton_cerrar")
@@ -225,7 +233,7 @@ theme_override_constants/separation = 12
 
 [node name="TituloConcepto" type="Label" parent="Centro/PanelPrincipal/VBox/Cuerpo/ColumnaDerecha/Scroll/Detalle"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.76, 0.94, 0.78, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 22
 text = "◆ CONCEPTO"
 
@@ -239,7 +247,7 @@ layout_mode = 2
 
 [node name="Lbl1" type="Label" parent="Centro/PanelPrincipal/VBox/Cuerpo/ColumnaDerecha/Scroll/Detalle"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.86, 0.63, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 15
 text = "DESCRIPCIÓN TEÓRICA:"
 
@@ -250,7 +258,7 @@ fit_content = true
 
 [node name="Lbl2" type="Label" parent="Centro/PanelPrincipal/VBox/Cuerpo/ColumnaDerecha/Scroll/Detalle"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.86, 0.63, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 15
 text = "SINTAXIS FORMAL:"
 
@@ -261,7 +269,7 @@ fit_content = true
 
 [node name="Lbl3" type="Label" parent="Centro/PanelPrincipal/VBox/Cuerpo/ColumnaDerecha/Scroll/Detalle"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.86, 0.63, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 15
 text = "EJEMPLO PRÁCTICO CON SPID:"
 
@@ -272,7 +280,7 @@ fit_content = true
 
 [node name="Lbl4" type="Label" parent="Centro/PanelPrincipal/VBox/Cuerpo/ColumnaDerecha/Scroll/Detalle"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.86, 0.63, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 15
 text = "PISTAS Y ERRORES COMUNES:"
 

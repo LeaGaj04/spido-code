@@ -8,18 +8,23 @@ content_margin_left = 18.0
 content_margin_top = 14.0
 content_margin_right = 18.0
 content_margin_bottom = 14.0
-bg_color = Color(4.4370537e-08, 0.067600854, 0.00088399946, 0.94)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3744904, 0.5937168, 0.41924155, 0.8509804)
-shadow_color = Color(0.005598605, 0.09105549, 0.011137269, 0.6509804)
-shadow_size = 12
+bg_color = Color(0.270588, 0.301961, 0.352941, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.95)
+shadow_size = 4
+shadow_offset = Vector2(8, 8)
 
 [sub_resource type="StyleBoxLine" id="StyleSeparadorADA"]
-color = Color(0.3744904, 0.5937168, 0.41924155, 0.45)
-thickness = 1
+color = Color(0.545098, 0.796078, 0.568627, 0.75)
+thickness = 2
 
 [node name="TransmisionADA" type="Control"]
 layout_mode = 3
@@ -33,17 +38,15 @@ script = ExtResource("1_transmision")
 
 [node name="PanelTransmision" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 6
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -475.0
-offset_top = -155.0
-offset_right = -25.0
-offset_bottom = 155.0
+offset_left = -340.0
+offset_top = 161.0
+offset_right = -20.0
+offset_bottom = 471.0
 grow_horizontal = 0
-grow_vertical = 2
+grow_vertical = 1
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StylePanelADA")
 
@@ -73,8 +76,8 @@ color = Color(0.7608024, 0.9369633, 0.7753063, 1)
 
 [node name="Nombre" type="Label" parent="PanelTransmision/Margen/Contenido/Cabecera"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7608024, 0.9369633, 0.7753063, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 23
 text = "A.D.A."
@@ -82,8 +85,8 @@ text = "A.D.A."
 [node name="Estado" type="Label" parent="PanelTransmision/Margen/Contenido/Cabecera"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.6003543, 0.86491835, 0.62992954, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 15
 text = "● TRANSMISION"
 horizontal_alignment = 2
 
@@ -98,26 +101,32 @@ mouse_filter = 2
 theme_override_constants/separation = 14
 
 [node name="AvatarADA" type="Control" parent="PanelTransmision/Margen/Contenido/Cuerpo"]
-custom_minimum_size = Vector2(125, 190)
+custom_minimum_size = Vector2(90, 175)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("2_avatar")
 
 [node name="Mensaje" type="RichTextLabel" parent="PanelTransmision/Margen/Contenido/Cuerpo"]
-custom_minimum_size = Vector2(265, 175)
+custom_minimum_size = Vector2(160, 175)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
-theme_override_colors/default_color = Color(0.8651328, 0.9999998, 0.866359, 1)
-theme_override_font_sizes/normal_font_size = 18
+theme_override_colors/default_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
+theme_override_colors/font_shadow_color = Color(0.05, 0.07, 0.1, 0.9)
+theme_override_constants/outline_size = 1
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/line_separation = 3
+theme_override_font_sizes/normal_font_size = 17
 text = "Unidad Spid, conexion establecida."
 fit_content = true
 scroll_active = false
 
 [node name="Canal" type="Label" parent="PanelTransmision/Margen/Contenido"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3744904, 0.5937168, 0.41924155, 0.85)
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 14
 text = "CANAL NAVE 01  //  SEÑAL ESTABLE"
 horizontal_alignment = 2
