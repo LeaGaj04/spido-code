@@ -29,14 +29,12 @@ func _ready() -> void:
 	style_panel.content_margin_top = 18.0
 	style_panel.content_margin_right = 22.0
 	style_panel.content_margin_bottom = 18.0
-	style_panel.bg_color = Color(0.005, 0.055, 0.02, 0.96)
-	style_panel.border_width_left = 3
-	style_panel.border_width_top = 3
-	style_panel.border_width_right = 3
-	style_panel.border_width_bottom = 3
-	style_panel.border_color = Color(0.37, 0.59, 0.42, 0.95)
-	style_panel.shadow_color = Color(0.004, 0.09, 0.011, 0.85)
-	style_panel.shadow_size = 12
+	style_panel.bg_color = Color("454D5A")
+	style_panel.set_border_width_all(4)
+	style_panel.border_color = Color("596372")
+	style_panel.set_corner_radius_all(20)
+	style_panel.shadow_color = Color("202833")
+	style_panel.shadow_size = 4
 	style_panel.shadow_offset = Vector2(8, 8)
 	panel.add_theme_stylebox_override("panel", style_panel)
 	
@@ -56,7 +54,7 @@ func _ready() -> void:
 	title.text = "◆ CONFIGURACIÓN ◆"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color(0.76, 0.94, 0.78, 1))
+	title.add_theme_color_override("font_color", Color("F4F6F2"))
 	vbox.add_child(title)
 	
 	# Contenedor de Sliders
@@ -75,7 +73,7 @@ func _ready() -> void:
 	lbl_mute.text = "MUTEAR TODO"
 	lbl_mute.custom_minimum_size = Vector2(130, 0)
 	lbl_mute.add_theme_font_size_override("font_size", 18)
-	lbl_mute.add_theme_color_override("font_color", Color(0.6, 0.86, 0.63, 1))
+	lbl_mute.add_theme_color_override("font_color", Color("F4F6F2"))
 	hbox_mute.add_child(lbl_mute)
 	check_mute = CheckButton.new()
 	check_mute.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index("Master"))
@@ -88,24 +86,21 @@ func _ready() -> void:
 	boton_cerrar = Button.new()
 	boton_cerrar.text = "CERRAR"
 	boton_cerrar.custom_minimum_size = Vector2(150, 45)
-	boton_cerrar.add_theme_color_override("font_color", Color(0.76, 0.94, 0.78, 1))
+	boton_cerrar.add_theme_color_override("font_color", Color("F4F6F2"))
 	
 	var style_btn = StyleBoxFlat.new()
-	style_btn.bg_color = Color(0, 0.066, 0, 0.76)
-	style_btn.border_width_left = 2
-	style_btn.border_width_top = 2
-	style_btn.border_width_right = 2
-	style_btn.border_width_bottom = 2
-	style_btn.border_color = Color(0.37, 0.59, 0.42, 0.85)
-	style_btn.corner_radius_top_left = 12
-	style_btn.corner_radius_top_right = 12
-	style_btn.corner_radius_bottom_right = 12
-	style_btn.corner_radius_bottom_left = 12
+	style_btn.bg_color = Color("8BCB91")
+	style_btn.set_border_width_all(3)
+	style_btn.border_width_bottom = 6
+	style_btn.border_color = Color("6FAF78")
+	style_btn.set_corner_radius_all(14)
+	style_btn.shadow_color = Color("202833")
+	style_btn.shadow_offset = Vector2(0, 6)
 	boton_cerrar.add_theme_stylebox_override("normal", style_btn)
 	
 	var style_btn_hover = style_btn.duplicate()
-	style_btn_hover.bg_color = Color(0.015, 0.12, 0.025, 0.92)
-	style_btn_hover.border_color = Color(0.48, 0.76, 0.54, 1)
+	style_btn_hover.bg_color = Color("9ED9A3")
+	style_btn_hover.border_color = Color("6FAF78")
 	boton_cerrar.add_theme_stylebox_override("hover", style_btn_hover)
 	boton_cerrar.add_theme_stylebox_override("pressed", style_btn_hover)
 	
@@ -120,7 +115,7 @@ func _crear_slider(texto: String, bus_name: String, parent: Control) -> HSlider:
 	lbl.text = texto
 	lbl.custom_minimum_size = Vector2(130, 0)
 	lbl.add_theme_font_size_override("font_size", 18)
-	lbl.add_theme_color_override("font_color", Color(0.6, 0.86, 0.63, 1))
+	lbl.add_theme_color_override("font_color", Color("F4F6F2"))
 	hbox.add_child(lbl)
 	var slider = HSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL

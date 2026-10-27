@@ -54,6 +54,7 @@ layout_mode = 2
 
 [node name="Volver" type="Button" parent="Panel/Contenedor" unique_id=1941070961]
 layout_mode = 2
+theme_type_variation = &"SecondaryButton"
 text = "Volver"
 
 [connection signal="pressed" from="Panel/Contenedor/Volver" to="." method="_on_volver_pressed"]

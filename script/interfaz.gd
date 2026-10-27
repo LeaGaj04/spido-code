@@ -9,6 +9,7 @@ extends CanvasLayer
 @onready var boton_paso: Button = $PanelCodigo/Contenido/BarraControles/BotonPaso
 @onready var boton_reset_base: Button = $PanelCodigo/Contenido/BarraControles/BotonResetBase
 @onready var transmision_ada = $TransmisionADA
+@onready var boton_sistema_ada: Button = $BotonSistemaADA
 @onready var panel_mision: Panel = $PanelMision
 @onready var label_mision: Label = $PanelMision/Nombre
 @onready var label_objetivo_mision: Label = $PanelMision/Objetivo
@@ -36,6 +37,8 @@ var posicion_inicio_redimension: Vector2 = Vector2.ZERO
 var tamano_inicio_redimension: Vector2 = Vector2.ZERO
 var alto_panel_expandido: float = ALTO_PANEL_CODIGO
 var posicion_panel_mision: Vector2
+var ada_visible_antes_tienda: bool = false
+var ada_visible_antes_pestana: bool = false
 
 # --- VARIABLES DE RECURSOS ---
 const CAPACIDAD_SPID : int = 10
@@ -102,6 +105,7 @@ const PRECIOS = {
 
 func _ready() -> void:
 	preload("res://script/tienda_layout.gd").construir(panel_tienda)
+	_estandarizar_botones_cerrar()
 	barra_codigo.gui_input.connect(_on_barra_codigo_gui_input)
 	caja_codigo.code_completion_enabled = true
 	caja_codigo.code_completion_prefixes = PackedStringArray(["."])
@@ -141,6 +145,12 @@ func _ready() -> void:
 		panel_tutorial.cerrado.connect(_on_tutorial_cerrado)
 	if boton_tutorial != null and not boton_tutorial.pressed.is_connected(_on_boton_tutorial_pressed):
 		boton_tutorial.pressed.connect(_on_boton_tutorial_pressed)
+	if (
+		transmision_ada != null
+		and MissionService.objective_id == "recolectar_primer_mineral"
+		and MissionService.completed_missions.is_empty()
+	):
+		transmision_ada.bloquear_mensajes()
 	call_deferred("_verificar_tutorial_inicio")
 	if boton_variables != null and not boton_variables.pressed.is_connected(_on_button_variables_pressed):
 		boton_variables.pressed.connect(_on_button_variables_pressed)
@@ -157,6 +167,44 @@ func _ready() -> void:
 	if boton_protocolo_maestro != null and not boton_protocolo_maestro.pressed.is_connected(_on_button_protocolo_maestro_pressed):
 		boton_protocolo_maestro.pressed.connect(_on_button_protocolo_maestro_pressed)
 	_marcar_interfaz_inicializada()
+
+
+func _estandarizar_botones_cerrar() -> void:
+	var botones: Array[Button] = []
+	var cerrar_tienda := get_node_or_null("PanelTienda/LienzoArbol/BotonCerrar") as Button
+	var cerrar_archivo := get_node_or_null("ArchivoADA/Centro/PanelPrincipal/VBox/Cabecera/BotonCerrar") as Button
+	var cerrar_guia := get_node_or_null("PanelTutorial/Centro/PanelPrincipal/VBox/Cabecera/BotonCerrar") as Button
+	for boton in [cerrar_tienda, cerrar_archivo, cerrar_guia]:
+		if boton != null:
+			botones.append(boton)
+	for boton in botones:
+		boton.custom_minimum_size = Vector2(110, 44)
+		boton.add_theme_font_size_override("font_size", 15)
+		boton.add_theme_color_override("font_color", Color("F4F6F2"))
+		boton.add_theme_color_override("font_hover_color", Color("F4F6F2"))
+		boton.add_theme_color_override("font_pressed_color", Color("F4F6F2"))
+		boton.add_theme_color_override("font_outline_color", Color("111720"))
+		boton.add_theme_constant_override("outline_size", 3)
+		boton.add_theme_stylebox_override("normal", _estilo_boton_cerrar(Color("8BCB91"), Color("6FAF78"), 6))
+		boton.add_theme_stylebox_override("hover", _estilo_boton_cerrar(Color("A1D6A6"), Color("6FAF78"), 6))
+		boton.add_theme_stylebox_override("pressed", _estilo_boton_cerrar(Color("6FAF78"), Color("6FAF78"), 2))
+		boton.add_theme_stylebox_override("focus", _estilo_boton_cerrar(Color("8BCB91"), Color("6FAF78"), 6))
+
+
+func _estilo_boton_cerrar(fondo: Color, borde: Color, desplazamiento: int) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = fondo
+	estilo.border_color = borde
+	estilo.set_border_width_all(3)
+	estilo.set_corner_radius_all(14)
+	estilo.shadow_color = Color("111720")
+	estilo.shadow_size = 4
+	estilo.shadow_offset = Vector2(0, desplazamiento)
+	estilo.content_margin_left = 14
+	estilo.content_margin_right = 14
+	estilo.content_margin_top = 8
+	estilo.content_margin_bottom = 8
+	return estilo
 
 
 func _on_codigo_text_changed() -> void:
@@ -214,7 +262,11 @@ func _marcar_interfaz_inicializada() -> void:
 
 func _on_boton_tienda_pressed() -> void:
 	actualizar_mejoras_visual()
+	ada_visible_antes_tienda = transmision_ada != null and transmision_ada.panel.visible
+	if transmision_ada != null and ada_visible_antes_tienda:
+		transmision_ada.ocultar()
 	panel_tienda.show()
+	boton_sistema_ada.hide()
 	boton_tienda.hide()
 	if boton_archivo != null:
 		boton_archivo.hide()
@@ -228,7 +280,11 @@ func _on_boton_tienda_pressed() -> void:
 
 func _on_boton_archivo_pressed() -> void:
 	if panel_archivo != null:
+		ada_visible_antes_pestana = transmision_ada != null and transmision_ada.panel.visible
+		if transmision_ada != null and ada_visible_antes_pestana:
+			transmision_ada.ocultar()
 		panel_archivo.abrir()
+		boton_sistema_ada.hide()
 		boton_tienda.hide()
 		if boton_archivo != null:
 			boton_archivo.hide()
@@ -242,6 +298,10 @@ func _on_boton_archivo_pressed() -> void:
 
 func _on_archivo_cerrado() -> void:
 	boton_tienda.show()
+	boton_sistema_ada.show()
+	if transmision_ada != null and ada_visible_antes_pestana:
+		transmision_ada.establecer_panel_abierto(true)
+	ada_visible_antes_pestana = false
 	if boton_archivo != null:
 		boton_archivo.show()
 	if boton_tutorial != null:
@@ -529,6 +589,10 @@ func evaluar_condicion_spid(condicion: String) -> bool:
 func _on_boton_cerrar_pressed() -> void:
 	# Ocultamos el panel directamente
 	panel_tienda.hide()
+	boton_sistema_ada.show()
+	if transmision_ada != null and ada_visible_antes_tienda:
+		transmision_ada.establecer_panel_abierto(true)
+	ada_visible_antes_tienda = false
 	
 	# Restauramos el botón principal para poder volver a abrir la tienda.
 	boton_tienda.text = "MEJORAS"
@@ -1899,8 +1963,14 @@ func _mostrar_mensaje_inicial_ada() -> void:
 
 func _on_boton_tutorial_pressed() -> void:
 	if panel_tutorial != null:
+		if transmision_ada != null:
+			transmision_ada.bloquear_mensajes()
+		ada_visible_antes_pestana = transmision_ada != null and transmision_ada.panel.visible
+		if transmision_ada != null and ada_visible_antes_pestana:
+			transmision_ada.ocultar()
 		var fase := _obtener_fase_actual()
 		panel_tutorial.abrir(fase)
+		boton_sistema_ada.hide()
 		boton_tienda.hide()
 		if boton_archivo != null:
 			boton_archivo.hide()
@@ -1914,6 +1984,7 @@ func _on_boton_tutorial_pressed() -> void:
 
 func _on_tutorial_cerrado() -> void:
 	boton_tienda.show()
+	boton_sistema_ada.show()
 	if boton_archivo != null:
 		boton_archivo.show()
 	if boton_tutorial != null:
@@ -1922,11 +1993,18 @@ func _on_tutorial_cerrado() -> void:
 		panel_codigo.show()
 	if brujula != null:
 		brujula.show()
+	if transmision_ada != null:
+		transmision_ada.desbloquear_mensajes()
+	if transmision_ada != null and ada_visible_antes_pestana:
+		transmision_ada.establecer_panel_abierto(true)
+	ada_visible_antes_pestana = false
 
 
 func _verificar_tutorial_inicio() -> void:
 	if MissionService.objective_id == "recolectar_primer_mineral" and MissionService.completed_missions.is_empty():
 		_on_boton_tutorial_pressed()
+	elif transmision_ada != null:
+		transmision_ada.desbloquear_mensajes()
 
 
 func _obtener_fase_actual() -> int:

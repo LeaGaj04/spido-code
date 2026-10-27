@@ -149,22 +149,24 @@ func _ready() -> void:
 
 func _inicializar_estilos_conceptos() -> void:
 	estilo_concepto_normal = StyleBoxFlat.new()
-	estilo_concepto_normal.bg_color = Color(0.0, 0.06666667, 0.0, 0.76)
-	estilo_concepto_normal.border_color = Color(0.37254903, 0.5921569, 0.41960785, 0.85)
-	estilo_concepto_normal.set_border_width_all(2)
-	estilo_concepto_normal.set_corner_radius_all(10)
+	estilo_concepto_normal.bg_color = Color("596372")
+	estilo_concepto_normal.border_color = Color("454D5A")
+	estilo_concepto_normal.set_border_width_all(3)
+	estilo_concepto_normal.border_width_bottom = 5
+	estilo_concepto_normal.set_corner_radius_all(12)
 	estilo_concepto_normal.content_margin_left = 14.0
 	estilo_concepto_normal.content_margin_top = 8.0
 	estilo_concepto_normal.content_margin_right = 14.0
 	estilo_concepto_normal.content_margin_bottom = 8.0
-	estilo_concepto_normal.shadow_color = Color(0.0039, 0.09, 0.011, 0.65)
-	estilo_concepto_normal.shadow_offset = Vector2(3, 3)
+	estilo_concepto_normal.shadow_color = Color("202833")
+	estilo_concepto_normal.shadow_offset = Vector2(0, 5)
 
 	estilo_concepto_hover = StyleBoxFlat.new()
-	estilo_concepto_hover.bg_color = Color(0.015, 0.12, 0.025, 0.92)
-	estilo_concepto_hover.border_color = Color(0.48, 0.76, 0.54, 1.0)
-	estilo_concepto_hover.set_border_width_all(2)
-	estilo_concepto_hover.set_corner_radius_all(10)
+	estilo_concepto_hover.bg_color = Color("8BCB91")
+	estilo_concepto_hover.border_color = Color("6FAF78")
+	estilo_concepto_hover.set_border_width_all(3)
+	estilo_concepto_hover.border_width_bottom = 6
+	estilo_concepto_hover.set_corner_radius_all(12)
 	estilo_concepto_hover.content_margin_left = 14.0
 	estilo_concepto_hover.content_margin_top = 8.0
 	estilo_concepto_hover.content_margin_right = 14.0
@@ -173,26 +175,27 @@ func _inicializar_estilos_conceptos() -> void:
 	estilo_concepto_hover.expand_margin_top = 1.0
 	estilo_concepto_hover.expand_margin_right = 1.0
 	estilo_concepto_hover.expand_margin_bottom = 1.0
-	estilo_concepto_hover.shadow_color = Color(0.0039, 0.09, 0.011, 0.65)
-	estilo_concepto_hover.shadow_offset = Vector2(3, 3)
+	estilo_concepto_hover.shadow_color = Color("202833")
+	estilo_concepto_hover.shadow_offset = Vector2(0, 6)
 
 	estilo_concepto_selected = StyleBoxFlat.new()
-	estilo_concepto_selected.bg_color = Color(0.025, 0.14, 0.04, 0.95)
-	estilo_concepto_selected.border_color = Color(0.7607843, 0.9372549, 0.7764706, 1.0)
-	estilo_concepto_selected.set_border_width_all(2)
-	estilo_concepto_selected.set_corner_radius_all(10)
+	estilo_concepto_selected.bg_color = Color("9ED9A3")
+	estilo_concepto_selected.border_color = Color("6FAF78")
+	estilo_concepto_selected.set_border_width_all(3)
+	estilo_concepto_selected.border_width_bottom = 6
+	estilo_concepto_selected.set_corner_radius_all(12)
 	estilo_concepto_selected.content_margin_left = 14.0
 	estilo_concepto_selected.content_margin_top = 8.0
 	estilo_concepto_selected.content_margin_right = 14.0
 	estilo_concepto_selected.content_margin_bottom = 8.0
-	estilo_concepto_selected.shadow_color = Color(0.0039, 0.09, 0.011, 0.75)
-	estilo_concepto_selected.shadow_offset = Vector2(4, 4)
+	estilo_concepto_selected.shadow_color = Color("202833")
+	estilo_concepto_selected.shadow_offset = Vector2(0, 6)
 
 	estilo_concepto_cifrado = StyleBoxFlat.new()
-	estilo_concepto_cifrado.bg_color = Color(0.01, 0.03, 0.015, 0.6)
-	estilo_concepto_cifrado.border_color = Color(0.25, 0.4, 0.3, 0.45)
-	estilo_concepto_cifrado.set_border_width_all(1)
-	estilo_concepto_cifrado.set_corner_radius_all(10)
+	estilo_concepto_cifrado.bg_color = Color(0.27, 0.3, 0.35, 0.7)
+	estilo_concepto_cifrado.border_color = Color(0.35, 0.39, 0.45, 0.75)
+	estilo_concepto_cifrado.set_border_width_all(2)
+	estilo_concepto_cifrado.set_corner_radius_all(12)
 	estilo_concepto_cifrado.content_margin_left = 14.0
 	estilo_concepto_cifrado.content_margin_top = 8.0
 	estilo_concepto_cifrado.content_margin_right = 14.0
@@ -242,12 +245,12 @@ func _poblar_lista_conceptos() -> void:
 		boton.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		boton.add_theme_font_size_override("font_size", 14)
-		boton.add_theme_color_override("font_outline_color", Color(0.025, 0.02, 0.055, 1))
+		boton.add_theme_color_override("font_outline_color", Color("202833"))
 		boton.add_theme_constant_override("outline_size", 2)
 
 		if esta_desbloqueado:
-			boton.add_theme_color_override("font_color", Color(0.7607843, 0.9372549, 0.7764706, 1))
-			boton.add_theme_color_override("font_hover_color", Color(0.92, 1.0, 0.92, 1))
+			boton.add_theme_color_override("font_color", Color("F4F6F2"))
+			boton.add_theme_color_override("font_hover_color", Color.WHITE)
 			boton.add_theme_stylebox_override("normal", estilo_concepto_normal)
 			boton.add_theme_stylebox_override("hover", estilo_concepto_hover)
 			boton.add_theme_stylebox_override("focus", estilo_concepto_selected)

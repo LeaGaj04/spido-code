@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dfvy6lib4ga2h" path="res://escenas/mineral.tscn" id="2_4vydk"]
 [ext_resource type="Script" uid="uid://br4t1ndl8asky" path="res://script/interfaz.gd" id="2_6wjgb"]
 [ext_resource type="Script" uid="uid://dqmlj1jkvco4u" path="res://script/ciclo_solar.gd" id="5_16hu1"]
-[ext_resource type="Texture2D" path="res://Minerales/MineralSpid.png" id="6_kckb2"]
+[ext_resource type="Texture2D" uid="uid://bkknfbgcshdew" path="res://Minerales/MineralSpid.png" id="6_kckb2"]
 [ext_resource type="Texture2D" uid="uid://ehjvumyqcfbr" path="res://Minerales/MineraNave.png" id="7_ijldy"]
 [ext_resource type="PackedScene" uid="uid://b0kuh5v2yxqd7" path="res://escenas/nave.tscn" id="8_txhqv"]
 [ext_resource type="Texture2D" uid="uid://mk4i0achjumg" path="res://assets/sky/cielo_espacial_suave_4k.png" id="9_cielo"]
@@ -14,53 +14,164 @@
 [ext_resource type="PackedScene" uid="uid://wgb3qc1i2srg" path="res://escenas/mapa.tscn" id="12_kckb2"]
 [ext_resource type="PackedScene" path="res://escenas/transmision_ada.tscn" id="13_ada"]
 [ext_resource type="PackedScene" path="res://escenas/archivo_ada.tscn" id="14_codice"]
-[ext_resource type="PackedScene" path="res://escenas/brujula.tscn" id="15_brujula"]
 [ext_resource type="PackedScene" path="res://escenas/panel_tutorial.tscn" id="16_tutorial"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_codigo"]
-bg_color = Color(0.005, 0.055, 0.02, 0.96)
+bg_color = Color(0.270588, 0.301961, 0.352941, 0.98)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.372549, 0.592157, 0.419608, 0.95)
-shadow_color = Color(0.0039, 0.09, 0.011, 0.85)
-shadow_offset = Vector2(6, 6)
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.95)
+shadow_size = 3
+shadow_offset = Vector2(7, 7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mision_header"]
+bg_color = Color(0.34902, 0.388235, 0.447059, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.545098, 0.796078, 0.568627, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_barra_codigo"]
-bg_color = Color(0, 0.06666667, 0, 0.7607843)
+bg_color = Color(0.34902, 0.388235, 0.447059, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.37254903, 0.5921569, 0.41960785, 0.8509804)
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
+border_color = Color(0.545098, 0.796078, 0.568627, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4vydk"]
-content_margin_left = 5.0
-content_margin_top = 5.0
-content_margin_right = 5.0
-content_margin_bottom = 5.0
-bg_color = Color(0, 0.06666667, 0, 0.7607843)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_minimizar"]
+content_margin_left = 10.0
+content_margin_top = 2.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.545098, 0.796078, 0.568627, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.37254903, 0.5921569, 0.41960785, 0.8509804)
+border_width_bottom = 5
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
-shadow_offset = Vector2(5, 5)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
+shadow_offset = Vector2(0, 3)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_hover"]
-bg_color = Color(0, 0.06666667, 0, 0.7607843)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_minimizar_hover"]
+content_margin_left = 10.0
+content_margin_top = 2.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.631373, 0.85098, 0.65098, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 5
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_editor_codigo"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12549, 0.156863, 0.2, 0.99)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.37254903, 0.5921569, 0.41960785, 0.8509804)
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="CodeHighlighter" id="CodeHighlighter_spid"]
+number_color = Color(1, 0.88, 0.25, 1)
+symbol_color = Color(0.9, 1, 0.92, 1)
+function_color = Color(0.3, 1, 0.68, 1)
+member_variable_color = Color(0.55, 1, 0.65, 1)
+keyword_colors = {
+"and": Color(1, 0.74, 0.22, 1),
+"as": Color(1, 0.74, 0.22, 1),
+"elif": Color(1, 0.74, 0.22, 1),
+"else": Color(1, 0.74, 0.22, 1),
+"este": Color(0.33, 0.91, 1, 1),
+"for": Color(1, 0.74, 0.22, 1),
+"hay_mineral": Color(0.82, 0.6, 1, 1),
+"if": Color(1, 0.74, 0.22, 1),
+"in": Color(1, 0.74, 0.22, 1),
+"minar": Color(0.38, 1, 0.6, 1),
+"mover": Color(0.33, 0.91, 1, 1),
+"norte": Color(0.33, 0.91, 1, 1),
+"not": Color(1, 0.74, 0.22, 1),
+"oeste": Color(0.33, 0.91, 1, 1),
+"or": Color(1, 0.74, 0.22, 1),
+"pass": Color(1, 0.74, 0.22, 1),
+"return": Color(1, 0.74, 0.22, 1),
+"sur": Color(0.33, 0.91, 1, 1),
+"tiene_espacio": Color(0.82, 0.6, 1, 1),
+"transferir": Color(0.38, 1, 0.6, 1),
+"while": Color(1, 0.74, 0.22, 1)
+}
+member_keyword_colors = {
+"este": Color(0.33, 0.91, 1, 1),
+"hay_mineral": Color(0.82, 0.6, 1, 1),
+"minar": Color(0.38, 1, 0.6, 1),
+"mover": Color(0.33, 0.91, 1, 1),
+"norte": Color(0.33, 0.91, 1, 1),
+"oeste": Color(0.33, 0.91, 1, 1),
+"sur": Color(0.33, 0.91, 1, 1),
+"tiene_espacio": Color(0.82, 0.6, 1, 1),
+"transferir": Color(0.38, 1, 0.6, 1)
+}
+color_regions = {
+"#": Color(0.48, 0.74, 0.58, 1)
+}
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_focus"]
+bg_color = Color(0.545098, 0.796078, 0.568627, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.92)
+shadow_size = 2
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_hover"]
+bg_color = Color(0.631373, 0.85098, 0.65098, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
@@ -69,45 +180,28 @@ expand_margin_left = 2.0
 expand_margin_top = 2.0
 expand_margin_right = 2.0
 expand_margin_bottom = 2.0
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
-shadow_offset = Vector2(4, 4)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.92)
+shadow_size = 2
+shadow_offset = Vector2(0, 7)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_editor_codigo"]
-content_margin_left = 12.0
-content_margin_top = 10.0
-content_margin_right = 12.0
-content_margin_bottom = 10.0
-bg_color = Color(0.082, 0.102, 0.098, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.37, 0.61, 0.45, 0.95)
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
-
-[sub_resource type="CodeHighlighter" id="CodeHighlighter_spid"]
-keyword_colors = {"and": Color(1, 0.74, 0.22, 1), "as": Color(1, 0.74, 0.22, 1), "elif": Color(1, 0.74, 0.22, 1), "else": Color(1, 0.74, 0.22, 1), "for": Color(1, 0.74, 0.22, 1), "if": Color(1, 0.74, 0.22, 1), "in": Color(1, 0.74, 0.22, 1), "not": Color(1, 0.74, 0.22, 1), "or": Color(1, 0.74, 0.22, 1), "pass": Color(1, 0.74, 0.22, 1), "return": Color(1, 0.74, 0.22, 1), "while": Color(1, 0.74, 0.22, 1), "norte": Color(0.33, 0.91, 1, 1), "sur": Color(0.33, 0.91, 1, 1), "este": Color(0.33, 0.91, 1, 1), "oeste": Color(0.33, 0.91, 1, 1), "mover": Color(0.33, 0.91, 1, 1), "minar": Color(0.38, 1, 0.6, 1), "transferir": Color(0.38, 1, 0.6, 1), "hay_mineral": Color(0.82, 0.6, 1, 1), "tiene_espacio": Color(0.82, 0.6, 1, 1)}
-member_keyword_colors = {"norte": Color(0.33, 0.91, 1, 1), "sur": Color(0.33, 0.91, 1, 1), "este": Color(0.33, 0.91, 1, 1), "oeste": Color(0.33, 0.91, 1, 1), "mover": Color(0.33, 0.91, 1, 1), "minar": Color(0.38, 1, 0.6, 1), "transferir": Color(0.38, 1, 0.6, 1), "hay_mineral": Color(0.82, 0.6, 1, 1), "tiene_espacio": Color(0.82, 0.6, 1, 1)}
-color_regions = {"#": Color(0.48, 0.74, 0.58, 1)}
-symbol_color = Color(0.9, 1, 0.92, 1)
-number_color = Color(1, 0.88, 0.25, 1)
-function_color = Color(0.3, 1, 0.68, 1)
-member_variable_color = Color(0.55, 1, 0.65, 1)
-string_color = Color(1, 0.72, 0.32, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_focus"]
-bg_color = Color(0, 0.06666667, 0, 0.7607843)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4vydk"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.545098, 0.796078, 0.568627, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.37254903, 0.5921569, 0.41960785, 0.8509804)
+border_width_bottom = 6
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(0.003921569, 0.09019608, 0.011764706, 0.6509804)
-shadow_offset = Vector2(6, 6)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.92)
+shadow_size = 2
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_txhqv"]
 content_margin_left = 0.0
@@ -117,112 +211,125 @@ content_margin_bottom = 0.0
 bg_color = Color(0, 0, 0, 0.6784314)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_panel"]
-bg_color = Color(0.11, 0.11, 0.12, 0.98)
+bg_color = Color(0.270588, 0.301961, 0.352941, 0.98)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.58, 0.58, 0.61, 1)
-shadow_color = Color(0.015, 0.015, 0.018, 0.95)
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.95)
+shadow_size = 4
 shadow_offset = Vector2(10, 10)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_disabled"]
-bg_color = Color(0.09, 0.09, 0.1, 0.9)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.34, 0.34, 0.37, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nucleo"]
-bg_color = Color(0.04, 0.12, 0.16, 0.95)
+bg_color = Color(0.631373, 0.85098, 0.65098, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.15, 0.95, 0.8, 1)
+border_color = Color(0.435294, 0.686275, 0.470588, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
-shadow_color = Color(0.15, 0.95, 0.8, 0.35)
-shadow_size = 6
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
+shadow_size = 2
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_code"]
-bg_color = Color(0, 0.05, 0.08, 0.85)
+bg_color = Color(0.34902, 0.388235, 0.447059, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.2, 0.65, 0.9, 0.9)
+border_color = Color(0.545098, 0.796078, 0.568627, 0.9)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(0.005, 0.05, 0.09, 0.65)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
 shadow_offset = Vector2(5, 5)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_map"]
-bg_color = Color(0, 0.06, 0.02, 0.85)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_disabled"]
+bg_color = Color(0.34902, 0.388235, 0.447059, 0.78)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.25, 0.8, 0.45, 0.9)
+border_width_bottom = 5
+border_color = Color(0.270588, 0.301961, 0.352941, 0.9)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(0.005, 0.09, 0.01, 0.65)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_map"]
+bg_color = Color(0.34902, 0.388235, 0.447059, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.545098, 0.796078, 0.568627, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
 shadow_offset = Vector2(5, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tienda_hard"]
-bg_color = Color(0.08, 0.05, 0, 0.85)
+bg_color = Color(0.34902, 0.388235, 0.447059, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.95, 0.75, 0.2, 0.9)
+border_color = Color(0.545098, 0.796078, 0.568627, 0.9)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(0.09, 0.06, 0, 0.65)
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
 shadow_offset = Vector2(5, 5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_contadores"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.270588, 0.301961, 0.352941, 0.94)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 5
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.9)
+shadow_offset = Vector2(0, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pausa_panel"]
 content_margin_left = 28.0
 content_margin_top = 24.0
 content_margin_right = 28.0
 content_margin_bottom = 24.0
-bg_color = Color(0.11, 0.11, 0.12, 0.98)
+bg_color = Color(0.270588, 0.301961, 0.352941, 0.98)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.58, 0.58, 0.61, 1)
-shadow_color = Color(0.015, 0.015, 0.018, 0.95)
+border_color = Color(0.34902, 0.388235, 0.447059, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.12549, 0.156863, 0.2, 0.95)
+shadow_size = 4
 shadow_offset = Vector2(10, 10)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mision_barra_fondo"]
-bg_color = Color(0.01, 0.04, 0.055, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.2, 0.55, 0.5, 0.8)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mision_barra_relleno"]
-bg_color = Color(0.2, 0.95, 0.72, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.45, 1, 0.85, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fondo_camara"]
 cull_mode = 2
@@ -270,41 +377,54 @@ offset_right = 385.0
 offset_bottom = 235.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel_codigo")
 
+[node name="Cabecera" type="Panel" parent="CanvasLayer/PanelMision" unique_id=1522050305]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 362.0
+offset_bottom = 42.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_mision_header")
+
 [node name="Titulo" type="Label" parent="CanvasLayer/PanelMision" unique_id=2090000002]
-offset_left = 16.0
-offset_top = 12.0
+layout_mode = 0
+offset_left = 20.0
+offset_top = 13.0
 offset_right = 350.0
 offset_bottom = 36.0
-theme_override_colors/font_color = Color(0.46, 1, 0.86, 1)
-theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 19
 text = "◆ MISIÓN ACTUAL"
 
 [node name="Nombre" type="Label" parent="CanvasLayer/PanelMision" unique_id=2090000003]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 43.0
 offset_right = 350.0
 offset_bottom = 67.0
-theme_override_colors/font_color = Color(0.76, 0.94, 0.78, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 18
 text = "Misión"
 
 [node name="Objetivo" type="Label" parent="CanvasLayer/PanelMision" unique_id=2090000004]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 70.0
 offset_right = 350.0
 offset_bottom = 98.0
-theme_override_colors/font_color = Color(0.78, 1, 0.93, 1)
-theme_override_font_sizes/font_size = 13
-autowrap_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 15
 text = "Objetivo actual"
+autowrap_mode = 2
 
 [node name="Estado" type="Label" parent="CanvasLayer/PanelMision" unique_id=2090000006]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 112.0
 offset_right = 350.0
 offset_bottom = 132.0
-theme_override_colors/font_color = Color(0.55, 0.78, 0.85, 0.9)
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 14
 text = "● EN CURSO"
 
 [node name="PanelCodigo" type="Panel" parent="CanvasLayer" unique_id=1087549051]
@@ -330,8 +450,8 @@ offset_left = 14.0
 offset_top = 8.0
 offset_right = 430.0
 offset_bottom = 36.0
-theme_override_colors/font_color = Color(0.7608024, 0.9369633, 0.7753063, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 18
 text = "◆ CONSOLA SPID"
@@ -341,15 +461,16 @@ layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -56.0
-offset_top = 6.0
-offset_right = -12.0
-offset_bottom = 38.0
+offset_top = 4.0
+offset_right = -10.0
+offset_bottom = 36.0
 tooltip_text = "Minimizar la consola"
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
-text = "_"
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_minimizar")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_minimizar")
+theme_override_styles/hover = SubResource("StyleBoxFlat_minimizar_hover")
+text = "−"
 
 [node name="Contenido" type="Control" parent="CanvasLayer/PanelCodigo" unique_id=1118908375]
 anchors_preset = 0
@@ -367,25 +488,23 @@ anchor_bottom = 1.0
 offset_bottom = -50.0
 theme_override_colors/caret_color = Color(0.76, 0.94, 0.78, 1)
 theme_override_colors/selection_color = Color(0.19, 0.36, 0.27, 0.95)
-theme_override_colors/font_color = Color(0.89, 1, 0.91, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_colors/current_line_color = Color(0.12, 0.16, 0.14, 0.9)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleBoxFlat_editor_codigo")
 theme_override_colors/line_number_color = Color(0.38, 0.58, 0.43, 1)
-theme_override_colors/line_length_guideline_color = Color(0.18, 0.3, 0.2, 0.4)
 theme_override_colors/completion_background_color = Color(0.082, 0.102, 0.098, 0.98)
 theme_override_colors/completion_selected_color = Color(0.19, 0.36, 0.27, 0.98)
 theme_override_colors/completion_existing_color = Color(0.37, 0.61, 0.45, 1)
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_editor_codigo")
+theme_override_colors/line_length_guideline_color = Color(0.18, 0.3, 0.2, 0.4)
 caret_blink = true
 caret_blink_interval = 0.5
+syntax_highlighter = SubResource("CodeHighlighter_spid")
+draw_tabs = true
 gutters_draw_line_numbers = true
 gutters_draw_fold_gutter = true
-draw_current_line = true
-draw_tabs = true
-syntax_highlighter = SubResource("CodeHighlighter_spid")
-completion_sort_options = false
 
-[node name="BarraControles" type="HBoxContainer" parent="CanvasLayer/PanelCodigo/Contenido"]
+[node name="BarraControles" type="HBoxContainer" parent="CanvasLayer/PanelCodigo/Contenido" unique_id=1386033386]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -397,25 +516,25 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 8
 
-[node name="BotonResetBase" type="Button" parent="CanvasLayer/PanelCodigo/Contenido/BarraControles"]
+[node name="BotonResetBase" type="Button" parent="CanvasLayer/PanelCodigo/Contenido/BarraControles" unique_id=323651604]
 custom_minimum_size = Vector2(130, 36)
 layout_mode = 2
 tooltip_text = "Devolver spid a la base central (0, 0)"
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_focus")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 text = "VUELTA A BASE"
 
-[node name="Separador" type="Control" parent="CanvasLayer/PanelCodigo/Contenido/BarraControles"]
+[node name="Separador" type="Control" parent="CanvasLayer/PanelCodigo/Contenido/BarraControles" unique_id=1573334385]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BotonPaso" type="Button" parent="CanvasLayer/PanelCodigo/Contenido/BarraControles"]
+[node name="BotonPaso" type="Button" parent="CanvasLayer/PanelCodigo/Contenido/BarraControles" unique_id=1695318453]
 custom_minimum_size = Vector2(120, 36)
 layout_mode = 2
 tooltip_text = "Ejecutar paso a paso (F10 / Ctrl+Espacio)"
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_focus")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -425,7 +544,7 @@ text = "PASO A PASO"
 custom_minimum_size = Vector2(130, 36)
 layout_mode = 2
 tooltip_text = "Ejecutar código completo (Ctrl+Enter)"
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_focus")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -476,8 +595,8 @@ theme_override_constants/separation = 12
 
 [node name="BotonTienda" type="Button" parent="CanvasLayer/ContenedorTienda" unique_id=1830627710]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
@@ -486,8 +605,8 @@ text = "MEJORAS"
 
 [node name="BotonArchivo" type="Button" parent="CanvasLayer/ContenedorTienda" unique_id=1830627711]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
@@ -496,8 +615,8 @@ text = "CÓDICE"
 
 [node name="BotonTutorial" type="Button" parent="CanvasLayer/ContenedorTienda" unique_id=1830627712]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
@@ -505,7 +624,6 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 text = "GUÍA"
 
 [node name="PanelTienda" type="Panel" parent="CanvasLayer" unique_id=922794825]
-visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -534,8 +652,8 @@ offset_left = 40.0
 offset_top = 24.0
 offset_right = 500.0
 offset_bottom = 58.0
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 26
 text = "◆ RUTA DE PROGRESIÓN ◆"
@@ -546,7 +664,7 @@ offset_left = 42.0
 offset_top = 62.0
 offset_right = 670.0
 offset_bottom = 88.0
-theme_override_colors/font_color = Color(0.6003543, 0.86491835, 0.62992954, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 text = "Expande el mapa, completa misiones y activa nuevos conceptos de Python."
 
@@ -595,7 +713,7 @@ offset_left = 700.0
 offset_top = 102.0
 offset_right = 960.0
 offset_bottom = 126.0
-theme_override_colors/font_color = Color(0.35, 0.75, 1, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 text = "SINTAXIS INSTALADA"
 horizontal_alignment = 1
@@ -606,7 +724,7 @@ offset_left = 350.0
 offset_top = 92.0
 offset_right = 650.0
 offset_bottom = 122.0
-theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 text = "RUTA PRINCIPAL"
 horizontal_alignment = 1
@@ -617,7 +735,7 @@ offset_left = 350.0
 offset_top = 515.0
 offset_right = 650.0
 offset_bottom = 539.0
-theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 text = "MEJORAS OPCIONALES"
 horizontal_alignment = 1
@@ -637,7 +755,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.2, 0.95, 0.85, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 13
 text = "BASE 1X1
 PUNTO DE PARTIDA"
@@ -652,8 +770,8 @@ offset_right = 960.0
 offset_bottom = 210.0
 tooltip_text = "Bucle While
 Se instala al completar la misión de calibración."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -669,8 +787,8 @@ offset_right = 960.0
 offset_bottom = 350.0
 tooltip_text = "IF / ELSE
 Se instala automáticamente al adquirir el Sector 2x3."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -686,8 +804,8 @@ offset_right = 960.0
 offset_bottom = 490.0
 tooltip_text = "Bucle FOR
 Se instala automáticamente al adquirir el Sector 3x3."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -711,8 +829,8 @@ tooltip_text = "Variables Dinámicas
 Capacidad de almacenar datos en memoria para reutilizarlos en métodos y bucles.
 
 Desbloqueo automático por progresión de misión"
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -729,8 +847,8 @@ offset_right = 960.0
 offset_bottom = 675.0
 tooltip_text = "Sensor de Telemetría Dinámica
 Capacidad de consultar en tiempo real las dimensiones del sector con spid.tamano_mundo()."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -747,8 +865,8 @@ offset_right = 960.0
 offset_bottom = 750.0
 tooltip_text = "Sector 4x3 y Listas
 Expande el terreno a 4 de ancho por 3 de largo y desbloquea el uso de listas en Python."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -763,8 +881,8 @@ offset_right = 960.0
 offset_bottom = 825.0
 tooltip_text = "Sector 4x4 y Funciones
 Expande el terreno a 4 de ancho por 4 de largo y desbloquea la definición de funciones propias (def) en Python."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -779,8 +897,8 @@ offset_right = 960.0
 offset_bottom = 900.0
 tooltip_text = "Sector 5x4 y Funciones con Parámetros
 Expande el terreno a 5 de ancho por 4 de largo y desbloquea el paso de argumentos en funciones en Python."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -795,8 +913,8 @@ offset_right = 960.0
 offset_bottom = 975.0
 tooltip_text = "Sector 5x5 y Barrido por Columnas
 Expande el terreno a 5 de ancho por 5 de largo y desbloquea el protocolo de barrido sistemático bidimensional."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -811,8 +929,8 @@ offset_right = 960.0
 offset_bottom = 1050.0
 tooltip_text = "Protocolo Maestro Spido (Endgame)
 Desbloquea el sensor de tolva tiene_espacio() y el protocolo definitivo de barrido continuo con descarga autónoma."
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_code")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -829,8 +947,8 @@ tooltip_text = "Corredor 1x3
 Desbloquea un corredor de tres casillas para aprender secuencias.
 
 Costo: 1 mineral"
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_map")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -848,8 +966,8 @@ tooltip_text = "Sector 2x3 (+3 Casillas)
 Agrega tres casillas y habilita dos depósitos aleatorios. Instala automáticamente IF / ELSE.
 
 Costo: 10 minerales"
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_map")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -868,8 +986,8 @@ tooltip_text = "Sector 3x3
 Expande el terreno a un cuadrante completo de 3x3 casillas. Requiere completar la misión IF / ELSE e instala automáticamente FOR.
 
 Costo: 20 minerales"
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_map")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -888,8 +1006,8 @@ tooltip_text = "Minería Rápida
 Optimiza el taladro dspid reduciendo el tiempo de extracción de 3 a 1 segundo.
 
 Costo: 15 minerales"
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.55, 0.58, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_disabled_color = Color(0.72, 0.75, 0.76, 0.9)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_tienda_hard")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
@@ -903,48 +1021,75 @@ offset_left = 875.0
 offset_top = 25.0
 offset_right = 955.0
 offset_bottom = 65.0
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 text = "CERRAR"
 
-[node name="ContenedorContadores" type="MarginContainer" parent="CanvasLayer" unique_id=549149912]
+[node name="ContenedorContadores" type="PanelContainer" parent="CanvasLayer" unique_id=549149912]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -229.0
-offset_top = -7.0
-offset_right = -50.0
-offset_bottom = 33.0
+offset_left = -340.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = 91.0
 grow_horizontal = 0
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
+theme_override_styles/panel = SubResource("StyleBoxFlat_contadores")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/ContenedorContadores" unique_id=1782200164]
 layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
 
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer/ContenedorContadores/HBoxContainer" unique_id=1979789161]
-custom_minimum_size = Vector2(65, 65)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 texture = ExtResource("6_kckb2")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="LabelSpid" type="Label" parent="CanvasLayer/ContenedorContadores/HBoxContainer" unique_id=1773966557]
+custom_minimum_size = Vector2(58, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "0/10"
+vertical_alignment = 1
 
 [node name="TextureRect2" type="TextureRect" parent="CanvasLayer/ContenedorContadores/HBoxContainer" unique_id=1827506586]
-custom_minimum_size = Vector2(65, 65)
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 texture = ExtResource("7_ijldy")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="LabelNave" type="Label" parent="CanvasLayer/ContenedorContadores/HBoxContainer" unique_id=896875989]
+custom_minimum_size = Vector2(68, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "0/100"
+vertical_alignment = 1
 
-[node name="Brujula" parent="CanvasLayer" unique_id=99283177 instance=ExtResource("15_brujula")]
+[node name="BotonSistemaADA" type="Button" parent="CanvasLayer" unique_id=652521952]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 101.0
+offset_right = -20.0
+offset_bottom = 151.0
+grow_horizontal = 0
+tooltip_text = "Mostrar u ocultar los mensajes del sistema A.D.A."
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tienda_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
+toggle_mode = true
+text = "SISTEMA ADA  ▼"
 
 [node name="ArchivoADA" parent="CanvasLayer" unique_id=1467148889 instance=ExtResource("14_codice")]
 visible = false
@@ -991,8 +1136,8 @@ theme_override_constants/separation = 18
 
 [node name="Titulo" type="Label" parent="CanvasLayer/MenuPausa/Centro/Panel/Contenido" unique_id=820133862]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 26
 text = "◆ JUEGO EN PAUSA ◆"
@@ -1004,8 +1149,8 @@ layout_mode = 2
 [node name="BotonConfiguracion" type="Button" parent="CanvasLayer/MenuPausa/Centro/Panel/Contenido" unique_id=2063336936]
 layout_mode = 2
 tooltip_text = "Disponible próximamente"
-theme_override_colors/font_color = Color(0.88, 0.88, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 19
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
@@ -1014,8 +1159,8 @@ text = "CONFIGURACIÓN"
 
 [node name="BotonSalirMenu" type="Button" parent="CanvasLayer/MenuPausa/Centro/Panel/Contenido" unique_id=845092181]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
-theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
+theme_override_colors/font_outline_color = Color(0.12549, 0.156863, 0.2, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 19
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
@@ -1024,7 +1169,7 @@ text = "SALIR AL MENÚ"
 
 [node name="Ayuda" type="Label" parent="CanvasLayer/MenuPausa/Centro/Panel/Contenido" unique_id=170534780]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.62, 0.65, 1)
+theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 13
 text = "Presiona ESC para continuar"
 horizontal_alignment = 1
@@ -1060,6 +1205,7 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/ContenedorTienda/BotonArchivo" to="CanvasLayer" method="_on_boton_archivo_pressed"]
 [connection signal="pressed" from="CanvasLayer/ContenedorTienda/BotonTutorial" to="CanvasLayer" method="_on_boton_tutorial_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonWhile" to="CanvasLayer" method="_on_button_while_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonIf" to="CanvasLayer" method="_on_button_if_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonFor" to="CanvasLayer" method="_on_button_for_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonVariables" to="CanvasLayer" method="_on_button_variables_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonTelemetria" to="CanvasLayer" method="_on_button_telemetria_pressed"]
@@ -1068,10 +1214,10 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector5x4" to="CanvasLayer" method="_on_button_sector_5x4_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonSector5x5" to="CanvasLayer" method="_on_button_sector_5x5_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonProtocoloMaestro" to="CanvasLayer" method="_on_button_protocolo_maestro_pressed"]
-[connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonIf" to="CanvasLayer" method="_on_button_if_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion1" to="CanvasLayer" method="_on_button_expansion_1_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion2" to="CanvasLayer" method="_on_button_expansion_2_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonExpansion3" to="CanvasLayer" method="_on_button_expansion_3_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonMineria" to="CanvasLayer" method="_on_button_mineria_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/BotonCerrar" to="CanvasLayer" method="_on_boton_cerrar_pressed"]
+[connection signal="toggled" from="CanvasLayer/BotonSistemaADA" to="CanvasLayer/TransmisionADA" method="establecer_panel_abierto"]
 [connection signal="pressed" from="CanvasLayer/MenuPausa/Centro/Panel/Contenido/BotonSalirMenu" to="CanvasLayer/MenuPausa" method="_on_boton_salir_menu_pressed"]
