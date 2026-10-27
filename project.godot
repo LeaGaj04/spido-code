@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="RoverEduCode"
+config/name="SpidoCode"
 run/main_scene="uid://dorjiuvlmgpes"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
@@ -35,7 +35,7 @@ window/stretch/aspect="expand"
 
 [dotnet]
 
-project/assembly_name="RoverEduCode"
+project/assembly_name="SpidoCode"
 
 [filesystem]
 
