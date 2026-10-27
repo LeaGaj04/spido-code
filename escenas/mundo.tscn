@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://escenas/transmision_ada.tscn" id="13_ada"]
 [ext_resource type="PackedScene" path="res://escenas/archivo_ada.tscn" id="14_codice"]
 [ext_resource type="PackedScene" path="res://escenas/brujula.tscn" id="15_brujula"]
+[ext_resource type="PackedScene" path="res://escenas/panel_tutorial.tscn" id="16_tutorial"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_codigo"]
 bg_color = Color(0.005, 0.055, 0.02, 0.96)
@@ -469,7 +470,7 @@ mouse_default_cursor_shape = 12
 [node name="ContenedorTienda" type="HBoxContainer" parent="CanvasLayer" unique_id=1788821658]
 offset_left = 15.0
 offset_top = 15.0
-offset_right = 320.0
+offset_right = 450.0
 offset_bottom = 55.0
 theme_override_constants/separation = 12
 
@@ -492,6 +493,16 @@ theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
 theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
 text = "CÓDICE"
+
+[node name="BotonTutorial" type="Button" parent="CanvasLayer/ContenedorTienda" unique_id=1830627712]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
+theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_4vydk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tienda_hover")
+text = "GUÍA"
 
 [node name="PanelTienda" type="Panel" parent="CanvasLayer" unique_id=922794825]
 visible = false
@@ -938,6 +949,9 @@ text = "0/100"
 [node name="ArchivoADA" parent="CanvasLayer" unique_id=1467148889 instance=ExtResource("14_codice")]
 visible = false
 
+[node name="PanelTutorial" parent="CanvasLayer" unique_id=1467148890 instance=ExtResource("16_tutorial")]
+visible = false
+
 [node name="MenuPausa" type="Control" parent="CanvasLayer" unique_id=1223488192]
 process_mode = 3
 visible = false
@@ -1044,6 +1058,7 @@ transform = Transform3D(1, 0, 0, 0, 0.9998309, -0.018388607, 0, 0.018388607, 0.9
 [connection signal="pressed" from="CanvasLayer/PanelCodigo/Contenido/BarraControles/Button" to="CanvasLayer" method="_on_button_pressed"]
 [connection signal="pressed" from="CanvasLayer/ContenedorTienda/BotonTienda" to="CanvasLayer" method="_on_boton_tienda_pressed"]
 [connection signal="pressed" from="CanvasLayer/ContenedorTienda/BotonArchivo" to="CanvasLayer" method="_on_boton_archivo_pressed"]
+[connection signal="pressed" from="CanvasLayer/ContenedorTienda/BotonTutorial" to="CanvasLayer" method="_on_boton_tutorial_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonWhile" to="CanvasLayer" method="_on_button_while_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonFor" to="CanvasLayer" method="_on_button_for_pressed"]
 [connection signal="pressed" from="CanvasLayer/PanelTienda/LienzoArbol/ButtonVariables" to="CanvasLayer" method="_on_button_variables_pressed"]

@@ -53,6 +53,8 @@ var minerales_spid : int = 0
 @onready var boton_tienda = $ContenedorTienda/BotonTienda
 @onready var panel_archivo = $ArchivoADA
 @onready var boton_archivo = $ContenedorTienda/BotonArchivo
+@onready var panel_tutorial = get_node_or_null("PanelTutorial")
+@onready var boton_tutorial = get_node_or_null("ContenedorTienda/BotonTutorial")
 @onready var boton_while: Button = $PanelTienda/LienzoArbol/ButtonWhile
 @onready var boton_for: Button = $PanelTienda/LienzoArbol/ButtonFor
 @onready var boton_if: Button = $PanelTienda/LienzoArbol/ButtonIf
@@ -135,6 +137,11 @@ func _ready() -> void:
 		mi_spid.mineral_recolectado.connect(_sumar_minerales_spid)
 	if panel_archivo != null:
 		panel_archivo.cerrado.connect(_on_archivo_cerrado)
+	if panel_tutorial != null:
+		panel_tutorial.cerrado.connect(_on_tutorial_cerrado)
+	if boton_tutorial != null and not boton_tutorial.pressed.is_connected(_on_boton_tutorial_pressed):
+		boton_tutorial.pressed.connect(_on_boton_tutorial_pressed)
+	call_deferred("_verificar_tutorial_inicio")
 	if boton_variables != null and not boton_variables.pressed.is_connected(_on_button_variables_pressed):
 		boton_variables.pressed.connect(_on_button_variables_pressed)
 	if boton_telemetria != null and not boton_telemetria.pressed.is_connected(_on_button_telemetria_pressed):
@@ -211,6 +218,8 @@ func _on_boton_tienda_pressed() -> void:
 	boton_tienda.hide()
 	if boton_archivo != null:
 		boton_archivo.hide()
+	if boton_tutorial != null:
+		boton_tutorial.hide()
 	if panel_codigo != null:
 		panel_codigo.hide()
 	if brujula != null:
@@ -223,6 +232,8 @@ func _on_boton_archivo_pressed() -> void:
 		boton_tienda.hide()
 		if boton_archivo != null:
 			boton_archivo.hide()
+		if boton_tutorial != null:
+			boton_tutorial.hide()
 		if panel_codigo != null:
 			panel_codigo.hide()
 		if brujula != null:
@@ -233,6 +244,8 @@ func _on_archivo_cerrado() -> void:
 	boton_tienda.show()
 	if boton_archivo != null:
 		boton_archivo.show()
+	if boton_tutorial != null:
+		boton_tutorial.show()
 	if panel_codigo != null:
 		panel_codigo.show()
 	if brujula != null:
@@ -522,6 +535,8 @@ func _on_boton_cerrar_pressed() -> void:
 	boton_tienda.show()
 	if boton_archivo != null:
 		boton_archivo.show()
+	if boton_tutorial != null:
+		boton_tutorial.show()
 	if panel_codigo != null:
 		panel_codigo.show()
 	if brujula != null:
@@ -1880,3 +1895,58 @@ func _mostrar_mensaje_inicial_ada() -> void:
 		"progreso",
 		10.0
 	)
+
+
+func _on_boton_tutorial_pressed() -> void:
+	if panel_tutorial != null:
+		var fase := _obtener_fase_actual()
+		panel_tutorial.abrir(fase)
+		boton_tienda.hide()
+		if boton_archivo != null:
+			boton_archivo.hide()
+		if boton_tutorial != null:
+			boton_tutorial.hide()
+		if panel_codigo != null:
+			panel_codigo.hide()
+		if brujula != null:
+			brujula.hide()
+
+
+func _on_tutorial_cerrado() -> void:
+	boton_tienda.show()
+	if boton_archivo != null:
+		boton_archivo.show()
+	if boton_tutorial != null:
+		boton_tutorial.show()
+	if panel_codigo != null:
+		panel_codigo.show()
+	if brujula != null:
+		brujula.show()
+
+
+func _verificar_tutorial_inicio() -> void:
+	if MissionService.objective_id == "recolectar_primer_mineral" and MissionService.completed_missions.is_empty():
+		_on_boton_tutorial_pressed()
+
+
+func _obtener_fase_actual() -> int:
+	var m := MissionService.objective_id
+	match m:
+		"recolectar_primer_mineral", "ruta_calibracion":
+			return 0
+		"trabajo_continuo", "cuota_suministro", "comprar_casillas":
+			return 2
+		"senales_inciertas", "comprar_mapa_3x3":
+			return 3
+		"ciclo_recoleccion", "patrulla_autonoma":
+			return 4
+		"comprar_sector_3x3", "calibracion_variables", "comprar_telemetria", "telemetria_dinamica":
+			return 5
+		"comprar_sector_4x3", "patrulla_lista", "barrido_listas_autonomo":
+			return 6
+		"comprar_sector_4x4", "rutina_funciones", "comprar_sector_5x4", "funciones_parametrizadas":
+			return 7
+		"comprar_sector_5x5", "barrido_columnas", "comprar_protocolo_maestro", "protocolo_maestro":
+			return 8
+		_:
+			return 0

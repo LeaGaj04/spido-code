@@ -1,0 +1,158 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://script/panel_tutorial.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_tutorial"]
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+bg_color = Color(0.005, 0.055, 0.02, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.372549, 0.592157, 0.419608, 0.95)
+shadow_color = Color(0.0039, 0.09, 0.011, 0.85)
+shadow_size = 14
+shadow_offset = Vector2(8, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_cerrar"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+bg_color = Color(0, 0.06666667, 0, 0.7607843)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.372549, 0.592157, 0.419608, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_nav"]
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.01, 0.12, 0.04, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.372549, 0.592157, 0.419608, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_entendido"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.08, 0.35, 0.15, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.95, 0.55, 1)
+
+[node name="PanelTutorial" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="FondoOscuro" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="Centro" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelPrincipal" type="PanelContainer" parent="Centro"]
+custom_minimum_size = Vector2(1040, 640)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_tutorial")
+
+[node name="VBox" type="VBoxContainer" parent="Centro/PanelPrincipal"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Cabecera" type="HBoxContainer" parent="Centro/PanelPrincipal/VBox"]
+layout_mode = 2
+
+[node name="TituloFase" type="Label" parent="Centro/PanelPrincipal/VBox/Cabecera"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
+theme_override_colors/font_outline_color = Color(0.025, 0.02, 0.055, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 20
+text = "A.D.A. // PROTOCOLO DE INDUCCIÓN BÁSICA"
+
+[node name="BotonCerrar" type="Button" parent="Centro/PanelPrincipal/VBox/Cabecera"]
+custom_minimum_size = Vector2(110, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7607843, 0.9372549, 0.7764706, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_cerrar")
+text = "✕ CERRAR"
+
+[node name="Separador1" type="HSeparator" parent="Centro/PanelPrincipal/VBox"]
+layout_mode = 2
+
+[node name="ContenedorImagen" type="MarginContainer" parent="Centro/PanelPrincipal/VBox"]
+custom_minimum_size = Vector2(980, 490)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Imagen" type="TextureRect" parent="Centro/PanelPrincipal/VBox/ContenedorImagen"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Separador2" type="HSeparator" parent="Centro/PanelPrincipal/VBox"]
+layout_mode = 2
+
+[node name="Navegacion" type="HBoxContainer" parent="Centro/PanelPrincipal/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BotonAnterior" type="Button" parent="Centro/PanelPrincipal/VBox/Navegacion"]
+custom_minimum_size = Vector2(130, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.94, 0.78, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_nav")
+text = "◄ ANTERIOR"
+
+[node name="Contador" type="Label" parent="Centro/PanelPrincipal/VBox/Navegacion"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.65, 0.85, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "Paso 1 de 3"
+horizontal_alignment = 1
+
+[node name="BotonSiguiente" type="Button" parent="Centro/PanelPrincipal/VBox/Navegacion"]
+custom_minimum_size = Vector2(130, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.94, 0.78, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_nav")
+text = "SIGUIENTE ►"
+
+[node name="BotonEntendido" type="Button" parent="Centro/PanelPrincipal/VBox/Navegacion"]
+visible = false
+custom_minimum_size = Vector2(210, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 1, 0.95, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_entendido")
+text = "¡A JUGAR! ►"
