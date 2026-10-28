@@ -1,8 +1,8 @@
 # 🚀 SpidoCode — Documento Maestro de Proyecto e Hitos
 
-> **Versión del Documento:** 1.1.0  
-> **Última Actualización:** 26 de Octubre de 2026  
-> **Estado General del Proyecto:** En Desarrollo Activo (Fases 1 a 8.5 Estructuradas en Misiones, Fase 0 Implementada)  
+> **Versión del Documento:** 1.2.0  
+> **Última Actualización:** 27 de Octubre de 2026  
+> **Estado General del Proyecto:** En Desarrollo Activo (Fases 1 a 8.5 Estructuradas en Misiones, Fases 0 y 1 con Guía Visual Completa)  
 > **Propósito:** Registro centralizado del estado del sistema, arquitectura, currículo pedagógico para Duoc UC, control de versiones y seguimiento continuo de hitos para el equipo de desarrollo.
 
 ---
@@ -91,8 +91,8 @@ flowchart TD
 
 | Fase | Concepto Didáctico | Expansión del Terreno | Misiones Clave | Estado |
 | :---: | :--- | :--- | :--- | :---: |
-| **0** | **Inducción y Primer Contacto** | Base 1x1 | • Modal de Guía Rápida (`panel_tutorial.gd`)<br>• Tarjetas de Consola, Movimiento y Ciclo | **100% OK** |
-| **1** | **Secuencia Lineal** | 1x1 $\rightarrow$ Corredor 1x3 | • `recolectar_primer_mineral`<br>• `ruta_calibracion` | **100% OK** |
+| **0** | **Inducción y Primer Contacto** | Base 1x1 | • `recolectar_primer_mineral`<br>• Guía Rápida (`fase0_*.png`) | **100% OK** |
+| **1** | **Secuencia Lineal** | Corredor 1x3 | • `ruta_calibracion`<br>• Guía Rápida (`fase1_*.png`) | **100% OK** |
 | **2** | **Bucle `while`** | Corredor 1x3 | • `trabajo_continuo`<br>• `cuota_suministro` | **100% OK** |
 | **3** | **Condicionales `if / else`** | Sector 2x3 (6 casillas) | • `senales_inciertas`<br>• `comprar_mapa_3x3` | **100% OK** |
 | **4** | **Bucle `for in range()`** | Sector 2x3 | • `ciclo_recoleccion`<br>• `patrulla_autonoma` (anidado) | **100% OK** |
@@ -137,3 +137,10 @@ flowchart TD
   * Integración del botón `[ GUÍA ]` en la barra superior `ContenedorTienda` junto a `[ MEJORAS ]` y `[ CÓDICE ]`.
   * Lanzamiento automático en el primer inicio de partida (`recolectar_primer_mineral`) para guiar al estudiante de inmediato.
   * Verificación técnica headless completada con 100% de éxito en Godot 4.7.1.
+
+* **HITO-08: Sistema de Progresión por Fases, Barra de Avance y Guía Visual para Fase 1**
+  * **Conservación de la Fase 0 (Inducción):** La Fase 0 se mantiene estrictamente como la fase de inicio (`recolectar_primer_mineral`), asegurando que todo jugador nuevo reciba la inducción de controles, consola y minería al arrancar.
+  * **Transición Dinámica y Auto-Apertura:** Al completar la Fase 0 y adquirir el Corredor 1x3 para iniciar `ruta_calibracion`, el sistema detecta automáticamente la transición a la Fase 1 y despliega las 3 tarjetas pedagógicas (`fase1_1_secuencia.png`, `fase1_2_corredor.png`, `fase1_3_errores.png`) tras cerrar la tienda.
+  * **Barra de Progreso Gamificada en HUD:** Se integró en `PanelMision` (`escenas/mundo.tscn`) una barra de avance visual (`BarraProgresoFase`) y rótulos de nivel (`LabelProgresoFase` y `Titulo`), mapeando las 5 fases del entrenamiento guiado (Fases 0 a 4: 0% a 100%) y marcando la transición hacia el **Modo Autónomo** (Fase 5 en adelante) donde el estudiante opera de forma independiente.
+  * **Botón `[ GUÍA ]` Contextual:** Al pulsar el botón superior en cualquier momento, el juego abre automáticamente el tutorial correspondiente a la fase activa del jugador.
+  * **Validación Automatizada:** Suites de tests en Godot 4.7.1 headless ejecutadas y aprobadas al 100%.
