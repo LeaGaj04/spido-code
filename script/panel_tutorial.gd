@@ -16,6 +16,20 @@ const TUTORIALES_POR_FASE := {
 				"imagen": "res://assets/tutorial/fase0_3_ciclo.png"
 			}
 		]
+	},
+	1: {
+		"titulo_fase": "FASE 1 // SECUENCIA LINEAL (ORDEN ESTRICTO)",
+		"tarjetas": [
+			{
+				"imagen": "res://assets/tutorial/fase1_1_secuencia.png"
+			},
+			{
+				"imagen": "res://assets/tutorial/fase1_2_corredor.png"
+			},
+			{
+				"imagen": "res://assets/tutorial/fase1_3_errores.png"
+			}
+		]
 	}
 }
 
@@ -39,9 +53,23 @@ func _ready() -> void:
 	btn_entendido.pressed.connect(cerrar)
 
 
+func tiene_tutorial(fase: int) -> bool:
+	return TUTORIALES_POR_FASE.has(fase)
+
+
+func _obtener_fase_fallback(fase: int) -> int:
+	var disponibles := TUTORIALES_POR_FASE.keys()
+	disponibles.sort()
+	var fallback := 0
+	for f in disponibles:
+		if f <= fase:
+			fallback = f
+	return fallback
+
+
 func abrir(fase: int = 0) -> void:
 	if not TUTORIALES_POR_FASE.has(fase):
-		fase = 0
+		fase = _obtener_fase_fallback(fase)
 	fase_actual = fase
 	indice_tarjeta = 0
 	_actualizar_contenido()
