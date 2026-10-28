@@ -43,20 +43,6 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progreso_bg"]
-bg_color = Color(0.12549, 0.156863, 0.2, 0.95)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progreso_fill"]
-bg_color = Color(0.545098, 0.796078, 0.568627, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_barra_codigo"]
 bg_color = Color(0.34902, 0.388235, 0.447059, 1)
 border_width_left = 1
@@ -388,7 +374,7 @@ label_spid = NodePath("ContenedorContadores/HBoxContainer/LabelSpid")
 offset_left = 15.0
 offset_top = 75.0
 offset_right = 385.0
-offset_bottom = 265.0
+offset_bottom = 235.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel_codigo")
 
 [node name="Cabecera" type="Panel" parent="CanvasLayer/PanelMision" unique_id=1522050305]
@@ -408,7 +394,7 @@ offset_right = 350.0
 offset_bottom = 36.0
 theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 19
-text = "◆ FASE 0: INDUCCIÓN"
+text = "◆ MISIÓN ACTUAL"
 
 [node name="Nombre" type="Label" parent="CanvasLayer/PanelMision" unique_id=2090000003]
 layout_mode = 0
@@ -440,28 +426,6 @@ offset_bottom = 132.0
 theme_override_colors/font_color = Color(0.956863, 0.964706, 0.94902, 1)
 theme_override_font_sizes/font_size = 14
 text = "● EN CURSO"
-
-[node name="BarraProgresoFase" type="ProgressBar" parent="CanvasLayer/PanelMision" unique_id=2090000007]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 136.0
-offset_right = 354.0
-offset_bottom = 146.0
-theme_override_styles/background = SubResource("StyleBoxFlat_progreso_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_progreso_fill")
-max_value = 100.0
-value = 0.0
-show_percentage = false
-
-[node name="LabelProgresoFase" type="Label" parent="CanvasLayer/PanelMision" unique_id=2090000008]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 150.0
-offset_right = 354.0
-offset_bottom = 172.0
-theme_override_colors/font_color = Color(0.545098, 0.796078, 0.568627, 1)
-theme_override_font_sizes/font_size = 13
-text = "FASE 0/4 // Controles y Minería (0%)"
 
 [node name="PanelCodigo" type="Panel" parent="CanvasLayer" unique_id=1087549051]
 offset_left = 13.0

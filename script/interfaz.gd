@@ -14,43 +14,8 @@ extends CanvasLayer
 @onready var label_mision: Label = $PanelMision/Nombre
 @onready var label_objetivo_mision: Label = $PanelMision/Objetivo
 @onready var label_estado_mision: Label = $PanelMision/Estado
-@onready var label_titulo_mision: Label = get_node_or_null("PanelMision/Titulo")
-@onready var barra_progreso_fase: ProgressBar = get_node_or_null("PanelMision/BarraProgresoFase")
-@onready var label_progreso_fase: Label = get_node_or_null("PanelMision/LabelProgresoFase")
 @onready var brujula: Control = get_node_or_null("Brujula")
 @export var mi_spid : CharacterBody3D
-
-const INFO_FASES := {
-	0: {
-		"nombre": "INDUCCIÓN BÁSICA",
-		"subtitulo": "Controles y Minería",
-		"progreso_pct": 0
-	},
-	1: {
-		"nombre": "SECUENCIA LINEAL",
-		"subtitulo": "Orden Estricto 1x3",
-		"progreso_pct": 25
-	},
-	2: {
-		"nombre": "BUCLE WHILE",
-		"subtitulo": "Automatización y Cuotas",
-		"progreso_pct": 50
-	},
-	3: {
-		"nombre": "CONDICIONALES IF/ELSE",
-		"subtitulo": "Sensores en Terreno",
-		"progreso_pct": 75
-	},
-	4: {
-		"nombre": "BUCLE FOR Y AUTONOMÍA",
-		"subtitulo": "Patrulla Desatendida",
-		"progreso_pct": 100
-	}
-}
-
-var fases_tutorial_mostradas: Array[int] = []
-var ultima_fase_registrada: int = -1
-var fase_tutorial_pendiente: int = -1
 
 const COLOR_LINEA_ACTIVA: Color = Color(1.0, 1.0, 1.0, 0.40)
 const COLOR_LINEA_ERROR: Color = Color(1.0, 0.25, 0.25, 0.45)
@@ -160,12 +125,6 @@ func _ready() -> void:
 	MissionService.mision_completada.connect(_on_mision_completada)
 	MissionService.conocimiento_desbloqueado.connect(_on_conocimiento_desbloqueado)
 	actualizar_panel_mision()
-	var misiones_completas: Array = MissionService.get_completed_missions()
-	if "recolectar_primer_mineral" in misiones_completas and 0 not in fases_tutorial_mostradas:
-		fases_tutorial_mostradas.append(0)
-	if "ruta_calibracion" in misiones_completas and 1 not in fases_tutorial_mostradas:
-		fases_tutorial_mostradas.append(1)
-	ultima_fase_registrada = _obtener_fase_actual()
 	posicion_panel_mision = panel_mision.position
 	get_viewport().size_changed.connect(_mantener_panel_en_pantalla)
 	
@@ -351,10 +310,6 @@ func _on_archivo_cerrado() -> void:
 		panel_codigo.show()
 	if brujula != null:
 		brujula.show()
-	if fase_tutorial_pendiente != -1:
-		var f := fase_tutorial_pendiente
-		fase_tutorial_pendiente = -1
-		_verificar_y_mostrar_tutorial_fase(f)
 
 
 func _input(event: InputEvent) -> void:
@@ -650,10 +605,6 @@ func _on_boton_cerrar_pressed() -> void:
 		panel_codigo.show()
 	if brujula != null:
 		brujula.show()
-	if fase_tutorial_pendiente != -1:
-		var f := fase_tutorial_pendiente
-		fase_tutorial_pendiente = -1
-		_verificar_y_mostrar_tutorial_fase(f)
 	
 func actualizar_contadores() -> void:
 	if label_nave != null:
@@ -675,12 +626,6 @@ func aplicar_progreso(progress: Dictionary) -> void:
 			" completed_missions_count=", MissionService.completed_missions.size())
 		print("PanelMision antes de actualizar: objective_id=", MissionService.objective_id)
 	actualizar_panel_mision()
-	var misiones_completas: Array = MissionService.get_completed_missions()
-	if "recolectar_primer_mineral" in misiones_completas and 0 not in fases_tutorial_mostradas:
-		fases_tutorial_mostradas.append(0)
-	if "ruta_calibracion" in misiones_completas and 1 not in fases_tutorial_mostradas:
-		fases_tutorial_mostradas.append(1)
-	ultima_fase_registrada = _obtener_fase_actual()
 
 	minerales_nave = maxi(
 		0,
@@ -1597,10 +1542,6 @@ func _on_progreso_ejecucion(resultado: Dictionary) -> void:
 func _on_objetivo_actualizado(_mision_id: String, objetivo: String) -> void:
 	actualizar_panel_mision()
 	_animar_nueva_mision()
-	var nueva_fase := _obtener_fase_actual()
-	if nueva_fase != ultima_fase_registrada:
-		ultima_fase_registrada = nueva_fase
-		_verificar_y_mostrar_tutorial_fase(nueva_fase)
 	if _conservar_aviso_senales:
 		_conservar_aviso_senales = false
 		if _mision_id == "comprar_mapa_3x3":
@@ -1920,40 +1861,6 @@ func actualizar_panel_mision(_resultado: Dictionary = {}) -> void:
 	else:
 		label_estado_mision.text = "● EN CURSO"
 
-	_actualizar_progreso_fase_ui()
-
-
-func _actualizar_progreso_fase_ui() -> void:
-	var fase := _obtener_fase_actual()
-	var info: Dictionary = INFO_FASES.get(fase, {
-		"nombre": "MODO AUTÓNOMO",
-		"subtitulo": "Operación Desatendida",
-		"progreso_pct": 100
-	})
-
-	if label_titulo_mision != null:
-		if fase <= 4:
-			label_titulo_mision.text = "◆ FASE %d: %s" % [fase, info.get("nombre", "")]
-		else:
-			label_titulo_mision.text = "◆ MODO AUTÓNOMO"
-
-	if barra_progreso_fase != null:
-		var pct: float = float(info.get("progreso_pct", 0))
-		if MissionService.objective_completed and fase < 4:
-			pct += 10.0
-		barra_progreso_fase.value = clampf(pct, 0.0, 100.0)
-
-	if label_progreso_fase != null:
-		if fase <= 4:
-			var pct_int := int(info.get("progreso_pct", 0))
-			label_progreso_fase.text = "FASE %d/4 // %s (%d%%)" % [
-				fase,
-				info.get("subtitulo", info.get("nombre", "")),
-				pct_int
-			]
-		else:
-			label_progreso_fase.text = "ENTRENAMIENTO BÁSICO COMPLETADO (100%)"
-
 func _animar_nueva_mision() -> void:
 	if panel_mision == null:
 		return
@@ -2054,53 +1961,30 @@ func _mostrar_mensaje_inicial_ada() -> void:
 	)
 
 
-func _mostrar_tutorial(fase: int) -> void:
-	if panel_tutorial == null:
-		return
-	if transmision_ada != null:
-		transmision_ada.bloquear_mensajes()
-	ada_visible_antes_pestana = transmision_ada != null and transmision_ada.panel != null and transmision_ada.panel.visible
-	if transmision_ada != null and ada_visible_antes_pestana:
-		transmision_ada.ocultar()
-	panel_tutorial.abrir(fase)
-	if boton_sistema_ada != null:
-		boton_sistema_ada.hide()
-	if boton_tienda != null:
-		boton_tienda.hide()
-	if boton_archivo != null:
-		boton_archivo.hide()
-	if boton_tutorial != null:
-		boton_tutorial.hide()
-	if panel_codigo != null:
-		panel_codigo.hide()
-	if brujula != null:
-		brujula.hide()
-
-
 func _on_boton_tutorial_pressed() -> void:
-	var fase := _obtener_fase_actual()
-	_mostrar_tutorial(fase)
-
-
-func _verificar_y_mostrar_tutorial_fase(fase: int) -> void:
-	if panel_tutorial == null:
-		return
-	if not panel_tutorial.tiene_tutorial(fase):
-		return
-	if fase in fases_tutorial_mostradas:
-		return
-	if (panel_tienda != null and panel_tienda.visible) or (panel_archivo != null and panel_archivo.visible):
-		fase_tutorial_pendiente = fase
-		return
-	fases_tutorial_mostradas.append(fase)
-	_mostrar_tutorial(fase)
+	if panel_tutorial != null:
+		if transmision_ada != null:
+			transmision_ada.bloquear_mensajes()
+		ada_visible_antes_pestana = transmision_ada != null and transmision_ada.panel.visible
+		if transmision_ada != null and ada_visible_antes_pestana:
+			transmision_ada.ocultar()
+		var fase := _obtener_fase_actual()
+		panel_tutorial.abrir(fase)
+		boton_sistema_ada.hide()
+		boton_tienda.hide()
+		if boton_archivo != null:
+			boton_archivo.hide()
+		if boton_tutorial != null:
+			boton_tutorial.hide()
+		if panel_codigo != null:
+			panel_codigo.hide()
+		if brujula != null:
+			brujula.hide()
 
 
 func _on_tutorial_cerrado() -> void:
-	if boton_tienda != null:
-		boton_tienda.show()
-	if boton_sistema_ada != null:
-		boton_sistema_ada.show()
+	boton_tienda.show()
+	boton_sistema_ada.show()
 	if boton_archivo != null:
 		boton_archivo.show()
 	if boton_tutorial != null:
@@ -2117,10 +2001,8 @@ func _on_tutorial_cerrado() -> void:
 
 
 func _verificar_tutorial_inicio() -> void:
-	var fase := _obtener_fase_actual()
-	ultima_fase_registrada = fase
-	if fase == 0 and MissionService.completed_missions.is_empty():
-		_verificar_y_mostrar_tutorial_fase(0)
+	if MissionService.objective_id == "recolectar_primer_mineral" and MissionService.completed_missions.is_empty():
+		_on_boton_tutorial_pressed()
 	elif transmision_ada != null:
 		transmision_ada.desbloquear_mensajes()
 
@@ -2128,20 +2010,10 @@ func _verificar_tutorial_inicio() -> void:
 func _obtener_fase_actual() -> int:
 	var m := MissionService.objective_id
 	match m:
-		"recolectar_primer_mineral":
+		"recolectar_primer_mineral", "ruta_calibracion":
 			return 0
-		"ruta_calibracion":
-			return 1
-		"trabajo_continuo", "cuota_suministro":
+		"trabajo_continuo", "cuota_suministro", "comprar_casillas":
 			return 2
-		"comprar_casillas":
-			if "cuota_suministro" in MissionService.completed_missions:
-				return 3
-			elif "ruta_calibracion" in MissionService.completed_missions:
-				return 2
-			elif "recolectar_primer_mineral" in MissionService.completed_missions:
-				return 1
-			return 0
 		"senales_inciertas", "comprar_mapa_3x3":
 			return 3
 		"ciclo_recoleccion", "patrulla_autonoma":
@@ -2155,6 +2027,4 @@ func _obtener_fase_actual() -> int:
 		"comprar_sector_5x5", "barrido_columnas", "comprar_protocolo_maestro", "protocolo_maestro":
 			return 8
 		_:
-			if MissionService.completed_missions.is_empty():
-				return 0
 			return 0
