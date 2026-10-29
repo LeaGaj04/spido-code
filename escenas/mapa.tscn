@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://wgb3qc1i2srg"]
 
-[ext_resource type="PackedScene" uid="uid://c7ahe3nisbhql" path="res://Modelados3D/Mapa/Mateo3.glb" id="1_a56od"]
+[ext_resource type="PackedScene" uid="uid://cwlce28i8l04g" path="res://Modelados3D/Mapa/Mapa.glb" id="1_mapa"]
 
 [node name="Mapa" type="Node3D" unique_id=1100740313]
 
-[node name="Mateo3" parent="." unique_id=692962310 instance=ExtResource("1_a56od")]
+[node name="Mateo3" parent="." unique_id=692962310 instance=ExtResource("1_mapa")]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -1.48802, 0, 3.1416676)
