@@ -30,6 +30,20 @@ const TUTORIALES_POR_FASE := {
 				"imagen": "res://assets/tutorial/fase1_3_errores.png"
 			}
 		]
+	},
+	2: {
+		"titulo_fase": "FASE 2 // BUCLE WHILE (TRABAJO CONTINUO)",
+		"tarjetas": [
+			{
+				"imagen": "res://assets/tutorial/fase2_1_bucle.png"
+			},
+			{
+				"imagen": "res://assets/tutorial/fase2_2_sangria.png"
+			},
+			{
+				"imagen": "res://assets/tutorial/fase2_3_errores.png"
+			}
+		]
 	}
 }
 
