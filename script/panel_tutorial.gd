@@ -44,6 +44,20 @@ const TUTORIALES_POR_FASE := {
 				"imagen": "res://assets/tutorial/fase2_3_errores.png"
 			}
 		]
+	},
+	3: {
+		"titulo_fase": "FASE 3 // CONDICIONALES IF/ELSE (TOMA DE DECISIONES)",
+		"tarjetas": [
+			{
+				"imagen": "res://assets/tutorial/fase3_1_sensor.png"
+			},
+			{
+				"imagen": "res://assets/tutorial/fase3_2_ifelse.png"
+			},
+			{
+				"imagen": "res://assets/tutorial/fase3_3_errores.png"
+			}
+		]
 	}
 }
 
