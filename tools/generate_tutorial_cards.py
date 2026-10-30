@@ -657,6 +657,179 @@ def slide_2_3():
     return image
 
 
+def slide_3_1():
+    """Fase 3 - Slide 1: Sensores y Condiciones (Escaneando el Terreno)"""
+    image, draw = create_base("FASE 3 // TOMA DE DECISIONES", "PASO 1: SENSORES Y CONDICIONES (ESCANEANDO EL TERRENO)")
+    
+    # Panel Izquierdo: Consola Spido y Codigo Condicional
+    draw_panel(draw, (20, 68, 475, 464))
+    draw_text(draw, (40, 88), "CONSOLA SPIDO: CONDICIONALES", get_font(16), fill=GREEN_ACCENT)
+    
+    draw_inset(draw, (38, 114, 456, 310), fill=INSET_BG, border=INSET_BORDER)
+    draw_chip(draw, (50, 126, 175, 148), "> Consola Spido", fill=PANEL_BG, border=PANEL_BORDER, text_col=WHITE_TEXT, font_size=11)
+    
+    # Codigo condicional
+    draw_text(draw, (56, 160), "1", get_font(14), fill=DIM_TEXT)
+    draw_text(draw, (76, 160), "spid.norte()", get_font(15), fill=WHITE_TEXT)
+    
+    draw_text(draw, (56, 190), "2", get_font(14), fill=DIM_TEXT)
+    draw_text(draw, (76, 190), "if spid.hay_mineral():", get_font(15), fill=GREEN_ACCENT)
+    
+    # Guia de sangria punteada
+    for y in range(216, 280, 4):
+        draw.rectangle((96, y, 98, y + 2), fill=GREEN_ACCENT)
+        
+    draw_text(draw, (56, 220), "3", get_font(14), fill=DIM_TEXT)
+    draw_text(draw, (110, 220), "spid.minar()", get_font(15), fill=WHITE_TEXT)
+    
+    draw_text(draw, (56, 250), "4", get_font(14), fill=DIM_TEXT)
+    draw_text(draw, (110, 250), "spid.sur()", get_font(15), fill=WHITE_TEXT)
+    
+    # Chip sensor
+    draw_chip(draw, (255, 182, 442, 208), "<- Sensor de terreno ()", fill=PANEL_BG, border=GREEN_BORDER, text_col=GREEN_ACCENT, font_size=11)
+    
+    # Inset explicativo inferior
+    draw_inset(draw, (38, 330, 456, 446), fill=INSET_BG, border=INSET_BORDER)
+    draw_text(draw, (52, 348), "¿COMO FUNCIONA EL SENSOR?", get_font(14), fill=GREEN_ACCENT)
+    draw_text(draw, (52, 372), "• Si hay cristal: El sensor dice SI -> Spid mina.", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (52, 394), "• Si esta vacio: El sensor dice NO -> Se salta la orden.", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (52, 418), "Asi evitamos que el taladro se active en casillas vacias.", get_font(13), fill=MUTED_TEXT)
+    
+    # Panel Derecho: Contexto y Lore
+    draw_panel(draw, (495, 68, 940, 464))
+    draw_text(draw, (515, 88), "LOGICA Y ESCANEO EN TERRENO", get_font(16), fill=GREEN_ACCENT)
+    
+    # Inset 1
+    draw_inset(draw, (515, 114, 920, 208))
+    draw_text(draw, (530, 132), "1. Yacimientos Inciertos (Sector 2x3)", get_font(15), fill=WHITE_TEXT)
+    draw_text(draw, (530, 156), "En el nuevo terreno, los cristales no estan en puntos fijos.", get_font(13), fill=MUTED_TEXT)
+    draw_text(draw, (530, 178), "Minar a ciegas provoca fallas de extraccion en Spido.", get_font(13), fill=MUTED_TEXT)
+    
+    # Inset 2
+    draw_inset(draw, (515, 222, 920, 316))
+    draw_text(draw, (530, 240), "2. El sensor spid.hay_mineral()", get_font(15), fill=WHITE_TEXT)
+    draw_text(draw, (530, 264), "Escanea la superficie bajo Spido antes de actuar.", get_font(13), fill=MUTED_TEXT)
+    draw_text(draw, (530, 286), "Devuelve una respuesta binaria: Verdadero o Falso.", get_font(13), fill=MUTED_TEXT)
+    
+    # Inset 3
+    draw_inset(draw, (515, 328, 920, 452), fill=(28, 42, 36), border=GREEN_BORDER)
+    draw_text(draw, (530, 346), "CONSEJO TACTICO DE A.D.A.", get_font(14), fill=GREEN_ACCENT)
+    draw_text(draw, (530, 370), "Spido nunca debe adivinar: censar el terreno optimiza", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (530, 392), "el uso de bateria y protege la durabilidad del taladro.", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (530, 414), "Las condiciones otorgan autonomia real a tus rutinas.", get_font(12), fill=MUTED_TEXT)
+    
+    return image
+
+
+def slide_3_2():
+    """Fase 3 - Slide 2: Estructura IF y Plan B con ELSE"""
+    image, draw = create_base("FASE 3 // ESTRUCTURA IF / ELSE", "PASO 2: LOS DOS PUNTOS (:) Y EL PLAN DE CONTINGENCIA")
+    
+    # Panel Izquierdo: Bifurcacion de codigo
+    draw_panel(draw, (20, 68, 475, 464))
+    draw_text(draw, (40, 88), "ESTRUCTURA DE BIFURCACION", get_font(16), fill=GREEN_ACCENT)
+    
+    draw_inset(draw, (38, 114, 456, 310), fill=INSET_BG, border=INSET_BORDER)
+    
+    # Encabezado IF
+    draw_text(draw, (56, 132), "if spid.hay_mineral():", get_font(15), fill=GREEN_ACCENT)
+    draw_chip(draw, (270, 126, 442, 150), "<- Si hay mineral", fill=PANEL_BG, border=GREEN_BORDER, text_col=GREEN_ACCENT, font_size=11)
+    
+    # Guia sangria IF
+    for y in range(156, 204, 4):
+        draw.rectangle((82, y, 84, y + 2), fill=GREEN_ACCENT)
+    draw_text(draw, (96, 160), "spid.minar()", get_font(15), fill=WHITE_TEXT)
+    draw_text(draw, (96, 186), "spid.sur()", get_font(15), fill=WHITE_TEXT)
+    
+    # Encabezado ELSE
+    draw_text(draw, (56, 218), "else:", get_font(15), fill=GREEN_ACCENT)
+    draw_chip(draw, (140, 212, 442, 236), "<- Si la casilla esta vacia (Plan B)", fill=PANEL_BG, border=PANEL_BORDER, text_col=MUTED_TEXT, font_size=11)
+    
+    # Guia sangria ELSE
+    for y in range(242, 290, 4):
+        draw.rectangle((82, y, 84, y + 2), fill=GREEN_ACCENT)
+    draw_text(draw, (96, 248), "spid.este()", get_font(15), fill=WHITE_TEXT)
+    draw_text(draw, (96, 274), "# Buscar en otra casilla", get_font(13), fill=DIM_TEXT)
+    
+    # Inset explicativo inferior
+    draw_inset(draw, (38, 330, 456, 446), fill=INSET_BG, border=INSET_BORDER)
+    draw_text(draw, (52, 348), "CAMINOS EXCLUYENTES:", get_font(14), fill=GREEN_ACCENT)
+    draw_text(draw, (52, 372), "Solo se ejecuta UNO de los dos bloques:", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (52, 394), "O se cumple el IF (minar), o se ejecuta el ELSE (explorar).", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (52, 418), "Spido nunca ejecutara ambos caminos a la vez.", get_font(13), fill=MUTED_TEXT)
+    
+    # Panel Derecho: Reglas de Sintaxis
+    draw_panel(draw, (495, 68, 940, 464))
+    draw_text(draw, (515, 88), "REGLAS DE SINTAXIS IF / ELSE", get_font(16), fill=GREEN_ACCENT)
+    
+    # Inset 1
+    draw_inset(draw, (515, 114, 920, 208))
+    draw_text(draw, (530, 132), "1. Dos puntos obligatorios (:)", get_font(15), fill=WHITE_TEXT)
+    draw_text(draw, (530, 156), "Tanto if condicion: como else: deben terminar con (:).", get_font(13), fill=MUTED_TEXT)
+    draw_text(draw, (530, 178), "Le avisan al sistema que inicia un bloque subordinado.", get_font(13), fill=MUTED_TEXT)
+    
+    # Inset 2
+    draw_inset(draw, (515, 222, 920, 316))
+    draw_text(draw, (530, 240), "2. Sangria interna con TAB", get_font(15), fill=WHITE_TEXT)
+    draw_text(draw, (530, 264), "Las ordenes de cada opcion llevan sangria hacia adentro.", get_font(13), fill=MUTED_TEXT)
+    draw_text(draw, (530, 286), "Asi Spid sabe que orden pertenece a cada decision.", get_font(13), fill=MUTED_TEXT)
+    
+    # Inset 3
+    draw_inset(draw, (515, 330, 920, 446), fill=(28, 42, 36), border=GREEN_BORDER)
+    draw_text(draw, (530, 350), "3. Alineacion entre IF y ELSE", get_font(14), fill=GREEN_ACCENT)
+    draw_text(draw, (530, 374), "La palabra else: va pegada al mismo margen que el if.", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (530, 396), "No le agregues sangria a la palabra else:.", get_font(13), fill=WHITE_TEXT)
+    draw_text(draw, (530, 420), "Solo las ordenes que van debajo de ella llevan TAB.", get_font(13), fill=MUTED_TEXT)
+    
+    return image
+
+
+def slide_3_3():
+    """Fase 3 - Slide 3: Errores Frecuentes con Condiciones y Soluciones"""
+    image, draw = create_base("FASE 3 // PREVENCION DE ERRORES", "PASO 3: ERRORES FRECUENTES CON CONDICIONALES")
+    
+    errors = [
+        (
+            "ERROR 1: OLVIDAR PARENTESIS EN EL SENSOR",
+            "Escribir if spid.hay_mineral: sin los parentesis ().",
+            "Los sensores son consultas activas y siempre llevan ().",
+            "if spid.hay_mineral():"
+        ),
+        (
+            "ERROR 2: OLVIDAR LOS DOS PUNTOS (:)",
+            "Omitir los dos puntos al final de la linea en if o else.",
+            "Agrega siempre dos puntos al final de cada condicion.",
+            "if condicion:  /  else:"
+        ),
+        (
+            "ERROR 3: SANGRIA INCORRECTA EN EL ELSE",
+            "Pegar las ordenes del else a la izquierda sin sangria.",
+            "Alinea else: con if y dale sangria TAB a sus ordenes.",
+            "else: -> TAB spid.este()"
+        )
+    ]
+    
+    y = 68
+    for title, err_desc, sol_desc, good_code in errors:
+        draw_panel(draw, (20, y, 940, y + 124))
+        
+        # Titulo del error
+        draw_chip(draw, (36, y + 12, 390, y + 36), title, fill=INSET_BG, border=PANEL_BORDER, text_col=WHITE_TEXT, font_size=12)
+        
+        # Explicacion limpia sin desbordes
+        draw_text(draw, (36, y + 54), f"• Problema: {err_desc}", get_font(13), fill=MUTED_TEXT)
+        draw_text(draw, (36, y + 84), f"• Solucion: {sol_desc}", get_font(13), fill=WHITE_TEXT)
+        
+        # Bloque de orden correcta
+        draw_inset(draw, (560, y + 34, 920, y + 88), fill=INSET_BG, border=GREEN_BORDER)
+        draw_text(draw, (576, y + 48), "Correcto:", get_font(12), fill=MUTED_TEXT)
+        draw_text(draw, (576, y + 68), good_code, get_font(14), fill=GREEN_ACCENT)
+        
+        y += 134
+        
+    return image
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     
@@ -693,5 +866,16 @@ if __name__ == "__main__":
         img.save(out_file, "PNG", optimize=True)
         print("  Generado:", out_file.name)
         
+    print("Renderizando tarjetas de Fase 3...")
+    for idx, (fn, name) in enumerate([
+        (slide_3_1, "sensor"),
+        (slide_3_2, "ifelse"),
+        (slide_3_3, "errores")
+    ], start=1):
+        img = fn()
+        out_file = OUT / f"fase3_{idx}_{name}.png"
+        img.save(out_file, "PNG", optimize=True)
+        print("  Generado:", out_file.name)
+
     print("Todas las slides generadas exitosamente!")
 
