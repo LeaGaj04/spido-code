@@ -1,6 +1,9 @@
 extends Control
 
 const ESCENA_MENU := "res://escenas/menu_inicio.tscn"
+# Preview de registro validado manualmente; no adjuntar credenciales ni tokens.
+const WEB_SIGNUP_URL := "https://educode-web-git-feat-spidocode-web-auth-educode3.vercel.app/registro"
+var _abrir_navegador: Callable = OS.shell_open
 @onready var email_input: LineEdit = $Panel/Contenedor/Email
 @onready var password_input: LineEdit = $Panel/Contenedor/Password
 @onready var recovery_button: Button = $Panel/Contenedor/RecuperarPassword
@@ -46,11 +49,14 @@ func _on_iniciar_sesion_pressed() -> void:
 		_set_request_state(false, "Ya hay una operación en curso.")
 
 func _on_registrarse_pressed() -> void:
-	if not _validar_campos():
+	if WEB_SIGNUP_URL.is_empty() or not WEB_SIGNUP_URL.begins_with("https://"):
+		status_label.text = "El registro web aún no está disponible. Si ya tienes cuenta, inicia sesión aquí."
 		return
-	_set_request_state(true, "Creando cuenta...")
-	if not Supabase.sign_up(email_input.text.strip_edges(), password_input.text):
-		_set_request_state(false, "Ya hay una operación en curso.")
+	var error: Error = _abrir_navegador.call(WEB_SIGNUP_URL)
+	if error != OK:
+		status_label.text = "No se pudo abrir el navegador. Inténtalo nuevamente."
+		return
+	status_label.text = "Completa el registro en el navegador y confirma tu correo si se solicita. Después vuelve al juego e inicia sesión."
 
 func _on_recuperar_password_pressed() -> void:
 	var email := email_input.text.strip_edges()
