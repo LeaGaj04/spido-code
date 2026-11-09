@@ -1,6 +1,7 @@
 <img width="1431" height="836" alt="2" src="https://github.com/user-attachments/assets/b6b3ccbd-2195-4cfb-8b71-affba48e10bc" />
 
-<img width="1436" height="833" alt="1" src="https://github.com/user-attachments/assets/90dd54d5-7a4c-4e72-9d96-04954db64601" />
+<img width="1914" height="1013" alt="image" src="https://github.com/user-attachments/assets/6352a13a-b081-4fc8-9de9-17465546dbd7" />
+
 
 
 # spidocode
